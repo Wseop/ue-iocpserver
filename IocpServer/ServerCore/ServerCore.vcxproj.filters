@@ -89,6 +89,12 @@
     <ClCompile Include="Service.cpp">
       <Filter>소스 파일\Network</Filter>
     </ClCompile>
+    <ClCompile Include="Job.cpp">
+      <Filter>소스 파일\Job</Filter>
+    </ClCompile>
+    <ClCompile Include="JobQueue.cpp">
+      <Filter>소스 파일\Job</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CorePch.h">
@@ -144,6 +150,12 @@
     </ClInclude>
     <ClInclude Include="Service.h">
       <Filter>소스 파일\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="Job.h">
+      <Filter>소스 파일\Job</Filter>
+    </ClInclude>
+    <ClInclude Include="JobQueue.h">
+      <Filter>소스 파일\Job</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

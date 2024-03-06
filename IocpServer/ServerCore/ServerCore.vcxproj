@@ -189,6 +189,8 @@
     <ClInclude Include="IocpCore.h" />
     <ClInclude Include="IocpEvent.h" />
     <ClInclude Include="IocpObject.h" />
+    <ClInclude Include="Job.h" />
+    <ClInclude Include="JobQueue.h" />
     <ClInclude Include="Listener.h" />
     <ClInclude Include="LockQueue.h" />
     <ClInclude Include="NetAddress.h" />
@@ -209,6 +211,8 @@
     <ClCompile Include="IocpCore.cpp" />
     <ClCompile Include="IocpEvent.cpp" />
     <ClCompile Include="IocpObject.cpp" />
+    <ClCompile Include="Job.cpp" />
+    <ClCompile Include="JobQueue.cpp" />
     <ClCompile Include="Listener.cpp" />
     <ClCompile Include="LockQueue.cpp" />
     <ClCompile Include="NetAddress.cpp" />
