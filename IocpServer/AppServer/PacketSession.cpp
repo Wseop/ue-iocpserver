@@ -17,6 +17,7 @@ void PacketSession::OnConnect()
 
 void PacketSession::OnDisconnect()
 {
+	cout << "Client Disconnected" << endl;
 }
 
 void PacketSession::OnRecv(BYTE* packet)
