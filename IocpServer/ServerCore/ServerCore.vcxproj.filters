@@ -30,6 +30,12 @@
     <Filter Include="소스 파일\Network\Iocp\IocpObject">
       <UniqueIdentifier>{d94408bd-0d20-4aae-8967-22fe105dde71}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\Network\Packet">
+      <UniqueIdentifier>{08d94112-7a29-49ad-833c-2cb71852dcba}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\Network\Packet\Protobuf">
+      <UniqueIdentifier>{7a232865-6033-4974-878b-49e52e23d9d5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CorePch.cpp">
@@ -64,6 +70,15 @@
     </ClCompile>
     <ClCompile Include="IocpObject.cpp">
       <Filter>소스 파일\Network\Iocp\IocpObject</Filter>
+    </ClCompile>
+    <ClCompile Include="RecvBuffer.cpp">
+      <Filter>소스 파일\Network\Packet</Filter>
+    </ClCompile>
+    <ClCompile Include="SendBuffer.cpp">
+      <Filter>소스 파일\Network\Packet</Filter>
+    </ClCompile>
+    <ClCompile Include="PacketHandler.cpp">
+      <Filter>소스 파일\Network\Packet</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -103,5 +118,22 @@
     <ClInclude Include="IocpObject.h">
       <Filter>소스 파일\Network\Iocp\IocpObject</Filter>
     </ClInclude>
+    <ClInclude Include="RecvBuffer.h">
+      <Filter>소스 파일\Network\Packet</Filter>
+    </ClInclude>
+    <ClInclude Include="SendBuffer.h">
+      <Filter>소스 파일\Network\Packet</Filter>
+    </ClInclude>
+    <ClInclude Include="PacketHandler.h">
+      <Filter>소스 파일\Network\Packet</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="GenPackets.bat">
+      <Filter>소스 파일\Network\Packet\Protobuf</Filter>
+    </None>
+    <None Include="Protocol.proto">
+      <Filter>소스 파일\Network\Packet\Protobuf</Filter>
+    </None>
   </ItemGroup>
 </Project>
