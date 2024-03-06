@@ -189,12 +189,15 @@
     <ClInclude Include="IocpCore.h" />
     <ClInclude Include="IocpEvent.h" />
     <ClInclude Include="IocpObject.h" />
+    <ClInclude Include="Listener.h" />
     <ClInclude Include="LockQueue.h" />
     <ClInclude Include="NetAddress.h" />
     <ClInclude Include="PacketHandler.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="RecvBuffer.h" />
     <ClInclude Include="SendBuffer.h" />
+    <ClInclude Include="Service.h" />
+    <ClInclude Include="Session.h" />
     <ClInclude Include="SocketUtils.h" />
     <ClInclude Include="ThreadManager.h" />
     <ClInclude Include="Types.h" />
@@ -206,6 +209,7 @@
     <ClCompile Include="IocpCore.cpp" />
     <ClCompile Include="IocpEvent.cpp" />
     <ClCompile Include="IocpObject.cpp" />
+    <ClCompile Include="Listener.cpp" />
     <ClCompile Include="LockQueue.cpp" />
     <ClCompile Include="NetAddress.cpp" />
     <ClCompile Include="PacketHandler.cpp" />
@@ -217,6 +221,8 @@
     </ClCompile>
     <ClCompile Include="RecvBuffer.cpp" />
     <ClCompile Include="SendBuffer.cpp" />
+    <ClCompile Include="Service.cpp" />
+    <ClCompile Include="Session.cpp" />
     <ClCompile Include="SocketUtils.cpp" />
     <ClCompile Include="ThreadManager.cpp" />
   </ItemGroup>

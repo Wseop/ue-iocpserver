@@ -80,6 +80,15 @@
     <ClCompile Include="PacketHandler.cpp">
       <Filter>소스 파일\Network\Packet</Filter>
     </ClCompile>
+    <ClCompile Include="Listener.cpp">
+      <Filter>소스 파일\Network\Iocp\IocpObject</Filter>
+    </ClCompile>
+    <ClCompile Include="Session.cpp">
+      <Filter>소스 파일\Network\Iocp\IocpObject</Filter>
+    </ClCompile>
+    <ClCompile Include="Service.cpp">
+      <Filter>소스 파일\Network</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CorePch.h">
@@ -126,6 +135,15 @@
     </ClInclude>
     <ClInclude Include="PacketHandler.h">
       <Filter>소스 파일\Network\Packet</Filter>
+    </ClInclude>
+    <ClInclude Include="Listener.h">
+      <Filter>소스 파일\Network\Iocp\IocpObject</Filter>
+    </ClInclude>
+    <ClInclude Include="Session.h">
+      <Filter>소스 파일\Network\Iocp\IocpObject</Filter>
+    </ClInclude>
+    <ClInclude Include="Service.h">
+      <Filter>소스 파일\Network</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
