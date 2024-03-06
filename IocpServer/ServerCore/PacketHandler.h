@@ -29,6 +29,7 @@ private:
 	// Header parsing - PacketType, Payload, Payload의 크기를 반환
 	static BYTE* HandleHeader(BYTE* packet, OUT PacketType& packetType, OUT uint32& payloadSize);
 
+protected:
 	template<typename T>
 	static inline shared_ptr<SendBuffer> MakeSendBuffer(PacketType packetType, T* payload)
 	{
