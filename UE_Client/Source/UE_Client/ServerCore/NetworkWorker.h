@@ -55,10 +55,8 @@ public:
 	virtual uint32 Run() override;
 	virtual void Stop() override;
 	virtual void Exit() override;
-
-public:
-	bool SendPacket(TSharedPtr<SendBuffer> sendBuffer);
 	
 private:
+	bool SendPacket(TSharedPtr<SendBuffer> sendBuffer);
 	bool SendDataBySize(uint32 dataSize, BYTE* data);
 };
