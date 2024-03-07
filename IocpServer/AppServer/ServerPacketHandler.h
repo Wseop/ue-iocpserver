@@ -9,10 +9,10 @@ public:
 
 	// Packet Handlers
 private:
-	static void HandleTest(shared_ptr<Session> session, BYTE* payload, uint32 payloadSize);
+	static void HandlePing(shared_ptr<Session> session, BYTE* payload, uint32 payloadSize);
 
 	// Packet Makers
 public:
-	static shared_ptr<SendBuffer> MakeTest(string msg);
+	static shared_ptr<SendBuffer> MakePing();
 };
 

@@ -1,26 +1,29 @@
 #include "pch.h"
 #include "ServerPacketHandler.h"
+#include "PacketSession.h"
 #include "Protocol.pb.h"
 
 void ServerPacketHandler::Init()
 {
     PacketHandler::Init();
 
-    GPacketHandler[static_cast<uint16>(PacketType::Test)] = HandleTest;
+    GPacketHandler[static_cast<uint16>(PacketType::Ping)] = HandlePing;
 }
 
-void ServerPacketHandler::HandleTest(shared_ptr<Session> session, BYTE* payload, uint32 payloadSize)
+void ServerPacketHandler::HandlePing(shared_ptr<Session> session, BYTE* payload, uint32 payloadSize)
 {
-    Protocol::Test test;
-    test.ParseFromArray(payload, payloadSize);
+    Protocol::Ping ping;
+    ping.ParseFromArray(payload, payloadSize);
 
-    cout << "From Client : " << test.msg() << endl;
+    // 클라에서 Ping 메세지가 정상적으로 왔다면 응답
+    if (ping.msg() == "Ping!")
+        session->Send(MakePing());
 }
 
-shared_ptr<SendBuffer> ServerPacketHandler::MakeTest(string msg)
+shared_ptr<SendBuffer> ServerPacketHandler::MakePing()
 {
-    Protocol::Test test;
-    test.set_msg(msg);
+    Protocol::Ping ping;
+    ping.set_msg("Pong!");
 
-    return MakeSendBuffer(PacketType::Test, &test);
+    return MakeSendBuffer(PacketType::Ping, &ping);
 }

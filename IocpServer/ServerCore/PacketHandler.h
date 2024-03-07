@@ -5,7 +5,7 @@
 enum class PacketType : uint16
 {
 	None,
-	Test
+	Ping,
 };
 
 struct PacketHeader
