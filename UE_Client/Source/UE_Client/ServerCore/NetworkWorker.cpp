@@ -87,7 +87,6 @@ bool RecvWorker::RecvDataBySize(uint32 dataSize, OUT BYTE* buffer)
 {
 	uint32 pendingDataSize = 0;
 
-	// 접속 종료 체크
 	if (_socket->HasPendingData(pendingDataSize) == false || pendingDataSize == 0)
 		return false;
 
