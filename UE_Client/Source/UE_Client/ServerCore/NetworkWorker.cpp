@@ -67,13 +67,13 @@ void RecvWorker::Exit()
 
 bool RecvWorker::RecvPacket(OUT TArray<BYTE>& packet)
 {
-	// 헤더 크기만큼 데이터 수신
+	// Header 수신
 	const uint32 headerSize = sizeof(PacketHeader);
 	packet.AddZeroed(headerSize);
 	if (RecvDataBySize(headerSize, packet.GetData()) == false)
 		return false;
 
-	// Payload 크기만큼 데이터 수신
+	// Payload 수신
 	PacketHeader* header = reinterpret_cast<PacketHeader*>(packet.GetData());
 	const uint32 payloadSize = header->packetSize - headerSize;
 	packet.AddZeroed(payloadSize);
@@ -90,14 +90,16 @@ bool RecvWorker::RecvDataBySize(uint32 dataSize, OUT BYTE* buffer)
 	if (_socket->HasPendingData(pendingDataSize) == false || pendingDataSize == 0)
 		return false;
 
-	// dataSize만큼 수신할 때 까지 Recv 시도
+	// dataSize 만큼의 데이터 수신
 	uint32 bufferOffset = 0;
 	
 	while (dataSize > 0)
 	{
 		int32 numOfBytes = 0;
 
-		_socket->Recv(buffer + bufferOffset, dataSize, numOfBytes);
+		if (_socket->Recv(buffer + bufferOffset, dataSize, numOfBytes) == false)
+			return false;
+
 		check(numOfBytes <= static_cast<int32>(dataSize));
 
 		bufferOffset += numOfBytes;
@@ -158,7 +160,7 @@ bool SendWorker::SendPacket(TSharedPtr<SendBuffer> sendBuffer)
 
 bool SendWorker::SendDataBySize(uint32 dataSize, BYTE* data)
 {
-	// dataSize만큼 데이터를 전송할 때 까지 Send 시도
+	// dataSize 만큼의 데이터 전송
 	while (dataSize > 0)
 	{
 		int32 numOfBytes = 0;
