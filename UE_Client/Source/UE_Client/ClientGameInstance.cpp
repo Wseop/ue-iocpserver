@@ -5,6 +5,8 @@
 #include "Sockets.h"
 #include "SocketSubsystem.h"
 #include "Common/TcpSocketBuilder.h"
+#include "ServerCore/PacketSession.h"
+#include "ServerCore/ClientPacketHandler.h"
 
 void UClientGameInstance::FinishDestroy()
 {
@@ -30,6 +32,11 @@ void UClientGameInstance::ConnectToServer()
 	{
 		// 서버 연결 성공, 세션 시작
 		UE_LOG(LogTemp, Log, TEXT("서버 연결 성공"));
+
+		ClientPacketHandler::Init();
+
+		_packetSession = MakeShared<PacketSession>(_socket);
+		_packetSession->Run();
 	}
 	else
 	{
@@ -39,9 +46,30 @@ void UClientGameInstance::ConnectToServer()
 
 void UClientGameInstance::DisconnectFromServer()
 {
+	if (_packetSession)
+	{
+		_packetSession->Stop();
+		_packetSession = nullptr;
+	}
+
 	if (_socket)
 	{
 		ISocketSubsystem::Get(PLATFORM_SOCKETSUBSYSTEM)->DestroySocket(_socket);
 		_socket = nullptr;
 	}
+}
+
+void UClientGameInstance::ProcessRecvPacket()
+{
+	TArray<BYTE> recvPacket;
+
+	while (_packetSession->PopRecvPacket(recvPacket))
+	{
+		ClientPacketHandler::HandlePacket(_packetSession, recvPacket.GetData());
+	}
+}
+
+void UClientGameInstance::SendPing()
+{
+	_packetSession->PushSendBuffer(ClientPacketHandler::MakePing());
 }

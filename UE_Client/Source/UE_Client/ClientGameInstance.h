@@ -7,6 +7,7 @@
 #include "ClientGameInstance.generated.h"
 
 class FSocket;
+class PacketSession;
 
 /**
  * 
@@ -25,6 +26,13 @@ public:
 
 	void DisconnectFromServer();
 
+	UFUNCTION(BlueprintCallable)
+	void ProcessRecvPacket();
+
+	UFUNCTION(BlueprintCallable)
+	void SendPing();
+
 private:
 	FSocket* _socket = nullptr;
+	TSharedPtr<PacketSession> _packetSession = nullptr;
 };
