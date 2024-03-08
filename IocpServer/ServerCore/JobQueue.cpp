@@ -13,6 +13,11 @@ void JobQueue::Push(shared_ptr<Job> job, bool pushOnly)
 		LJobQueue = shared_from_this();
 		Execute();
 	}
+	// 바로 처리할 수 없다면 다른 Thread에서 가져갈 수 있도록 Global Queue에 등록
+	else
+	{
+		GJobQueue->Push(shared_from_this());
+	}
 }
 
 void JobQueue::Execute()
