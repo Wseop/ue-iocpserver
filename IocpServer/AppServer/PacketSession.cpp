@@ -1,8 +1,10 @@
 #include "pch.h"
 #include "PacketSession.h"
 #include "ServerPacketHandler.h"
+#include "JobQueue.h"
 
-PacketSession::PacketSession()
+PacketSession::PacketSession() :
+	_sendJobQueue(make_shared<JobQueue>())
 {
 	
 }
@@ -27,4 +29,9 @@ void PacketSession::OnRecv(BYTE* packet)
 
 void PacketSession::OnSend(uint32 numOfBytes)
 {
+}
+
+void PacketSession::PushSendJob(shared_ptr<Job> sendJob, bool pushOnly)
+{
+	_sendJobQueue->Push(sendJob, pushOnly);
 }

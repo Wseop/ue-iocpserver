@@ -2,6 +2,7 @@
 #include "ServerPacketHandler.h"
 #include "PacketSession.h"
 #include "Protocol.pb.h"
+#include "Job.h"
 
 void ServerPacketHandler::Init()
 {
@@ -17,7 +18,15 @@ void ServerPacketHandler::HandlePing(shared_ptr<Session> session, BYTE* payload,
 
     // 클라에서 Ping 메세지가 정상적으로 왔다면 응답
     if (ping.msg() == "Ping!")
-        session->Send(MakePing());
+    {
+        if (shared_ptr<PacketSession> packetSession = dynamic_pointer_cast<PacketSession>(session))
+        {
+            packetSession->PushSendJob(
+                make_shared<Job>([packetSession](){ packetSession->Send(MakePing()); }), 
+                false
+            );
+        }
+    }
 }
 
 shared_ptr<SendBuffer> ServerPacketHandler::MakePing()
