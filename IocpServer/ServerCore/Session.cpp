@@ -53,15 +53,16 @@ bool Session::Disconnect()
 
 void Session::Send(shared_ptr<SendBuffer> sendBuffer)
 {
-    {
-        lock_guard<mutex> lock(_mutex);
+    _sendQueue.Push(sendBuffer);
 
-        _sendQueue.push(sendBuffer);
-    }
-
-    // Send 처리중인 Thread가 없으면 현재 Thread가 담당
+    // Send를 처리중인 Thread가 없으면 현재 Thread가 담당
     if (_bSendRegistered.exchange(true) == false)
-        RegisterSend();
+    {
+        vector<shared_ptr<SendBuffer>> sendBuffers;
+        _sendQueue.PopAll(sendBuffers);
+
+        RegisterSend(sendBuffers);
+    }
 }
 
 bool Session::OnAccept(NetAddress netAddress)
@@ -249,27 +250,23 @@ uint32 Session::ProcessPacket(uint32 numOfBytes)
     return processedSize;
 }
 
-void Session::RegisterSend()
+void Session::RegisterSend(vector<shared_ptr<SendBuffer>>& sendBuffers)
 {
     _sendEvent.Init();
     _sendEvent.SetOwner(shared_from_this());
 
     // 보낼 데이터들을 WSABUF에 할당
     vector<WSABUF> wsaBufs;
+    
+    for (shared_ptr<SendBuffer>& sendBuffer : sendBuffers)
     {
-        lock_guard<mutex> lock(_mutex);
+        WSABUF wsaBuf;
+        wsaBuf.buf = reinterpret_cast<char*>(sendBuffer->Buffer());
+        wsaBuf.len = sendBuffer->GetBufferSize();
+        wsaBufs.push_back(wsaBuf);
 
-        while (_sendQueue.empty() == false)
-        {
-            shared_ptr<SendBuffer> sendBuffer = _sendQueue.front();
-            _sendQueue.pop();
-            _sendEvent.PushSendBuffer(sendBuffer);  // SendBuffer 소멸 방지 (use_count 추가)
-
-            WSABUF wsaBuf;
-            wsaBuf.buf = reinterpret_cast<char*>(sendBuffer->Buffer());
-            wsaBuf.len = sendBuffer->GetBufferSize();
-            wsaBufs.push_back(wsaBuf);
-        }
+        // SendBuffer가 전송 완료 전에 소멸되지 않도록 Event에 추가 (use_count++)
+        _sendEvent.PushSendBuffer(sendBuffer);
     }
 
     // Send
@@ -298,10 +295,13 @@ void Session::ProcessSend(uint32 numOfBytes)
 
     _sendEvent.ClearSendBuffers();
 
-    // 보낼 데이터가 남아있으면 다시 전송
-    if (_sendQueue.empty() == false)
+    // 보낼 데이터가 남아있으면 추가로 전송
+    vector<shared_ptr<SendBuffer>> sendBuffers;
+    _sendQueue.PopAll(sendBuffers);
+
+    if (sendBuffers.empty() == false)
     {
-        RegisterSend();
+        RegisterSend(sendBuffers);
     }
     else
     {
