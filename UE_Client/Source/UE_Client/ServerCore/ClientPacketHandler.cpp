@@ -13,6 +13,7 @@ void ClientPacketHandler::Init()
 		GPacketHandler[i] = HandleInvalid;
 
 	GPacketHandler[static_cast<uint16>(PacketType::Ping)] = HandlePing;
+	GPacketHandler[static_cast<uint16>(PacketType::S_Enter)] = HandleS_Enter;
 }
 
 void ClientPacketHandler::HandlePacket(TSharedPtr<PacketSession> packetSession, BYTE* packet)
@@ -51,10 +52,34 @@ void ClientPacketHandler::HandlePing(TSharedPtr<PacketSession> packetSession, BY
 	UE_LOG(LogTemp, Log, TEXT("%s"), *FString(ping.msg().c_str()));
 }
 
+void ClientPacketHandler::HandleS_Enter(TSharedPtr<PacketSession> packetSession, BYTE* payload, uint32 payloadSize)
+{
+	Protocol::S_Enter sEnter;
+	sEnter.ParseFromArray(payload, payloadSize);
+
+	// 입장 성공 여부 출력
+	FString result;
+	
+	if (sEnter.result() == 1)
+		result = FString("Enter Success");
+	else
+		result = FString("Enter Failed");
+
+	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, result);
+}
+
 TSharedPtr<SendBuffer> ClientPacketHandler::MakePing()
 {
 	Protocol::Ping ping;
-	ping.set_msg(TCHAR_TO_ANSI(*FString("Ping!")));
+	ping.set_msg("Ping!");
 
 	return MakeSendBuffer(PacketType::Ping, &ping);
+}
+
+TSharedPtr<SendBuffer> ClientPacketHandler::MakeC_Enter()
+{
+	Protocol::C_Enter cEnter;
+	cEnter.set_key("12345");
+
+	return MakeSendBuffer(PacketType::C_Enter, &cEnter);
 }

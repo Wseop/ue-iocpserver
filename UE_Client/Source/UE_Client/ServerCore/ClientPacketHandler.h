@@ -9,6 +9,8 @@ enum class PacketType : uint16
 {
 	None,
 	Ping,
+	C_Enter,
+	S_Enter,
 };
 
 struct PacketHeader
@@ -60,8 +62,10 @@ private:
 private:
 	static void HandleInvalid(TSharedPtr<PacketSession> packetSession, BYTE* payload, uint32 payloadSize);
 	static void HandlePing(TSharedPtr<PacketSession> packetSession, BYTE* payload, uint32 payloadSize);
+	static void HandleS_Enter(TSharedPtr<PacketSession> packetSession, BYTE* payload, uint32 payloadSize);
 
 	// Packet Makers
 public:
 	static TSharedPtr<SendBuffer> MakePing();
+	static TSharedPtr<SendBuffer> MakeC_Enter();
 };

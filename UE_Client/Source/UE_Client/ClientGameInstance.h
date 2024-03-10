@@ -32,6 +32,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SendPing();
 
+	UFUNCTION(BlueprintCallable)
+	void EnterGameRoom();
+
 private:
 	FSocket* _socket = nullptr;
 	TSharedPtr<PacketSession> _packetSession = nullptr;

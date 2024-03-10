@@ -71,7 +71,12 @@ void UClientGameInstance::ProcessRecvPacket()
 
 void UClientGameInstance::SendPing()
 {
-	_packetSession->PushSendBuffer(ClientPacketHandler::MakePing());
-
 	UE_LOG(LogTemp, Log, TEXT("Ping!"));
+
+	_packetSession->PushSendBuffer(ClientPacketHandler::MakePing());
+}
+
+void UClientGameInstance::EnterGameRoom()
+{
+	_packetSession->PushSendBuffer(ClientPacketHandler::MakeC_Enter());
 }
