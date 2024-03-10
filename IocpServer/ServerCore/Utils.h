@@ -4,6 +4,7 @@
 
 class Utils
 {
+public:
 	template<typename T>
 	static inline T GetRandom(T min, T max)
 	{
