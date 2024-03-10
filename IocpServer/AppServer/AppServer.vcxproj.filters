@@ -41,6 +41,9 @@
     <ClCompile Include="..\ServerCore\Protocol.pb.cc">
       <Filter>소스 파일\Packet\Protobuf</Filter>
     </ClCompile>
+    <ClCompile Include="..\ServerCore\Struct.pb.cc">
+      <Filter>소스 파일\Packet\Protobuf</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -56,6 +59,9 @@
       <Filter>소스 파일\Main</Filter>
     </ClInclude>
     <ClInclude Include="..\ServerCore\Protocol.pb.h">
+      <Filter>소스 파일\Packet\Protobuf</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ServerCore\Struct.pb.h">
       <Filter>소스 파일\Packet\Protobuf</Filter>
     </ClInclude>
   </ItemGroup>

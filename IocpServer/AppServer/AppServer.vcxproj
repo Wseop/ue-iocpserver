@@ -165,6 +165,12 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="..\ServerCore\Struct.pb.cc">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="AppServer.cpp" />
     <ClCompile Include="PacketSession.cpp" />
     <ClCompile Include="pch.cpp">
@@ -178,6 +184,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\ServerCore\Protocol.pb.h" />
+    <ClInclude Include="..\ServerCore\Struct.pb.h" />
     <ClInclude Include="PacketSession.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="ServerPacketHandler.h" />

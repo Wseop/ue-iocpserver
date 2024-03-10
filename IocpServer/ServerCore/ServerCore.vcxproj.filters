@@ -95,6 +95,9 @@
     <ClCompile Include="JobQueue.cpp">
       <Filter>소스 파일\Job</Filter>
     </ClCompile>
+    <ClCompile Include="Utils.cpp">
+      <Filter>소스 파일\Utils</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CorePch.h">
@@ -157,12 +160,18 @@
     <ClInclude Include="JobQueue.h">
       <Filter>소스 파일\Job</Filter>
     </ClInclude>
+    <ClInclude Include="Utils.h">
+      <Filter>소스 파일\Utils</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="GenPackets.bat">
       <Filter>소스 파일\Network\Packet\Protobuf</Filter>
     </None>
     <None Include="Protocol.proto">
+      <Filter>소스 파일\Network\Packet\Protobuf</Filter>
+    </None>
+    <None Include="Struct.proto">
       <Filter>소스 파일\Network\Packet\Protobuf</Filter>
     </None>
   </ItemGroup>

@@ -6,6 +6,8 @@ enum class PacketType : uint16
 {
 	None,
 	Ping,
+	C_Enter,
+	S_Enter,
 };
 
 struct PacketHeader

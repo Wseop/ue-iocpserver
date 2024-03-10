@@ -1,7 +1,19 @@
 syntax = "proto3";
 package Protocol;
 
+import "Struct.proto";
+
 message Ping
 {
 	string msg = 1;
+}
+
+message C_Enter
+{
+	string key = 1;
+}
+
+message S_Enter
+{
+	int32 result = 1;
 }

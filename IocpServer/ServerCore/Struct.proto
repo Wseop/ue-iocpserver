@@ -1,0 +1,4 @@
+syntax = "proto3";
+package Protocol;
+
+// Protocol.proto에서 사용할 구조체를 여기에 정의
