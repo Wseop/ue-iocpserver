@@ -4,6 +4,9 @@
 
 void JobQueue::Push(shared_ptr<Job> job, bool pushOnly)
 {
+	if (job == nullptr)
+		return;
+
 	_jobCount++;
 	_jobs.Push(job);
 

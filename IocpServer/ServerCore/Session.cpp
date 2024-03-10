@@ -53,6 +53,9 @@ bool Session::Disconnect()
 
 void Session::Send(shared_ptr<SendBuffer> sendBuffer)
 {
+    if (sendBuffer == nullptr)
+        return;
+
     _sendQueue.Push(sendBuffer);
 
     // Send를 처리중인 Thread가 없으면 현재 Thread가 담당
