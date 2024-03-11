@@ -8,7 +8,7 @@
 #include "ClientGameInstance.generated.h"
 
 class FSocket;
-class PacketSession;
+class FPacketSession;
 
 /**
  * 
@@ -22,7 +22,7 @@ public:
 	virtual void FinishDestroy() override;
 
 public:
-	void SetPlayerId(uint64 playerId) { _playerId = playerId; }
+	void SetPlayerId(uint64 Id) { PlayerId = Id; }
 
 	UFUNCTION(BlueprintCallable)
 	void ShowPlayerId();
@@ -42,22 +42,22 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void EnterGameRoom();
 
-	void SpawnPlayer(Protocol::PlayerInfo player);
+	void SpawnPlayer(Protocol::PlayerInfo Player);
 
 	UFUNCTION(BlueprintCallable)
 	void ExitGameRoom();
 
-	void DespawnPlayer(uint64 playerId);
+	void DespawnPlayer(uint64 PlayerId);
 	void ProcessExit();
 
 protected:
 	UPROPERTY(Editanywhere)
-	TSubclassOf<AActor> _playerClass;
+	TSubclassOf<AActor> PlayerClass;
 
 private:
-	FSocket* _socket = nullptr;
-	TSharedPtr<PacketSession> _packetSession = nullptr;
+	FSocket* Socket = nullptr;
+	TSharedPtr<FPacketSession> PacketSession = nullptr;
 
-	uint64 _playerId = 0;
-	TMap<uint64, AActor*> _players;
+	uint64 PlayerId = 0;
+	TMap<uint64, AActor*> Players;
 };

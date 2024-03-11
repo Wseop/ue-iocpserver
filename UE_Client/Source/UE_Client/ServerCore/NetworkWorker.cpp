@@ -6,50 +6,50 @@
 #include "PacketSession.h"
 #include "ClientPacketHandler.h"
 
-NetworkWorker::NetworkWorker(FSocket* socket, TWeakPtr<PacketSession> packetSession) :
-	_socket(socket),
-	_packetSession(packetSession)
+FNetworkWorker::FNetworkWorker(FSocket* Socket, TWeakPtr<FPacketSession> PacketSession) :
+	Socket(Socket),
+	PacketSession(PacketSession)
 {
 }
 
-NetworkWorker::~NetworkWorker()
+FNetworkWorker::~FNetworkWorker()
 {
 }
 
-void NetworkWorker::Destroy()
+void FNetworkWorker::Destroy()
 {
-	_bRunning = false;
+	bRunning = false;
 }
 
 /* RecvWorker */
 
-RecvWorker::RecvWorker(FSocket* socket, TWeakPtr<PacketSession> packetSession) :
-	NetworkWorker(socket, packetSession)
+FRecvWorker::FRecvWorker(FSocket* Socket, TWeakPtr<FPacketSession> PacketSession) :
+	FNetworkWorker(Socket, PacketSession)
 {
-	_thread = FRunnableThread::Create(this, TEXT("RecvWorkerThread"));
+	Thread = FRunnableThread::Create(this, TEXT("RecvWorkerThread"));
 }
 
-RecvWorker::~RecvWorker()
+FRecvWorker::~FRecvWorker()
 {
 }
 
-bool RecvWorker::Init()
+bool FRecvWorker::Init()
 {
 	return true;
 }
 
-uint32 RecvWorker::Run()
+uint32 FRecvWorker::Run()
 {
 	// Packet을 수신하여 Session에 전달
-	while (_bRunning)
+	while (bRunning)
 	{
-		if (TSharedPtr<PacketSession> packetSession = _packetSession.Pin())
+		if (TSharedPtr<FPacketSession> Session = PacketSession.Pin())
 		{
-			TArray<BYTE> packet;
+			TArray<BYTE> Packet;
 
-			if (RecvPacket(packet))
+			if (RecvPacket(Packet))
 			{
-				packetSession->PushRecvPacket(packet);
+				Session->PushRecvPacket(Packet);
 			}
 		}
 	}
@@ -57,53 +57,53 @@ uint32 RecvWorker::Run()
 	return 0;
 }
 
-void RecvWorker::Stop()
+void FRecvWorker::Stop()
 {
 }
 
-void RecvWorker::Exit()
+void FRecvWorker::Exit()
 {
 }
 
-bool RecvWorker::RecvPacket(OUT TArray<BYTE>& packet)
+bool FRecvWorker::RecvPacket(OUT TArray<BYTE>& Packet)
 {
 	// Header 수신
-	const uint32 headerSize = sizeof(PacketHeader);
-	packet.AddZeroed(headerSize);
-	if (RecvDataBySize(headerSize, packet.GetData()) == false)
+	const uint32 HeaderSize = sizeof(FPacketHeader);
+	Packet.AddZeroed(HeaderSize);
+	if (RecvDataBySize(HeaderSize, Packet.GetData()) == false)
 		return false;
 
 	// Payload 수신
-	PacketHeader* header = reinterpret_cast<PacketHeader*>(packet.GetData());
-	const uint32 payloadSize = header->packetSize - headerSize;
-	packet.AddZeroed(payloadSize);
-	if (RecvDataBySize(payloadSize, packet.GetData() + headerSize) == false)
+	FPacketHeader* Header = reinterpret_cast<FPacketHeader*>(Packet.GetData());
+	const uint32 PayloadSize = Header->PacketSize - HeaderSize;
+	Packet.AddZeroed(PayloadSize);
+	if (RecvDataBySize(PayloadSize, Packet.GetData() + HeaderSize) == false)
 		return false;
 
 	return true;
 }
 
-bool RecvWorker::RecvDataBySize(uint32 dataSize, OUT BYTE* buffer)
+bool FRecvWorker::RecvDataBySize(uint32 DataSize, OUT BYTE* Buffer)
 {
-	uint32 pendingDataSize = 0;
+	uint32 PendingDataSize = 0;
 
-	if (_socket->HasPendingData(pendingDataSize) == false || pendingDataSize == 0)
+	if (Socket->HasPendingData(PendingDataSize) == false || PendingDataSize == 0)
 		return false;
 
 	// dataSize 만큼의 데이터 수신
-	uint32 bufferOffset = 0;
+	uint32 BufferOffset = 0;
 	
-	while (dataSize > 0)
+	while (DataSize > 0)
 	{
-		int32 numOfBytes = 0;
+		int32 NumOfBytes = 0;
 
-		if (_socket->Recv(buffer + bufferOffset, dataSize, numOfBytes) == false)
+		if (Socket->Recv(Buffer + BufferOffset, DataSize, NumOfBytes) == false)
 			return false;
 
-		check(numOfBytes <= static_cast<int32>(dataSize));
+		check(NumOfBytes <= static_cast<int32>(DataSize));
 
-		bufferOffset += numOfBytes;
-		dataSize -= numOfBytes;
+		BufferOffset += NumOfBytes;
+		DataSize -= NumOfBytes;
 	}
 
 	return true;
@@ -111,33 +111,33 @@ bool RecvWorker::RecvDataBySize(uint32 dataSize, OUT BYTE* buffer)
 
 /* SendWorker */
 
-SendWorker::SendWorker(FSocket* socket, TWeakPtr<PacketSession> packetSession) :
-	NetworkWorker(socket, packetSession)
+FSendWorker::FSendWorker(FSocket* Socket, TWeakPtr<FPacketSession> PacketSession) :
+	FNetworkWorker(Socket, PacketSession)
 {
-	_thread = FRunnableThread::Create(this, TEXT("SendWorkerThread"));
+	Thread = FRunnableThread::Create(this, TEXT("SendWorkerThread"));
 }
 
-SendWorker::~SendWorker()
+FSendWorker::~FSendWorker()
 {
 }
 
-bool SendWorker::Init()
+bool FSendWorker::Init()
 {
 	return true;
 }
 
-uint32 SendWorker::Run()
+uint32 FSendWorker::Run()
 {
 	// SendQueue에 보낼 데이터가 있으면 전송
-	while (_bRunning)
+	while (bRunning)
 	{
-		if (TSharedPtr<PacketSession> packetSession = _packetSession.Pin())
+		if (TSharedPtr<FPacketSession> Session = PacketSession.Pin())
 		{
-			TSharedPtr<SendBuffer> sendBuffer = nullptr;
+			TSharedPtr<FSendBuffer> SendBuffer = nullptr;
 
-			if (packetSession->PopSendBuffer(sendBuffer))
+			if (Session->PopSendBuffer(SendBuffer))
 			{
-				SendPacket(sendBuffer);
+				SendPacket(SendBuffer);
 			}
 		}
 	}
@@ -145,30 +145,30 @@ uint32 SendWorker::Run()
 	return 0;
 }
 
-void SendWorker::Stop()
+void FSendWorker::Stop()
 {
 }
 
-void SendWorker::Exit()
+void FSendWorker::Exit()
 {
 }
 
-bool SendWorker::SendPacket(TSharedPtr<SendBuffer> sendBuffer)
+bool FSendWorker::SendPacket(TSharedPtr<FSendBuffer> SendBuffer)
 {
-	return SendDataBySize(sendBuffer->GetBufferSize(), sendBuffer->Buffer());
+	return SendDataBySize(SendBuffer->GetBufferSize(), SendBuffer->GetBuffer());
 }
 
-bool SendWorker::SendDataBySize(uint32 dataSize, BYTE* data)
+bool FSendWorker::SendDataBySize(uint32 DataSize, BYTE* Data)
 {
 	// dataSize 만큼의 데이터 전송
-	while (dataSize > 0)
+	while (DataSize > 0)
 	{
-		int32 numOfBytes = 0;
+		int32 NumOfBytes = 0;
 
-		if (_socket->Send(data, dataSize, numOfBytes) == false)
+		if (Socket->Send(Data, DataSize, NumOfBytes) == false)
 			return false;
 
-		dataSize -= numOfBytes;
+		DataSize -= NumOfBytes;
 	}
 
 	return true;

@@ -7,16 +7,16 @@
 /**
  * 
  */
-class UE_CLIENT_API SendBuffer
+class UE_CLIENT_API FSendBuffer
 {
 public:
-	SendBuffer(uint32 bufferSize);
-	~SendBuffer();
+	FSendBuffer(uint32 BufferSize);
+	~FSendBuffer();
 
 public:
-	BYTE* Buffer();
+	BYTE* GetBuffer();
 	uint32 GetBufferSize();
 
 private:
-	TArray<BYTE> _buffer;
+	TArray<BYTE> Buffer;
 };

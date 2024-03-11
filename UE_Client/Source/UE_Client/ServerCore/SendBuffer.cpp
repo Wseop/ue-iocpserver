@@ -3,21 +3,21 @@
 
 #include "SendBuffer.h"
 
-SendBuffer::SendBuffer(uint32 bufferSize)
+FSendBuffer::FSendBuffer(uint32 BufferSize)
 {
-	_buffer.AddZeroed(bufferSize);
+	Buffer.AddZeroed(BufferSize);
 }
 
-SendBuffer::~SendBuffer()
+FSendBuffer::~FSendBuffer()
 {
 }
 
-BYTE* SendBuffer::Buffer()
+BYTE* FSendBuffer::GetBuffer()
 {
-	return _buffer.GetData();
+	return Buffer.GetData();
 }
 
-uint32 SendBuffer::GetBufferSize()
+uint32 FSendBuffer::GetBufferSize()
 {
-	return static_cast<uint32>(_buffer.Num());
+	return static_cast<uint32>(Buffer.Num());
 }

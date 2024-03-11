@@ -5,53 +5,53 @@
 #include "Sockets.h"
 #include "NetworkWorker.h"
 
-PacketSession::PacketSession(FSocket* socket) :
-	_socket(socket)
+FPacketSession::FPacketSession(FSocket* Socket) :
+	Socket(Socket)
 {
 }
 
-PacketSession::~PacketSession()
+FPacketSession::~FPacketSession()
 {
 }
 
-void PacketSession::Run()
+void FPacketSession::Run()
 {
 	// NetworkWorker Thread ½ÇÇà
-	_recvWorkerThread = MakeShared<RecvWorker>(_socket, AsShared());
-	_sendWorkerThread = MakeShared<SendWorker>(_socket, AsShared());
+	RecvWorkerThread = MakeShared<FRecvWorker>(Socket, AsShared());
+	SendWorkerThread = MakeShared<FSendWorker>(Socket, AsShared());
 }
 
-void PacketSession::Stop()
+void FPacketSession::Stop()
 {
-	if (_recvWorkerThread)
+	if (RecvWorkerThread)
 	{
-		_recvWorkerThread->Destroy();
-		_recvWorkerThread = nullptr;
+		RecvWorkerThread->Destroy();
+		RecvWorkerThread = nullptr;
 	}
 
-	if (_sendWorkerThread)
+	if (SendWorkerThread)
 	{
-		_sendWorkerThread->Destroy();
-		_sendWorkerThread = nullptr;
+		SendWorkerThread->Destroy();
+		SendWorkerThread = nullptr;
 	}
 }
 
-bool PacketSession::PushRecvPacket(TArray<BYTE>& packet)
+bool FPacketSession::PushRecvPacket(TArray<BYTE>& Packet)
 {
-	return _recvQueue.Enqueue(packet);
+	return RecvQueue.Enqueue(Packet);
 }
 
-bool PacketSession::PopRecvPacket(OUT TArray<BYTE>& packet)
+bool FPacketSession::PopRecvPacket(OUT TArray<BYTE>& Packet)
 {
-	return _recvQueue.Dequeue(packet);
+	return RecvQueue.Dequeue(Packet);
 }
 
-bool PacketSession::PushSendBuffer(TSharedPtr<SendBuffer> sendBuffer)
+bool FPacketSession::PushSendBuffer(TSharedPtr<FSendBuffer> SendBuffer)
 {
-	return _sendQueue.Enqueue(sendBuffer);
+	return SendQueue.Enqueue(SendBuffer);
 }
 
-bool PacketSession::PopSendBuffer(OUT TSharedPtr<SendBuffer>& sendBuffer)
+bool FPacketSession::PopSendBuffer(OUT TSharedPtr<FSendBuffer>& SendBuffer)
 {
-	return _sendQueue.Dequeue(sendBuffer);
+	return SendQueue.Dequeue(SendBuffer);
 }

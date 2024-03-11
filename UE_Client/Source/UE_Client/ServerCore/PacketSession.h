@@ -5,39 +5,39 @@
 #include "CoreMinimal.h"
 
 class FSocket;
-class RecvWorker;
-class SendWorker;
-class SendBuffer;
+class FRecvWorker;
+class FSendWorker;
+class FSendBuffer;
 
 /**
  * 
  */
-class UE_CLIENT_API PacketSession : public TSharedFromThis<PacketSession>
+class UE_CLIENT_API FPacketSession : public TSharedFromThis<FPacketSession>
 {
 public:
-	PacketSession(FSocket* socket);
-	~PacketSession();
+	FPacketSession(FSocket* Socket);
+	~FPacketSession();
 
 public:
 	void Run();
 	void Stop();
 
 	// Recv Queue
-	bool PushRecvPacket(TArray<BYTE>& packet);
-	bool PopRecvPacket(OUT TArray<BYTE>& packet);
+	bool PushRecvPacket(TArray<BYTE>& Packet);
+	bool PopRecvPacket(OUT TArray<BYTE>& Packet);
 
 	// Send Queue
-	bool PushSendBuffer(TSharedPtr<SendBuffer> sendBuffer);
-	bool PopSendBuffer(OUT TSharedPtr<SendBuffer>& sendBuffer);
+	bool PushSendBuffer(TSharedPtr<FSendBuffer> SendBuffer);
+	bool PopSendBuffer(OUT TSharedPtr<FSendBuffer>& SendBuffer);
 
 private:
-	FSocket* _socket = nullptr;
+	FSocket* Socket = nullptr;
 
 	// NetworkWorker
-	TSharedPtr<RecvWorker> _recvWorkerThread = nullptr;
-	TSharedPtr<SendWorker> _sendWorkerThread = nullptr;
+	TSharedPtr<FRecvWorker> RecvWorkerThread = nullptr;
+	TSharedPtr<FSendWorker> SendWorkerThread = nullptr;
 
 	// Recv, Send Queue
-	TQueue<TArray<BYTE>> _recvQueue;
-	TQueue<TSharedPtr<SendBuffer>> _sendQueue;
+	TQueue<TArray<BYTE>> RecvQueue;
+	TQueue<TSharedPtr<FSendBuffer>> SendQueue;
 };

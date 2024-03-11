@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "SendBuffer.h"
 
-enum class PacketType : uint16
+enum class EPacketType : uint16
 {
 	None,
 	Ping,
@@ -17,63 +17,63 @@ enum class PacketType : uint16
 	S_DespawnPlayer,
 };
 
-struct PacketHeader
+struct FPacketHeader
 {
-	PacketType packetType = PacketType::None;
-	uint32 packetSize = 0;
+	EPacketType PacketType = EPacketType::None;
+	uint32 PacketSize = 0;
 };
 
-class PacketSession;
+class FPacketSession;
 
-using PacketHandlerFunc = TFunction<void(TSharedPtr<PacketSession>, BYTE*, uint32)>;
+using PacketHandlerFunc = TFunction<void(TSharedPtr<FPacketSession>, BYTE*, uint32)>;
 extern PacketHandlerFunc GPacketHandler[UINT16_MAX];
 
 /**
  * 
  */
-class UE_CLIENT_API ClientPacketHandler
+class UE_CLIENT_API FClientPacketHandler
 {
 public:
 	static void Init();
-	static void HandlePacket(TSharedPtr<PacketSession> packetSession, BYTE* packet);
+	static void HandlePacket(TSharedPtr<FPacketSession> PacketSession, BYTE* Packet);
 
 private:
 	// Header parsing - PacketType, Payload, Payload의 크기를 반환
-	static BYTE* HandleHeader(BYTE* packet, OUT PacketType& packetType, OUT uint32& payloadSize);
+	static BYTE* HandleHeader(BYTE* Packet, OUT EPacketType& PacketType, OUT uint32& PayloadSize);
 
 	template<typename T>
-	static inline TSharedPtr<SendBuffer> MakeSendBuffer(PacketType packetType, T* payload)
+	static inline TSharedPtr<FSendBuffer> MakeSendBuffer(EPacketType PacketType, T* Payload)
 	{
 		// Packet 크기 계산
-		uint32 payloadSize = static_cast<uint32>(payload->ByteSizeLong());
-		uint32 packetSize = sizeof(PacketHeader) + payloadSize;
+		uint32 PayloadSize = static_cast<uint32>(Payload->ByteSizeLong());
+		uint32 PacketSize = sizeof(FPacketHeader) + PayloadSize;
 
 		// SendBuffer 생성
-		TSharedPtr<SendBuffer> sendBuffer = MakeShared<SendBuffer>(packetSize);
+		TSharedPtr<FSendBuffer> SendBuffer = MakeShared<FSendBuffer>(PacketSize);
 
 		// SendBuffer에 Header 추가
-		PacketHeader* header = reinterpret_cast<PacketHeader*>(sendBuffer->Buffer());
-		header->packetType = packetType;
-		header->packetSize = packetSize;
+		FPacketHeader* Header = reinterpret_cast<FPacketHeader*>(SendBuffer->GetBuffer());
+		Header->PacketType = PacketType;
+		Header->PacketSize = PacketSize;
 
 		// SendBuffer에 Payload 추가 (헤더에 이어서)
-		check(payload->SerializeToArray(header + 1, payloadSize));
+		check(Payload->SerializeToArray(Header + 1, PayloadSize));
 
-		return sendBuffer;
+		return SendBuffer;
 	}
 
 	// Packet Handlers
 private:
-	static void HandleInvalid(TSharedPtr<PacketSession> packetSession, BYTE* payload, uint32 payloadSize);
-	static void HandlePing(TSharedPtr<PacketSession> packetSession, BYTE* payload, uint32 payloadSize);
-	static void HandleS_Enter(TSharedPtr<PacketSession> packetSession, BYTE* payload, uint32 payloadSize);
-	static void HandleS_Exit(TSharedPtr<PacketSession> packetSession, BYTE* payload, uint32 payloadSize);
-	static void HandleS_SpawnPlayer(TSharedPtr<PacketSession> packetSession, BYTE* payload, uint32 payloadSize);
-	static void HandleS_DespawnPlayer(TSharedPtr<PacketSession> packetSession, BYTE* payload, uint32 payloadSize);
+	static void HandleInvalid(TSharedPtr<FPacketSession> PacketSession, BYTE* Payload, uint32 PayloadSize);
+	static void HandlePing(TSharedPtr<FPacketSession> PacketSession, BYTE* Payload, uint32 PayloadSize);
+	static void HandleS_Enter(TSharedPtr<FPacketSession> PacketSession, BYTE* Payload, uint32 PayloadSize);
+	static void HandleS_Exit(TSharedPtr<FPacketSession> PacketSession, BYTE* Payload, uint32 PayloadSize);
+	static void HandleS_SpawnPlayer(TSharedPtr<FPacketSession> PacketSession, BYTE* Payload, uint32 PayloadSize);
+	static void HandleS_DespawnPlayer(TSharedPtr<FPacketSession> PacketSession, BYTE* Payload, uint32 PayloadSize);
 
 	// Packet Makers
 public:
-	static TSharedPtr<SendBuffer> MakePing();
-	static TSharedPtr<SendBuffer> MakeC_Enter();
-	static TSharedPtr<SendBuffer> MakeC_Exit(uint64 playerId);
+	static TSharedPtr<FSendBuffer> MakePing();
+	static TSharedPtr<FSendBuffer> MakeC_Enter();
+	static TSharedPtr<FSendBuffer> MakeC_Exit(uint64 PlayerId);
 };

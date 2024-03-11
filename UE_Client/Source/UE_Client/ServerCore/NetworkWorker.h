@@ -5,34 +5,34 @@
 #include "CoreMinimal.h"
 
 class FSocket;
-class PacketSession;
-class SendBuffer;
+class FPacketSession;
+class FSendBuffer;
 
 /**
  * 
  */
-class UE_CLIENT_API NetworkWorker : public FRunnable
+class UE_CLIENT_API FNetworkWorker : public FRunnable
 {
 public:
-	NetworkWorker(FSocket* socket, TWeakPtr<PacketSession> packetSession);
-	virtual ~NetworkWorker();
+	FNetworkWorker(FSocket* Socket, TWeakPtr<FPacketSession> PacketSession);
+	virtual ~FNetworkWorker();
 
 public:
 	void Destroy();
 
 protected:
-	FRunnableThread* _thread = nullptr;
-	bool _bRunning = true;
-	FSocket* _socket = nullptr;
-	TWeakPtr<PacketSession> _packetSession = nullptr;
+	FRunnableThread* Thread = nullptr;
+	bool bRunning = true;
+	FSocket* Socket = nullptr;
+	TWeakPtr<FPacketSession> PacketSession = nullptr;
 };
 
 /* RecvWorker */
-class RecvWorker : public NetworkWorker
+class FRecvWorker : public FNetworkWorker
 {
 public:
-	RecvWorker(FSocket* socket, TWeakPtr<PacketSession> packetSession);
-	virtual ~RecvWorker();
+	FRecvWorker(FSocket* Socket, TWeakPtr<FPacketSession> PacketSession);
+	virtual ~FRecvWorker();
 
 	virtual bool Init() override;
 	virtual uint32 Run() override;
@@ -40,16 +40,16 @@ public:
 	virtual void Exit() override;
 
 private:
-	bool RecvPacket(OUT TArray<BYTE>& packet);
-	bool RecvDataBySize(uint32 dataSize, OUT BYTE* buffer);
+	bool RecvPacket(OUT TArray<BYTE>& Packet);
+	bool RecvDataBySize(uint32 DataSize, OUT BYTE* Buffer);
 };
 
 /* SendWorker */
-class SendWorker : public NetworkWorker
+class FSendWorker : public FNetworkWorker
 {
 public:
-	SendWorker(FSocket* socket, TWeakPtr<PacketSession> packetSession);
-	virtual ~SendWorker();
+	FSendWorker(FSocket* Socket, TWeakPtr<FPacketSession> PacketSession);
+	virtual ~FSendWorker();
 
 	virtual bool Init() override;
 	virtual uint32 Run() override;
@@ -57,6 +57,6 @@ public:
 	virtual void Exit() override;
 	
 private:
-	bool SendPacket(TSharedPtr<SendBuffer> sendBuffer);
-	bool SendDataBySize(uint32 dataSize, BYTE* data);
+	bool SendPacket(TSharedPtr<FSendBuffer> SendBuffer);
+	bool SendDataBySize(uint32 DataSize, BYTE* Data);
 };

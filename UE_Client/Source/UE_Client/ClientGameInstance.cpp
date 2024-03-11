@@ -17,35 +17,35 @@ void UClientGameInstance::FinishDestroy()
 
 void UClientGameInstance::ShowPlayerId()
 {
-	if (_playerId == 0)
+	if (PlayerId == 0)
 		return;
 
-	FString message = FString::Printf(TEXT("Player Id : %d"), _playerId);
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, message);
+	FString Message = FString::Printf(TEXT("Player Id : %d"), PlayerId);
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, Message);
 }
 
 void UClientGameInstance::ConnectToServer()
 {
-	_socket = ISocketSubsystem::Get(PLATFORM_SOCKETSUBSYSTEM)->CreateSocket(TEXT("Stream"), TEXT("ClientSocket"));
+	Socket = ISocketSubsystem::Get(PLATFORM_SOCKETSUBSYSTEM)->CreateSocket(TEXT("Stream"), TEXT("ClientSocket"));
 
-	FIPv4Address ip;
-	FIPv4Address::Parse(TEXT("127.0.0.1"), ip);
+	FIPv4Address Ip;
+	FIPv4Address::Parse(TEXT("127.0.0.1"), Ip);
 
-	TSharedRef<FInternetAddr> internetAddr = ISocketSubsystem::Get(PLATFORM_SOCKETSUBSYSTEM)->CreateInternetAddr();
-	internetAddr->SetIp(ip.Value);
-	internetAddr->SetPort(7777);
+	TSharedRef<FInternetAddr> InternetAddr = ISocketSubsystem::Get(PLATFORM_SOCKETSUBSYSTEM)->CreateInternetAddr();
+	InternetAddr->SetIp(Ip.Value);
+	InternetAddr->SetPort(7777);
 
-	bool bConnected = _socket->Connect(*internetAddr);
+	bool bConnected = Socket->Connect(*InternetAddr);
 
 	if (bConnected)
 	{
 		// 서버 연결 성공, 세션 시작
 		UE_LOG(LogTemp, Log, TEXT("서버 연결 성공"));
 
-		ClientPacketHandler::Init();
+		FClientPacketHandler::Init();
 
-		_packetSession = MakeShared<PacketSession>(_socket);
-		_packetSession->Run();
+		PacketSession = MakeShared<FPacketSession>(Socket);
+		PacketSession->Run();
 	}
 	else
 	{
@@ -55,26 +55,26 @@ void UClientGameInstance::ConnectToServer()
 
 void UClientGameInstance::DisconnectFromServer()
 {
-	if (_packetSession)
+	if (PacketSession)
 	{
-		_packetSession->Stop();
-		_packetSession = nullptr;
+		PacketSession->Stop();
+		PacketSession = nullptr;
 	}
 
-	if (_socket)
+	if (Socket)
 	{
-		ISocketSubsystem::Get(PLATFORM_SOCKETSUBSYSTEM)->DestroySocket(_socket);
-		_socket = nullptr;
+		ISocketSubsystem::Get(PLATFORM_SOCKETSUBSYSTEM)->DestroySocket(Socket);
+		Socket = nullptr;
 	}
 }
 
 void UClientGameInstance::ProcessRecvPacket()
 {
-	TArray<BYTE> recvPacket;
+	TArray<BYTE> RecvPacket;
 
-	while (_packetSession->PopRecvPacket(recvPacket))
+	while (PacketSession->PopRecvPacket(RecvPacket))
 	{
-		ClientPacketHandler::HandlePacket(_packetSession, recvPacket.GetData());
+		FClientPacketHandler::HandlePacket(PacketSession, RecvPacket.GetData());
 	}
 }
 
@@ -82,64 +82,56 @@ void UClientGameInstance::SendPing()
 {
 	UE_LOG(LogTemp, Log, TEXT("Ping!"));
 
-	_packetSession->PushSendBuffer(ClientPacketHandler::MakePing());
+	PacketSession->PushSendBuffer(FClientPacketHandler::MakePing());
 }
 
 void UClientGameInstance::EnterGameRoom()
 {
-	if (_playerId != 0)
+	if (PlayerId != 0)
 		return;
 
-	_packetSession->PushSendBuffer(ClientPacketHandler::MakeC_Enter());
+	PacketSession->PushSendBuffer(FClientPacketHandler::MakeC_Enter());
 }
 
-void UClientGameInstance::SpawnPlayer(Protocol::PlayerInfo player)
+void UClientGameInstance::SpawnPlayer(Protocol::PlayerInfo Player)
 {
-	UWorld* world = GetWorld();
-
-	if (world == nullptr)
-		return;
-
 	// 중복 체크
-	if (_players.Find(player.player_id()) != nullptr)
+	if (Players.Find(Player.player_id()) != nullptr)
 		return;
 
-	FVector spawnLocation(player.x(), player.y(), player.z());
-	AActor* spawnedPlayer = world->SpawnActor(_playerClass, &spawnLocation);
+	FVector SpawnLocation(Player.x(), Player.y(), Player.z());
+	AActor* SpawnedPlayer = GWorld->SpawnActor(PlayerClass, &SpawnLocation);
 
-	_players.Add(player.player_id(), spawnedPlayer);
+	Players.Add(Player.player_id(), SpawnedPlayer);
 }
 
 void UClientGameInstance::ExitGameRoom()
 {
-	if (_playerId == 0)
+	if (PlayerId == 0)
 		return;
 
-	_packetSession->PushSendBuffer(ClientPacketHandler::MakeC_Exit(_playerId));
+	PacketSession->PushSendBuffer(FClientPacketHandler::MakeC_Exit(PlayerId));
 }
 
-void UClientGameInstance::DespawnPlayer(uint64 playerId)
+void UClientGameInstance::DespawnPlayer(uint64 Id)
 {
-	if (_players.Find(playerId) == nullptr)
+	if (Players.Find(Id) == nullptr)
 		return;
 
-	if (UWorld* world = GetWorld())
-	{
-		if (world->DestroyActor(_players[playerId]))
-			_players.Remove(playerId);
-	}
+	if (GWorld->DestroyActor(Players[Id]))
+		Players.Remove(Id);
 }
 
 void UClientGameInstance::ProcessExit()
 {
 	// player 정리
-	for (auto& p : _players)
+	for (auto& Elem : Players)
 	{
-		GWorld->DestroyActor(p.Value);
+		GWorld->DestroyActor(Elem.Value);
 	}
-	_players.Reset();
+	Players.Reset();
 
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Player %d Leave"), _playerId));
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Player %d Leave"), PlayerId));
 	
-	_playerId = 0;
+	PlayerId = 0;
 }
