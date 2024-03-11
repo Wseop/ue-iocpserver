@@ -16,4 +16,10 @@ message C_Enter
 message S_Enter
 {
 	int32 result = 1;
+	int64 player_id = 2;
+}
+
+message S_SpawnPlayer
+{
+	repeated PlayerInfo players = 1;
 }

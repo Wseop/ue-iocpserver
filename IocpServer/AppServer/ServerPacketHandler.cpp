@@ -3,6 +3,9 @@
 #include "PacketSession.h"
 #include "Protocol.pb.h"
 #include "Job.h"
+#include "Room.h"
+#include "ObjectManager.h"
+#include "Player.h"
 
 void ServerPacketHandler::Init()
 {
@@ -37,17 +40,23 @@ void ServerPacketHandler::HandleC_Enter(shared_ptr<Session> session, BYTE* paylo
 
     // key check
     bool bResult = cEnter.key() == "12345" ? true : false;
+    shared_ptr<PacketSession> packetSession = dynamic_pointer_cast<PacketSession>(session);
 
-    // 입장 성공여부 전송
-    if (shared_ptr<PacketSession> packetSession = dynamic_pointer_cast<PacketSession>(session))
+    if (packetSession)
     {
-        packetSession->PushSendJob(
-            make_shared<Job>([packetSession, bResult]() { packetSession->Send(MakeS_Enter(bResult)); }),
-            false
-        );
+        // Player 입장
+        if (bResult)
+        {
+            GRoom->EnterPlayer(ObjectManager::CreatePlayer(packetSession));
+        }
+        else
+        {
+            packetSession->PushSendJob(
+                make_shared<Job>([packetSession, bResult]() { packetSession->Send(MakeS_Enter(bResult, -1)); }),
+                false
+            );
+        }
     }
-
-    // TODO. key가 일치하면 캐릭터 Spawn
 }
 
 shared_ptr<SendBuffer> ServerPacketHandler::MakePing()
@@ -58,7 +67,7 @@ shared_ptr<SendBuffer> ServerPacketHandler::MakePing()
     return MakeSendBuffer(PacketType::Ping, &ping);
 }
 
-shared_ptr<SendBuffer> ServerPacketHandler::MakeS_Enter(bool bResult)
+shared_ptr<SendBuffer> ServerPacketHandler::MakeS_Enter(bool bResult, uint64 playerId)
 {
     Protocol::S_Enter sEnter;
 
@@ -67,5 +76,24 @@ shared_ptr<SendBuffer> ServerPacketHandler::MakeS_Enter(bool bResult)
     else
         sEnter.set_result(-1);
 
+    sEnter.set_player_id(playerId);
+
     return MakeSendBuffer(PacketType::S_Enter, &sEnter);
+}
+
+shared_ptr<SendBuffer> ServerPacketHandler::MakeS_SpawnPlayer(vector<shared_ptr<Player>> players)
+{
+    Protocol::S_SpawnPlayer spawnPlayer;
+
+    for (shared_ptr<Player>& player : players)
+    {
+        Protocol::PlayerInfo* playerInfo = spawnPlayer.add_players();
+        playerInfo->set_player_id(player->GetPlayerId());
+        playerInfo->set_x(player->GetX());
+        playerInfo->set_y(player->GetY());
+        playerInfo->set_z(player->GetZ());
+        playerInfo->set_yaw(player->GetYaw());
+    }
+
+    return MakeSendBuffer(PacketType::S_SpawnPlayer, &spawnPlayer);
 }

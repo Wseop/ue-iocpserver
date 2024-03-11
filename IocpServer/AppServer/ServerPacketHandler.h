@@ -2,6 +2,8 @@
 
 #include "PacketHandler.h"
 
+class Player;
+
 class ServerPacketHandler : public PacketHandler
 {
 public:
@@ -15,6 +17,7 @@ private:
 	// Packet Makers
 public:
 	static shared_ptr<SendBuffer> MakePing();
-	static shared_ptr<SendBuffer> MakeS_Enter(bool bResult);
+	static shared_ptr<SendBuffer> MakeS_Enter(bool bResult, uint64 playerId);
+	static shared_ptr<SendBuffer> MakeS_SpawnPlayer(vector<shared_ptr<Player>> players);
 };
 
