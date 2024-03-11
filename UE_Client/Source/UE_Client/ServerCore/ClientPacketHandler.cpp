@@ -45,7 +45,7 @@ BYTE* FClientPacketHandler::HandleHeader(BYTE* Packet, OUT EPacketType& PacketTy
 
 void FClientPacketHandler::HandleInvalid(TSharedPtr<FPacketSession> PacketSession, BYTE* Payload, uint32 PayloadSize)
 {
-	UE_LOG(LogTemp, Log, TEXT("Invalid Packet!"));
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Invalid Packet!"));
 }
 
 void FClientPacketHandler::HandlePing(TSharedPtr<FPacketSession> PacketSession, BYTE* Payload, uint32 PayloadSize)
@@ -53,7 +53,8 @@ void FClientPacketHandler::HandlePing(TSharedPtr<FPacketSession> PacketSession, 
 	Protocol::Ping Ping;
 	Ping.ParseFromArray(Payload, PayloadSize);
 
-	UE_LOG(LogTemp, Log, TEXT("%s"), *FString(Ping.msg().c_str()));
+	FString Message = FString::Printf(TEXT("%s"), *FString(Ping.msg().c_str()));
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, Message);
 }
 
 void FClientPacketHandler::HandleS_Enter(TSharedPtr<FPacketSession> PacketSession, BYTE* Payload, uint32 PayloadSize)
