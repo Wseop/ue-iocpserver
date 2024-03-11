@@ -38,7 +38,7 @@ void Room::EnterPlayer(shared_ptr<Player> player)
 		packetSession->PushSendJob(
 			make_shared<Job>([&packetSession, playerId = player->GetPlayerId()]()
 				{
-					packetSession->Send(ServerPacketHandler::MakeS_Enter(true, playerId));
+					packetSession->Send(ServerPacketHandler::MakeS_Enter(1, playerId));
 				}),
 			false
 		);
@@ -87,5 +87,51 @@ void Room::SpawnPlayer(shared_ptr<Player> player)
 					packetSession->Send(ServerPacketHandler::MakeS_SpawnPlayer(others));
 				}), 
 			false);
+	}
+}
+
+void Room::ExitPlayer(uint64 playerId)
+{
+	lock_guard<mutex> lock(_mutex);
+
+	if (_players.find(playerId) == _players.end())
+		return;
+
+	// Despawn
+	DespawnPlayer(playerId);
+
+	// Exit 완료 메세지 전송
+	if (shared_ptr<PacketSession> packetSession = _players[playerId]->GetPacketSession())
+	{
+		packetSession->PushSendJob(
+			make_shared<Job>([&packetSession]()
+				{
+					packetSession->Send(ServerPacketHandler::MakeS_Exit(1));
+				}),
+			false
+		);
+	}
+
+	// player 제거
+	_players.erase(playerId);
+}
+
+void Room::DespawnPlayer(uint64 playerId)
+{
+	// 남아있는 player들에게 Despawn 메세지 Broadcasting
+	for (auto iter = _players.begin(); iter != _players.end(); iter++)
+	{
+		shared_ptr<Player> other = iter->second;
+
+		if (shared_ptr<PacketSession> packetSession = other->GetPacketSession())
+		{
+			packetSession->PushSendJob(
+				make_shared<Job>([&packetSession, playerId]()
+					{
+						packetSession->Send(ServerPacketHandler::MakeS_DespawnPlayer({ playerId }));
+					}),
+				false
+			);
+		}
 	}
 }

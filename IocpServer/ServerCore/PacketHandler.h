@@ -8,7 +8,10 @@ enum class PacketType : uint16
 	Ping,
 	C_Enter,
 	S_Enter,
+	C_Exit,
+	S_Exit,
 	S_SpawnPlayer,
+	S_DespawnPlayer,
 };
 
 struct PacketHeader

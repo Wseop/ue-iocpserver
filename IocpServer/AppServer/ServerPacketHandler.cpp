@@ -13,6 +13,7 @@ void ServerPacketHandler::Init()
 
     GPacketHandler[static_cast<uint16>(PacketType::Ping)] = HandlePing;
     GPacketHandler[static_cast<uint16>(PacketType::C_Enter)] = HandleC_Enter;
+    GPacketHandler[static_cast<uint16>(PacketType::C_Exit)] = HandleC_Exit;
 }
 
 void ServerPacketHandler::HandlePing(shared_ptr<Session> session, BYTE* payload, uint32 payloadSize)
@@ -39,24 +40,32 @@ void ServerPacketHandler::HandleC_Enter(shared_ptr<Session> session, BYTE* paylo
     cEnter.ParseFromArray(payload, payloadSize);
 
     // key check
-    bool bResult = cEnter.key() == "12345" ? true : false;
+    int32 result = cEnter.key() == "12345" ? 1 : -1;
     shared_ptr<PacketSession> packetSession = dynamic_pointer_cast<PacketSession>(session);
 
     if (packetSession)
     {
         // Player ÀÔÀå
-        if (bResult)
+        if (result)
         {
             GRoom->EnterPlayer(ObjectManager::CreatePlayer(packetSession));
         }
         else
         {
             packetSession->PushSendJob(
-                make_shared<Job>([packetSession, bResult]() { packetSession->Send(MakeS_Enter(bResult, -1)); }),
+                make_shared<Job>([packetSession, result]() { packetSession->Send(MakeS_Enter(result, -1)); }),
                 false
             );
         }
     }
+}
+
+void ServerPacketHandler::HandleC_Exit(shared_ptr<Session> session, BYTE* payload, uint32 payloadSize)
+{
+    Protocol::C_Exit cExit;
+    cExit.ParseFromArray(payload, payloadSize);
+
+    GRoom->ExitPlayer(cExit.player_id());
 }
 
 shared_ptr<SendBuffer> ServerPacketHandler::MakePing()
@@ -67,18 +76,23 @@ shared_ptr<SendBuffer> ServerPacketHandler::MakePing()
     return MakeSendBuffer(PacketType::Ping, &ping);
 }
 
-shared_ptr<SendBuffer> ServerPacketHandler::MakeS_Enter(bool bResult, uint64 playerId)
+shared_ptr<SendBuffer> ServerPacketHandler::MakeS_Enter(int32 result, uint64 playerId)
 {
     Protocol::S_Enter sEnter;
 
-    if (bResult)
-        sEnter.set_result(1);
-    else
-        sEnter.set_result(-1);
-
+    sEnter.set_result(result);
     sEnter.set_player_id(playerId);
 
     return MakeSendBuffer(PacketType::S_Enter, &sEnter);
+}
+
+shared_ptr<SendBuffer> ServerPacketHandler::MakeS_Exit(int32 result)
+{
+    Protocol::S_Exit sExit;
+
+    sExit.set_result(result);
+
+    return MakeSendBuffer(PacketType::S_Exit, &sExit);
 }
 
 shared_ptr<SendBuffer> ServerPacketHandler::MakeS_SpawnPlayer(vector<shared_ptr<Player>> players)
@@ -96,4 +110,16 @@ shared_ptr<SendBuffer> ServerPacketHandler::MakeS_SpawnPlayer(vector<shared_ptr<
     }
 
     return MakeSendBuffer(PacketType::S_SpawnPlayer, &spawnPlayer);
+}
+
+shared_ptr<SendBuffer> ServerPacketHandler::MakeS_DespawnPlayer(vector<uint64> playerIds)
+{
+    Protocol::S_DespawnPlayer despawnPlayer;
+
+    for (uint64 playerId : playerIds)
+    {
+        despawnPlayer.add_player_ids(playerId);
+    }
+
+    return MakeSendBuffer(PacketType::S_DespawnPlayer, &despawnPlayer);
 }

@@ -16,10 +16,25 @@ message C_Enter
 message S_Enter
 {
 	int32 result = 1;
-	int64 player_id = 2;
+	uint64 player_id = 2;
+}
+
+message C_Exit
+{
+	uint64 player_id = 1;
+}
+
+message S_Exit
+{
+	int32 result = 1;
 }
 
 message S_SpawnPlayer
 {
 	repeated PlayerInfo players = 1;
+}
+
+message S_DespawnPlayer
+{
+	repeated uint64 player_ids = 1;
 }

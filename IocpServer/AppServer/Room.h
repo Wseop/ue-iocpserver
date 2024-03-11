@@ -12,6 +12,9 @@ public:
 	void EnterPlayer(shared_ptr<Player> player);
 	void SpawnPlayer(shared_ptr<Player> player);
 
+	void ExitPlayer(uint64 playerId);
+	void DespawnPlayer(uint64 playerId);
+
 private:
 	mutex _mutex;
 	map<uint64, shared_ptr<Player>> _players;
