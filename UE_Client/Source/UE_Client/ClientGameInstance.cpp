@@ -78,5 +78,25 @@ void UClientGameInstance::SendPing()
 
 void UClientGameInstance::EnterGameRoom()
 {
+	if (_playerId != 0)
+		return;
+
 	_packetSession->PushSendBuffer(ClientPacketHandler::MakeC_Enter());
+}
+
+void UClientGameInstance::SpawnPlayer(Protocol::PlayerInfo player)
+{
+	UWorld* world = GetWorld();
+
+	if (world == nullptr)
+		return;
+
+	// 중복 체크
+	if (_players.Find(player.player_id()) != nullptr)
+		return;
+
+	FVector spawnLocation(player.x(), player.y(), player.z());
+	AActor* spawnedPlayer = world->SpawnActor(_playerClass, &spawnLocation);
+
+	_players.Add(player.player_id(), spawnedPlayer);
 }

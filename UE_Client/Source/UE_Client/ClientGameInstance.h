@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Engine/GameInstance.h"
+#include "ServerCore/Protocol.pb.h"
 #include "ClientGameInstance.generated.h"
 
 class FSocket;
@@ -21,6 +22,9 @@ public:
 	virtual void FinishDestroy() override;
 
 public:
+	void SetPlayerId(uint64 playerId) { _playerId = playerId; }
+
+public:
 	UFUNCTION(BlueprintCallable)
 	void ConnectToServer();
 
@@ -35,7 +39,16 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void EnterGameRoom();
 
+	void SpawnPlayer(Protocol::PlayerInfo player);
+
+protected:
+	UPROPERTY(Editanywhere)
+	TSubclassOf<AActor> _playerClass;
+
 private:
 	FSocket* _socket = nullptr;
 	TSharedPtr<PacketSession> _packetSession = nullptr;
+
+	uint64 _playerId = 0;
+	TMap<uint64, AActor*> _players;
 };

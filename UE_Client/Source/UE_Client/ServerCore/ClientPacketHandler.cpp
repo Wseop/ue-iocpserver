@@ -4,6 +4,7 @@
 #include "ClientPacketHandler.h"
 #include "PacketSession.h"
 #include "Protocol.pb.h"
+#include "../ClientGameInstance.h"
 
 PacketHandlerFunc GPacketHandler[UINT16_MAX];
 
@@ -14,6 +15,7 @@ void ClientPacketHandler::Init()
 
 	GPacketHandler[static_cast<uint16>(PacketType::Ping)] = HandlePing;
 	GPacketHandler[static_cast<uint16>(PacketType::S_Enter)] = HandleS_Enter;
+	GPacketHandler[static_cast<uint16>(PacketType::S_SpawnPlayer)] = HandleS_SpawnPlayer;
 }
 
 void ClientPacketHandler::HandlePacket(TSharedPtr<PacketSession> packetSession, BYTE* packet)
@@ -61,11 +63,34 @@ void ClientPacketHandler::HandleS_Enter(TSharedPtr<PacketSession> packetSession,
 	FString result;
 	
 	if (sEnter.result() == 1)
+	{
 		result = FString("Enter Success");
+		
+		if (UClientGameInstance* gameInstance = Cast<UClientGameInstance>(GWorld->GetGameInstance()))
+			gameInstance->SetPlayerId(sEnter.player_id());
+	}
 	else
+	{
 		result = FString("Enter Failed");
+	}
 
 	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, result);
+}
+
+void ClientPacketHandler::HandleS_SpawnPlayer(TSharedPtr<PacketSession> packetSession, BYTE* payload, uint32 payloadSize)
+{
+	Protocol::S_SpawnPlayer spawnPlayer;
+	spawnPlayer.ParseFromArray(payload, payloadSize);
+
+	UClientGameInstance* gameInstance = Cast<UClientGameInstance>(GWorld->GetGameInstance());
+
+	if (gameInstance)
+	{
+		for (auto& player : spawnPlayer.players())
+		{
+			gameInstance->SpawnPlayer(player);
+		}
+	}
 }
 
 TSharedPtr<SendBuffer> ClientPacketHandler::MakePing()
