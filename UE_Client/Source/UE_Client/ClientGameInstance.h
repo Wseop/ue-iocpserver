@@ -39,6 +39,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SendPing();
 
+public:
 	UFUNCTION(BlueprintCallable)
 	void EnterGameRoom();
 

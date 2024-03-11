@@ -40,7 +40,7 @@ void UClientGameInstance::ConnectToServer()
 	if (bConnected)
 	{
 		// 서버 연결 성공, 세션 시작
-		UE_LOG(LogTemp, Log, TEXT("서버 연결 성공"));
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("서버 연결 성공"));
 
 		FClientPacketHandler::Init();
 
@@ -49,7 +49,7 @@ void UClientGameInstance::ConnectToServer()
 	}
 	else
 	{
-		UE_LOG(LogTemp, Log, TEXT("서버 연결 실패"));
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("서버 연결 실패"));
 	}
 }
 
@@ -80,7 +80,7 @@ void UClientGameInstance::ProcessRecvPacket()
 
 void UClientGameInstance::SendPing()
 {
-	UE_LOG(LogTemp, Log, TEXT("Ping!"));
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Ping!"));
 
 	PacketSession->PushSendBuffer(FClientPacketHandler::MakePing());
 }
