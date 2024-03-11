@@ -59,22 +59,19 @@ void ClientPacketHandler::HandleS_Enter(TSharedPtr<PacketSession> packetSession,
 	Protocol::S_Enter sEnter;
 	sEnter.ParseFromArray(payload, payloadSize);
 
-	// 입장 성공 여부 출력
-	FString result;
-	
 	if (sEnter.result() == 1)
 	{
-		result = FString("Enter Success");
-		
+		// 입장 성공, PlayerId 설정
 		if (UClientGameInstance* gameInstance = Cast<UClientGameInstance>(GWorld->GetGameInstance()))
+		{
 			gameInstance->SetPlayerId(sEnter.player_id());
+			gameInstance->ShowPlayerId();
+		}
 	}
 	else
 	{
-		result = FString("Enter Failed");
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Enter Fail"));
 	}
-
-	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, result);
 }
 
 void ClientPacketHandler::HandleS_SpawnPlayer(TSharedPtr<PacketSession> packetSession, BYTE* payload, uint32 payloadSize)

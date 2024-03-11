@@ -15,6 +15,15 @@ void UClientGameInstance::FinishDestroy()
 	Super::FinishDestroy();
 }
 
+void UClientGameInstance::ShowPlayerId()
+{
+	if (_playerId == 0)
+		return;
+
+	FString message = FString::Printf(TEXT("Player Id : %d"), _playerId);
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, message);
+}
+
 void UClientGameInstance::ConnectToServer()
 {
 	_socket = ISocketSubsystem::Get(PLATFORM_SOCKETSUBSYSTEM)->CreateSocket(TEXT("Stream"), TEXT("ClientSocket"));

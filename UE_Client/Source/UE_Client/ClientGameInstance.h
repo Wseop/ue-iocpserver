@@ -24,6 +24,9 @@ public:
 public:
 	void SetPlayerId(uint64 playerId) { _playerId = playerId; }
 
+	UFUNCTION(BlueprintCallable)
+	void ShowPlayerId();
+
 public:
 	UFUNCTION(BlueprintCallable)
 	void ConnectToServer();
