@@ -11,7 +11,10 @@ enum class PacketType : uint16
 	Ping,
 	C_Enter,
 	S_Enter,
+	C_Exit,
+	S_Exit,
 	S_SpawnPlayer,
+	S_DespawnPlayer,
 };
 
 struct PacketHeader
@@ -64,10 +67,13 @@ private:
 	static void HandleInvalid(TSharedPtr<PacketSession> packetSession, BYTE* payload, uint32 payloadSize);
 	static void HandlePing(TSharedPtr<PacketSession> packetSession, BYTE* payload, uint32 payloadSize);
 	static void HandleS_Enter(TSharedPtr<PacketSession> packetSession, BYTE* payload, uint32 payloadSize);
+	static void HandleS_Exit(TSharedPtr<PacketSession> packetSession, BYTE* payload, uint32 payloadSize);
 	static void HandleS_SpawnPlayer(TSharedPtr<PacketSession> packetSession, BYTE* payload, uint32 payloadSize);
+	static void HandleS_DespawnPlayer(TSharedPtr<PacketSession> packetSession, BYTE* payload, uint32 payloadSize);
 
 	// Packet Makers
 public:
 	static TSharedPtr<SendBuffer> MakePing();
 	static TSharedPtr<SendBuffer> MakeC_Enter();
+	static TSharedPtr<SendBuffer> MakeC_Exit(uint64 playerId);
 };

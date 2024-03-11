@@ -15,7 +15,9 @@ void ClientPacketHandler::Init()
 
 	GPacketHandler[static_cast<uint16>(PacketType::Ping)] = HandlePing;
 	GPacketHandler[static_cast<uint16>(PacketType::S_Enter)] = HandleS_Enter;
+	GPacketHandler[static_cast<uint16>(PacketType::S_Exit)] = HandleS_Exit;
 	GPacketHandler[static_cast<uint16>(PacketType::S_SpawnPlayer)] = HandleS_SpawnPlayer;
+	GPacketHandler[static_cast<uint16>(PacketType::S_DespawnPlayer)] = HandleS_DespawnPlayer;
 }
 
 void ClientPacketHandler::HandlePacket(TSharedPtr<PacketSession> packetSession, BYTE* packet)
@@ -74,18 +76,44 @@ void ClientPacketHandler::HandleS_Enter(TSharedPtr<PacketSession> packetSession,
 	}
 }
 
+void ClientPacketHandler::HandleS_Exit(TSharedPtr<PacketSession> packetSession, BYTE* payload, uint32 payloadSize)
+{
+	Protocol::S_Exit sExit;
+	sExit.ParseFromArray(payload, payloadSize);
+
+	if (sExit.result() == 1)
+	{
+		if (UClientGameInstance* gameInstance = Cast<UClientGameInstance>(GWorld->GetGameInstance()))
+		{
+			gameInstance->ProcessExit();
+		}
+	}
+}
+
 void ClientPacketHandler::HandleS_SpawnPlayer(TSharedPtr<PacketSession> packetSession, BYTE* payload, uint32 payloadSize)
 {
 	Protocol::S_SpawnPlayer spawnPlayer;
 	spawnPlayer.ParseFromArray(payload, payloadSize);
 
-	UClientGameInstance* gameInstance = Cast<UClientGameInstance>(GWorld->GetGameInstance());
-
-	if (gameInstance)
+	if (UClientGameInstance* gameInstance = Cast<UClientGameInstance>(GWorld->GetGameInstance()))
 	{
 		for (auto& player : spawnPlayer.players())
 		{
 			gameInstance->SpawnPlayer(player);
+		}
+	}
+}
+
+void ClientPacketHandler::HandleS_DespawnPlayer(TSharedPtr<PacketSession> packetSession, BYTE* payload, uint32 payloadSize)
+{
+	Protocol::S_DespawnPlayer despawnPlayer;
+	despawnPlayer.ParseFromArray(payload, payloadSize);
+
+	if (UClientGameInstance* gameInstance = Cast<UClientGameInstance>(GWorld->GetGameInstance()))
+	{
+		for (auto& playerId : despawnPlayer.player_ids())
+		{
+			gameInstance->DespawnPlayer(playerId);
 		}
 	}
 }
@@ -104,4 +132,12 @@ TSharedPtr<SendBuffer> ClientPacketHandler::MakeC_Enter()
 	cEnter.set_key("12345");
 
 	return MakeSendBuffer(PacketType::C_Enter, &cEnter);
+}
+
+TSharedPtr<SendBuffer> ClientPacketHandler::MakeC_Exit(uint64 playerId)
+{
+	Protocol::C_Exit cExit;
+	cExit.set_player_id(playerId);
+
+	return MakeSendBuffer(PacketType::C_Exit, &cExit);
 }

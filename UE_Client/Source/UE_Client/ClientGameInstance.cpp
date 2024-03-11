@@ -109,3 +109,37 @@ void UClientGameInstance::SpawnPlayer(Protocol::PlayerInfo player)
 
 	_players.Add(player.player_id(), spawnedPlayer);
 }
+
+void UClientGameInstance::ExitGameRoom()
+{
+	if (_playerId == 0)
+		return;
+
+	_packetSession->PushSendBuffer(ClientPacketHandler::MakeC_Exit(_playerId));
+}
+
+void UClientGameInstance::DespawnPlayer(uint64 playerId)
+{
+	if (_players.Find(playerId) == nullptr)
+		return;
+
+	if (UWorld* world = GetWorld())
+	{
+		if (world->DestroyActor(_players[playerId]))
+			_players.Remove(playerId);
+	}
+}
+
+void UClientGameInstance::ProcessExit()
+{
+	// player 정리
+	for (auto& p : _players)
+	{
+		GWorld->DestroyActor(p.Value);
+	}
+	_players.Reset();
+
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Player %d Leave"), _playerId));
+	
+	_playerId = 0;
+}

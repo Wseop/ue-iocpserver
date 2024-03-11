@@ -44,6 +44,12 @@ public:
 
 	void SpawnPlayer(Protocol::PlayerInfo player);
 
+	UFUNCTION(BlueprintCallable)
+	void ExitGameRoom();
+
+	void DespawnPlayer(uint64 playerId);
+	void ProcessExit();
+
 protected:
 	UPROPERTY(Editanywhere)
 	TSubclassOf<AActor> _playerClass;
