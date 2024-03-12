@@ -3,16 +3,16 @@
 #include "ThreadManager.h"
 #include "JobQueue.h"
 
-shared_ptr<ThreadManager> GThreadManager = nullptr;
-shared_ptr<LockQueue<shared_ptr<JobQueue>>> GJobQueue = nullptr;
+shared_ptr<ThreadManager> gThreadManager = nullptr;
+shared_ptr<LockQueue<shared_ptr<JobQueue>>> gJobQueue = nullptr;
 
 class CoreGlobal
 {
 public:
 	CoreGlobal()
 	{
-		GThreadManager = make_shared<ThreadManager>();
-		GJobQueue = make_shared<LockQueue<shared_ptr<JobQueue>>>();
+		gThreadManager = make_shared<ThreadManager>();
+		gJobQueue = make_shared<LockQueue<shared_ptr<JobQueue>>>();
 
 		SocketUtils::Init();
 	}
@@ -21,4 +21,4 @@ public:
 	{
 		SocketUtils::Clear();
 	}
-}GCoreGlobal;
+} gCoreGlobal;

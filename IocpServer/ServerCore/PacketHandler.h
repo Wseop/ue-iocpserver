@@ -23,7 +23,7 @@ struct PacketHeader
 class Session;
 
 using PacketHandlerFunc = function<void(shared_ptr<Session>, BYTE*, uint32)>;
-extern PacketHandlerFunc GPacketHandler[UINT16_MAX];
+extern PacketHandlerFunc gPacketHandler[UINT16_MAX];
 
 class PacketHandler
 {

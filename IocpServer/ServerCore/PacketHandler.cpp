@@ -1,12 +1,12 @@
 #include "pch.h"
 #include "PacketHandler.h"
 
-PacketHandlerFunc GPacketHandler[UINT16_MAX];
+PacketHandlerFunc gPacketHandler[UINT16_MAX];
 
 void PacketHandler::Init()
 {
 	for (uint16 i = 0; i < UINT16_MAX; i++)
-		GPacketHandler[i] = HandleInvalid;
+		gPacketHandler[i] = HandleInvalid;
 }
 
 void PacketHandler::HandlePacket(shared_ptr<Session> session, BYTE* packet)
@@ -17,7 +17,7 @@ void PacketHandler::HandlePacket(shared_ptr<Session> session, BYTE* packet)
 	BYTE* payload = HandleHeader(packet, OUT packetType, OUT payloadSize);
 
 	// PacketType에 맞는 Handler 호출
-	GPacketHandler[static_cast<uint16>(packetType)](session, payload, payloadSize);
+	gPacketHandler[static_cast<uint16>(packetType)](session, payload, payloadSize);
 }
 
 BYTE* PacketHandler::HandleHeader(BYTE* packet, OUT PacketType& packetType, OUT uint32& payloadSize)

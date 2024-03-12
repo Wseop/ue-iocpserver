@@ -11,9 +11,9 @@ void ServerPacketHandler::Init()
 {
     PacketHandler::Init();
 
-    GPacketHandler[static_cast<uint16>(PacketType::Ping)] = HandlePing;
-    GPacketHandler[static_cast<uint16>(PacketType::C_Enter)] = HandleC_Enter;
-    GPacketHandler[static_cast<uint16>(PacketType::C_Exit)] = HandleC_Exit;
+    gPacketHandler[static_cast<uint16>(PacketType::Ping)] = HandlePing;
+    gPacketHandler[static_cast<uint16>(PacketType::C_Enter)] = HandleC_Enter;
+    gPacketHandler[static_cast<uint16>(PacketType::C_Exit)] = HandleC_Exit;
 }
 
 void ServerPacketHandler::HandlePing(shared_ptr<Session> session, BYTE* payload, uint32 payloadSize)

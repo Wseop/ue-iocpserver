@@ -11,15 +11,15 @@ void JobQueue::Push(shared_ptr<Job> job, bool pushOnly)
 	_jobs.Push(job);
 
 	// 처리중인 JobQueue가 없다면 현재 JobQueue를 담당
-	if (pushOnly == false && LJobQueue == nullptr)
+	if (pushOnly == false && tJobQueue == nullptr)
 	{
-		LJobQueue = shared_from_this();
+		tJobQueue = shared_from_this();
 		Execute();
 	}
 	// 바로 처리할 수 없다면 다른 Thread에서 가져갈 수 있도록 Global Queue에 등록
 	else
 	{
-		GJobQueue->Push(shared_from_this());
+		gJobQueue->Push(shared_from_this());
 	}
 }
 
@@ -39,8 +39,8 @@ void JobQueue::Execute()
 	// Job이 남아있으면 다른 Thread에서 처리될 수 있도록 GlobalQueue에 등록
 	if (_jobCount.fetch_sub(jobCount) != jobCount)
 	{
-		GJobQueue->Push(shared_from_this());
+		gJobQueue->Push(shared_from_this());
 	}
 
-	LJobQueue = nullptr;
+	tJobQueue = nullptr;
 }

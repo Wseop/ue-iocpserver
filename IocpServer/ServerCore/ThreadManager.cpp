@@ -35,15 +35,15 @@ void ThreadManager::Join()
 
 void ThreadManager::InitTLS()
 {
-	static atomic<uint32> s_threadId = 0;
-	LThreadId = s_threadId++;
+	static atomic<uint32> sThreadId = 0;
+	tThreadId = sThreadId++;
 }
 
 void ThreadManager::ExecuteJobQueue()
 {
 	// 담당하고 있는 JobQueue가 없다면, GlobalQueue에 있는 JobQueue를 꺼내와서 처리
-	if (LJobQueue == nullptr && GJobQueue->Pop(LJobQueue))
+	if (tJobQueue == nullptr && gJobQueue->Pop(tJobQueue))
 	{
-		LJobQueue->Execute();
+		tJobQueue->Execute();
 	}
 }

@@ -2,5 +2,5 @@
 #include "CoreTLS.h"
 #include "JobQueue.h"
 
-thread_local uint32 LThreadId = 0;
-thread_local shared_ptr<JobQueue> LJobQueue = nullptr;
+thread_local uint32 tThreadId = 0;
+thread_local shared_ptr<JobQueue> tJobQueue = nullptr;

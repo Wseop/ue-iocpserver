@@ -18,7 +18,7 @@ int main()
     // Worker 실행 - Dispatch & ExecuteJobQueue
     for (uint32 i = 0; i < 10; i++)
     {
-        GThreadManager->Launch([&service]()
+        gThreadManager->Launch([&service]()
             {
                 while (true)
                 {
@@ -28,5 +28,5 @@ int main()
             });
     }
 
-    GThreadManager->Join();
+    gThreadManager->Join();
 }
