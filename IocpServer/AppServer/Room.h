@@ -10,9 +10,10 @@ public:
 
 public:
 	void EnterPlayer(shared_ptr<Player> player);
-	void SpawnPlayer(shared_ptr<Player> player);
-
 	void ExitPlayer(uint64 playerId);
+
+private:
+	void SpawnPlayer(shared_ptr<Player> player);
 	void DespawnPlayer(uint64 playerId);
 
 private:
