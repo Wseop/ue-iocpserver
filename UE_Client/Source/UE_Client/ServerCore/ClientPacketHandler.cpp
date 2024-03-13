@@ -50,24 +50,24 @@ void FClientPacketHandler::HandleInvalid(TSharedPtr<FPacketSession> PacketSessio
 
 void FClientPacketHandler::HandlePing(TSharedPtr<FPacketSession> PacketSession, BYTE* Payload, uint32 PayloadSize)
 {
-	Protocol::Ping Ping;
-	Ping.ParseFromArray(Payload, PayloadSize);
+	Protocol::Ping Message;
+	Message.ParseFromArray(Payload, PayloadSize);
 
-	FString Message = FString::Printf(TEXT("%s"), *FString(Ping.msg().c_str()));
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, Message);
+	FString Log = FString::Printf(TEXT("%s"), *FString(Message.msg().c_str()));
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, Log);
 }
 
 void FClientPacketHandler::HandleS_Enter(TSharedPtr<FPacketSession> PacketSession, BYTE* Payload, uint32 PayloadSize)
 {
-	Protocol::S_Enter Enter;
-	Enter.ParseFromArray(Payload, PayloadSize);
+	Protocol::S_Enter Message;
+	Message.ParseFromArray(Payload, PayloadSize);
 
-	if (Enter.result() == 1)
+	if (Message.result() == 1)
 	{
 		// 입장 성공, PlayerId 설정
 		if (UClientGameInstance* GameInstance = Cast<UClientGameInstance>(GWorld->GetGameInstance()))
 		{
-			GameInstance->SetPlayerId(Enter.player_id());
+			GameInstance->SetPlayerId(Message.player_id());
 			GameInstance->ShowPlayerId();
 		}
 	}
@@ -79,10 +79,10 @@ void FClientPacketHandler::HandleS_Enter(TSharedPtr<FPacketSession> PacketSessio
 
 void FClientPacketHandler::HandleS_Exit(TSharedPtr<FPacketSession> PacketSession, BYTE* Payload, uint32 PayloadSize)
 {
-	Protocol::S_Exit Exit;
-	Exit.ParseFromArray(Payload, PayloadSize);
+	Protocol::S_Exit Message;
+	Message.ParseFromArray(Payload, PayloadSize);
 
-	if (Exit.result() == 1)
+	if (Message.result() == 1)
 	{
 		if (UClientGameInstance* GameInstance = Cast<UClientGameInstance>(GWorld->GetGameInstance()))
 		{
@@ -93,12 +93,12 @@ void FClientPacketHandler::HandleS_Exit(TSharedPtr<FPacketSession> PacketSession
 
 void FClientPacketHandler::HandleS_SpawnPlayer(TSharedPtr<FPacketSession> PacketSession, BYTE* Payload, uint32 PayloadSize)
 {
-	Protocol::S_SpawnPlayer SpawnPlayer;
-	SpawnPlayer.ParseFromArray(Payload, PayloadSize);
+	Protocol::S_SpawnPlayer Message;
+	Message.ParseFromArray(Payload, PayloadSize);
 
 	if (UClientGameInstance* GameInstance = Cast<UClientGameInstance>(GWorld->GetGameInstance()))
 	{
-		for (auto& Player : SpawnPlayer.players())
+		for (auto& Player : Message.player_infos())
 		{
 			GameInstance->SpawnPlayer(Player);
 		}
@@ -107,12 +107,12 @@ void FClientPacketHandler::HandleS_SpawnPlayer(TSharedPtr<FPacketSession> Packet
 
 void FClientPacketHandler::HandleS_DespawnPlayer(TSharedPtr<FPacketSession> PacketSession, BYTE* Payload, uint32 PayloadSize)
 {
-	Protocol::S_DespawnPlayer DespawnPlayer;
-	DespawnPlayer.ParseFromArray(Payload, PayloadSize);
+	Protocol::S_DespawnPlayer Message;
+	Message.ParseFromArray(Payload, PayloadSize);
 
 	if (UClientGameInstance* GameInstance = Cast<UClientGameInstance>(GWorld->GetGameInstance()))
 	{
-		for (auto& PlayerId : DespawnPlayer.player_ids())
+		for (auto& PlayerId : Message.player_ids())
 		{
 			GameInstance->DespawnPlayer(PlayerId);
 		}
@@ -121,24 +121,24 @@ void FClientPacketHandler::HandleS_DespawnPlayer(TSharedPtr<FPacketSession> Pack
 
 TSharedPtr<FSendBuffer> FClientPacketHandler::MakePing()
 {
-	Protocol::Ping Ping;
-	Ping.set_msg("Ping!");
+	Protocol::Ping Payload;
+	Payload.set_msg("Ping!");
 
-	return MakeSendBuffer(EPacketType::Ping, &Ping);
+	return MakeSendBuffer(EPacketType::Ping, &Payload);
 }
 
 TSharedPtr<FSendBuffer> FClientPacketHandler::MakeC_Enter()
 {
-	Protocol::C_Enter Enter;
-	Enter.set_key("12345");
+	Protocol::C_Enter Payload;
+	Payload.set_key("12345");
 
-	return MakeSendBuffer(EPacketType::C_Enter, &Enter);
+	return MakeSendBuffer(EPacketType::C_Enter, &Payload);
 }
 
 TSharedPtr<FSendBuffer> FClientPacketHandler::MakeC_Exit(uint64 PlayerId)
 {
-	Protocol::C_Exit Exit;
-	Exit.set_player_id(PlayerId);
+	Protocol::C_Exit Payload;
+	Payload.set_player_id(PlayerId);
 
-	return MakeSendBuffer(EPacketType::C_Exit, &Exit);
+	return MakeSendBuffer(EPacketType::C_Exit, &Payload);
 }
