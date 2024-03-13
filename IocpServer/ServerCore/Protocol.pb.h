@@ -963,25 +963,25 @@ class S_SpawnPlayer final :
   // accessors -------------------------------------------------------
 
   enum : int {
-    kPlayersFieldNumber = 1,
+    kPlayerInfosFieldNumber = 1,
   };
-  // repeated .Protocol.PlayerInfo players = 1;
-  int players_size() const;
+  // repeated .Protocol.PlayerInfo player_infos = 1;
+  int player_infos_size() const;
   private:
-  int _internal_players_size() const;
+  int _internal_player_infos_size() const;
   public:
-  void clear_players();
-  ::Protocol::PlayerInfo* mutable_players(int index);
+  void clear_player_infos();
+  ::Protocol::PlayerInfo* mutable_player_infos(int index);
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::Protocol::PlayerInfo >*
-      mutable_players();
+      mutable_player_infos();
   private:
-  const ::Protocol::PlayerInfo& _internal_players(int index) const;
-  ::Protocol::PlayerInfo* _internal_add_players();
+  const ::Protocol::PlayerInfo& _internal_player_infos(int index) const;
+  ::Protocol::PlayerInfo* _internal_add_player_infos();
   public:
-  const ::Protocol::PlayerInfo& players(int index) const;
-  ::Protocol::PlayerInfo* add_players();
+  const ::Protocol::PlayerInfo& player_infos(int index) const;
+  ::Protocol::PlayerInfo* add_player_infos();
   const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::Protocol::PlayerInfo >&
-      players() const;
+      player_infos() const;
 
   // @@protoc_insertion_point(class_scope:Protocol.S_SpawnPlayer)
  private:
@@ -991,7 +991,7 @@ class S_SpawnPlayer final :
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
   struct Impl_ {
-    ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::Protocol::PlayerInfo > players_;
+    ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::Protocol::PlayerInfo > player_infos_;
     mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   };
   union { Impl_ _impl_; };
@@ -1370,41 +1370,41 @@ inline void S_Exit::set_result(int32_t value) {
 
 // S_SpawnPlayer
 
-// repeated .Protocol.PlayerInfo players = 1;
-inline int S_SpawnPlayer::_internal_players_size() const {
-  return _impl_.players_.size();
+// repeated .Protocol.PlayerInfo player_infos = 1;
+inline int S_SpawnPlayer::_internal_player_infos_size() const {
+  return _impl_.player_infos_.size();
 }
-inline int S_SpawnPlayer::players_size() const {
-  return _internal_players_size();
+inline int S_SpawnPlayer::player_infos_size() const {
+  return _internal_player_infos_size();
 }
-inline ::Protocol::PlayerInfo* S_SpawnPlayer::mutable_players(int index) {
-  // @@protoc_insertion_point(field_mutable:Protocol.S_SpawnPlayer.players)
-  return _impl_.players_.Mutable(index);
+inline ::Protocol::PlayerInfo* S_SpawnPlayer::mutable_player_infos(int index) {
+  // @@protoc_insertion_point(field_mutable:Protocol.S_SpawnPlayer.player_infos)
+  return _impl_.player_infos_.Mutable(index);
 }
 inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::Protocol::PlayerInfo >*
-S_SpawnPlayer::mutable_players() {
-  // @@protoc_insertion_point(field_mutable_list:Protocol.S_SpawnPlayer.players)
-  return &_impl_.players_;
+S_SpawnPlayer::mutable_player_infos() {
+  // @@protoc_insertion_point(field_mutable_list:Protocol.S_SpawnPlayer.player_infos)
+  return &_impl_.player_infos_;
 }
-inline const ::Protocol::PlayerInfo& S_SpawnPlayer::_internal_players(int index) const {
-  return _impl_.players_.Get(index);
+inline const ::Protocol::PlayerInfo& S_SpawnPlayer::_internal_player_infos(int index) const {
+  return _impl_.player_infos_.Get(index);
 }
-inline const ::Protocol::PlayerInfo& S_SpawnPlayer::players(int index) const {
-  // @@protoc_insertion_point(field_get:Protocol.S_SpawnPlayer.players)
-  return _internal_players(index);
+inline const ::Protocol::PlayerInfo& S_SpawnPlayer::player_infos(int index) const {
+  // @@protoc_insertion_point(field_get:Protocol.S_SpawnPlayer.player_infos)
+  return _internal_player_infos(index);
 }
-inline ::Protocol::PlayerInfo* S_SpawnPlayer::_internal_add_players() {
-  return _impl_.players_.Add();
+inline ::Protocol::PlayerInfo* S_SpawnPlayer::_internal_add_player_infos() {
+  return _impl_.player_infos_.Add();
 }
-inline ::Protocol::PlayerInfo* S_SpawnPlayer::add_players() {
-  ::Protocol::PlayerInfo* _add = _internal_add_players();
-  // @@protoc_insertion_point(field_add:Protocol.S_SpawnPlayer.players)
+inline ::Protocol::PlayerInfo* S_SpawnPlayer::add_player_infos() {
+  ::Protocol::PlayerInfo* _add = _internal_add_player_infos();
+  // @@protoc_insertion_point(field_add:Protocol.S_SpawnPlayer.player_infos)
   return _add;
 }
 inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::Protocol::PlayerInfo >&
-S_SpawnPlayer::players() const {
-  // @@protoc_insertion_point(field_list:Protocol.S_SpawnPlayer.players)
-  return _impl_.players_;
+S_SpawnPlayer::player_infos() const {
+  // @@protoc_insertion_point(field_list:Protocol.S_SpawnPlayer.player_infos)
+  return _impl_.player_infos_;
 }
 
 // -------------------------------------------------------------------

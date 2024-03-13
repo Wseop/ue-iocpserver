@@ -9,16 +9,17 @@ public:
 	virtual ~Room();
 
 public:
-	void EnterPlayer(shared_ptr<Player> player);
-	void ExitPlayer(uint64 playerId);
+	bool EnterPlayer(shared_ptr<Player> player);
+	bool ExitPlayer(uint64 playerId);
 
 private:
-	void SpawnPlayer(shared_ptr<Player> player);
-	void DespawnPlayer(uint64 playerId);
+	bool SpawnPlayer(shared_ptr<Player> player);
+	bool DespawnPlayer(uint64 playerId);
+	void RemovePlayer(vector<uint64> removeIds);
 
 private:
 	mutex _mutex;
 	map<uint64, shared_ptr<Player>> _players;
 };
 
-extern shared_ptr<Room> GRoom;
+extern shared_ptr<Room> gRoom;

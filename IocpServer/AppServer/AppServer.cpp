@@ -16,7 +16,7 @@ int main()
     assert(service->Start());
 
     // Worker 실행 - Dispatch & ExecuteJobQueue
-    for (uint32 i = 0; i < 10; i++)
+    for (uint32 i = 0; i < thread::hardware_concurrency(); i++)
     {
         gThreadManager->Launch([&service]()
             {

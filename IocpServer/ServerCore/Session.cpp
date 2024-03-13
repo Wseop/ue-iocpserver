@@ -156,6 +156,8 @@ void Session::ProcessDisconnect()
 
     OnDisconnect();
     GetService()->RemoveSession(dynamic_pointer_cast<Session>(shared_from_this()));
+
+    wcout << format(L"Client Disconnect - {}({})", GetNetAddress().GetIpAddress(), GetNetAddress().GetPort()) << endl;;
 }
 
 void Session::RegisterRecv()

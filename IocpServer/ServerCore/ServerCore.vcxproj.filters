@@ -27,9 +27,6 @@
     <Filter Include="소스 파일\Network\Iocp">
       <UniqueIdentifier>{c5f4ea89-902c-4cb1-9d04-e8afa4193ffd}</UniqueIdentifier>
     </Filter>
-    <Filter Include="소스 파일\Network\Iocp\IocpObject">
-      <UniqueIdentifier>{d94408bd-0d20-4aae-8967-22fe105dde71}</UniqueIdentifier>
-    </Filter>
     <Filter Include="소스 파일\Network\Packet">
       <UniqueIdentifier>{08d94112-7a29-49ad-833c-2cb71852dcba}</UniqueIdentifier>
     </Filter>
@@ -68,9 +65,6 @@
     <ClCompile Include="IocpEvent.cpp">
       <Filter>소스 파일\Network\Iocp</Filter>
     </ClCompile>
-    <ClCompile Include="IocpObject.cpp">
-      <Filter>소스 파일\Network\Iocp\IocpObject</Filter>
-    </ClCompile>
     <ClCompile Include="RecvBuffer.cpp">
       <Filter>소스 파일\Network\Packet</Filter>
     </ClCompile>
@@ -79,12 +73,6 @@
     </ClCompile>
     <ClCompile Include="PacketHandler.cpp">
       <Filter>소스 파일\Network\Packet</Filter>
-    </ClCompile>
-    <ClCompile Include="Listener.cpp">
-      <Filter>소스 파일\Network\Iocp\IocpObject</Filter>
-    </ClCompile>
-    <ClCompile Include="Session.cpp">
-      <Filter>소스 파일\Network\Iocp\IocpObject</Filter>
     </ClCompile>
     <ClCompile Include="Service.cpp">
       <Filter>소스 파일\Network</Filter>
@@ -97,6 +85,15 @@
     </ClCompile>
     <ClCompile Include="Utils.cpp">
       <Filter>소스 파일\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="Listener.cpp">
+      <Filter>소스 파일\Network</Filter>
+    </ClCompile>
+    <ClCompile Include="Session.cpp">
+      <Filter>소스 파일\Network</Filter>
+    </ClCompile>
+    <ClCompile Include="IocpObject.cpp">
+      <Filter>소스 파일\Network\Iocp</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -133,9 +130,6 @@
     <ClInclude Include="IocpEvent.h">
       <Filter>소스 파일\Network\Iocp</Filter>
     </ClInclude>
-    <ClInclude Include="IocpObject.h">
-      <Filter>소스 파일\Network\Iocp\IocpObject</Filter>
-    </ClInclude>
     <ClInclude Include="RecvBuffer.h">
       <Filter>소스 파일\Network\Packet</Filter>
     </ClInclude>
@@ -144,12 +138,6 @@
     </ClInclude>
     <ClInclude Include="PacketHandler.h">
       <Filter>소스 파일\Network\Packet</Filter>
-    </ClInclude>
-    <ClInclude Include="Listener.h">
-      <Filter>소스 파일\Network\Iocp\IocpObject</Filter>
-    </ClInclude>
-    <ClInclude Include="Session.h">
-      <Filter>소스 파일\Network\Iocp\IocpObject</Filter>
     </ClInclude>
     <ClInclude Include="Service.h">
       <Filter>소스 파일\Network</Filter>
@@ -162,6 +150,15 @@
     </ClInclude>
     <ClInclude Include="Utils.h">
       <Filter>소스 파일\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Listener.h">
+      <Filter>소스 파일\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="Session.h">
+      <Filter>소스 파일\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="IocpObject.h">
+      <Filter>소스 파일\Network\Iocp</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

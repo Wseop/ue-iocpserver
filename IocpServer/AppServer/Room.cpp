@@ -7,7 +7,7 @@
 #include "ServerPacketHandler.h"
 #include "Job.h"
 
-shared_ptr<Room> GRoom = make_shared<Room>();
+shared_ptr<Room> gRoom = make_shared<Room>();
 
 Room::Room()
 {
@@ -17,61 +17,44 @@ Room::~Room()
 {
 }
 
-void Room::EnterPlayer(shared_ptr<Player> player)
+bool Room::EnterPlayer(shared_ptr<Player> player)
 {
 	lock_guard<mutex> lock(_mutex);
 
 	// 중복 체크
 	if (_players.find(player->GetPlayerId()) != _players.end())
-		return;
+		return false;
 	
-	// Room에 Player 정보 추가
+	// 플레이어 스폰
+	if (SpawnPlayer(player) == false)
+		return false;
+
+	// 방에 플레이어 정보 추가
 	_players[player->GetPlayerId()] = player;
 	player->SetRoom(shared_from_this());
 
-	// 캐릭터 스폰
-	SpawnPlayer(player);
-
-	// 입장 완료 메세지 전송
-	if (shared_ptr<PacketSession> packetSession = player->GetPacketSession())
-	{
-		packetSession->PushSendJob(
-			make_shared<Job>([&packetSession, playerId = player->GetPlayerId()]()
-				{
-					packetSession->Send(ServerPacketHandler::MakeS_Enter(1, playerId));
-				}),
-			false
-		);
-	}
+	return true;
 }
 
-void Room::ExitPlayer(uint64 playerId)
+bool Room::ExitPlayer(uint64 playerId)
 {
 	lock_guard<mutex> lock(_mutex);
 
+	// 존재하는 플레이어가 아니면 종료
 	if (_players.find(playerId) == _players.end())
-		return;
+		return false;
 
-	// Despawn
-	DespawnPlayer(playerId);
-
-	// Exit 완료 메세지 전송
-	if (shared_ptr<PacketSession> packetSession = _players[playerId]->GetPacketSession())
-	{
-		packetSession->PushSendJob(
-			make_shared<Job>([&packetSession]()
-				{
-					packetSession->Send(ServerPacketHandler::MakeS_Exit(1));
-				}),
-			false
-		);
-	}
-
-	// player 제거
+	// 방에서 플레이어 정보 제거
 	_players.erase(playerId);
+
+	// 플레이어 디스폰
+	if (DespawnPlayer(playerId) == false)
+		return false;
+
+	return true;
 }
 
-void Room::SpawnPlayer(shared_ptr<Player> player)
+bool Room::SpawnPlayer(shared_ptr<Player> player)
 {
 	// 랜덤 위치 지정
 	player->SetX(Utils::GetRandom(-1000.f, 1000.f));
@@ -79,73 +62,84 @@ void Room::SpawnPlayer(shared_ptr<Player> player)
 	player->SetZ(Utils::GetRandom(50.f, 200.f));
 	player->SetYaw(0.f);
 
-	// 새로 입장한 player를 제외한 나머지 player들
-	vector<shared_ptr<Player>> others;
+	vector<shared_ptr<Player>> players;
 	vector<uint64> removeIds;
 
-	// 방에 있는 모든 player들에게 새 player 정보 Broadcasting
+	// 방에 있는 다른 플레이어들에게 새로 입장한 플레이어 정보 전송 (Broadcasting)
 	for (auto iter = _players.begin(); iter != _players.end(); iter++)
 	{
 		shared_ptr<Player> other = iter->second;
 
-		if (shared_ptr<PacketSession> packetSession = other->GetPacketSession())
+		// 예외처리) 제거된 플레이어인 경우
+		if (other == nullptr)
 		{
-			packetSession->PushSendJob(
-				make_shared<Job>([&packetSession, player]()
-					{
-						packetSession->Send(ServerPacketHandler::MakeS_SpawnPlayer({ player }));
-					}),
-				false
-			);
+			removeIds.push_back(iter->first);
+			continue;
+		}
 
-			if (other->GetPlayerId() != player->GetPlayerId())
-			{
-				others.push_back(iter->second);
-			}
-		}
-		// PacketSession이 존재하지 않는 경우 Disconnect된 상태로 판단하여 Player 제거
-		else
+		shared_ptr<PacketSession> otherSession = other->GetPacketSession();
+		
+		// 예외처리) 연결이 끊긴 플레이어인 경우
+		if (otherSession == nullptr)
 		{
-			const uint64 removeId = other->GetPlayerId();
-			if (_players.find(removeId) != _players.end())
-				removeIds.push_back(removeId);
+			removeIds.push_back(iter->first);
+			continue;
 		}
+
+		otherSession->Send(ServerPacketHandler::MakeS_SpawnPlayer({ player }));
+		players.push_back(other);
 	}
+
+	players.push_back(player);
 	
-	// 새 player에게 나머지 player들의 정보 Send
-	if (shared_ptr<PacketSession> packetSession = player->GetPacketSession())
+	// 새로 입장한 플레이어에게 방에 있는 모든 플레이어들의 정보 전송
+	shared_ptr<PacketSession> playerSession = player->GetPacketSession();
+
+	if (playerSession == nullptr)
+		return false;
+	
+	playerSession->Send(ServerPacketHandler::MakeS_SpawnPlayer(players));
+
+	RemovePlayer(removeIds);
+
+	return true;
+}
+
+bool Room::DespawnPlayer(uint64 playerId)
+{
+	vector<uint64> removeIds;
+
+	// 방에 남은 플레이어들에게 나간 플레이어의 정보 전송
+	for (auto iter = _players.begin(); iter != _players.end(); iter++)
 	{
-		packetSession->PushSendJob(
-			make_shared<Job>([&packetSession, others]()
-				{
-					packetSession->Send(ServerPacketHandler::MakeS_SpawnPlayer(others));
-				}), 
-			false);
+		// 예외처리) 제거된 플레이어인 경우
+		if (iter->second == nullptr)
+		{
+			removeIds.push_back(iter->first);
+			continue;
+		}
+
+		shared_ptr<PacketSession> playerSession = iter->second->GetPacketSession();
+
+		// 예외처리) 연결이 끊긴 플레이어인 경우
+		if (playerSession == nullptr)
+		{
+			removeIds.push_back(iter->first);
+			continue;
+		}
+
+		playerSession->Send(ServerPacketHandler::MakeS_DespawnPlayer({ playerId }));
 	}
 
-	// Disconnect된 Player 제거
+	RemovePlayer(removeIds);
+
+	return true;
+}
+
+void Room::RemovePlayer(vector<uint64> removeIds)
+{
 	for (uint64 removeId : removeIds)
 	{
 		_players.erase(removeId);
-	}
-}
-
-void Room::DespawnPlayer(uint64 playerId)
-{
-	// 남아있는 player들에게 Despawn 메세지 Broadcasting
-	for (auto iter = _players.begin(); iter != _players.end(); iter++)
-	{
-		shared_ptr<Player> other = iter->second;
-
-		if (shared_ptr<PacketSession> packetSession = other->GetPacketSession())
-		{
-			packetSession->PushSendJob(
-				make_shared<Job>([&packetSession, playerId]()
-					{
-						packetSession->Send(ServerPacketHandler::MakeS_DespawnPlayer({ playerId }));
-					}),
-				false
-			);
-		}
 	}
 }

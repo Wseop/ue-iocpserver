@@ -31,7 +31,7 @@ message S_Exit
 
 message S_SpawnPlayer
 {
-	repeated PlayerInfo players = 1;
+	repeated PlayerInfo player_infos = 1;
 }
 
 message S_DespawnPlayer

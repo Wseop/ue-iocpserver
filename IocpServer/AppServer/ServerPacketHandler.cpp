@@ -18,90 +18,84 @@ void ServerPacketHandler::Init()
 
 void ServerPacketHandler::HandlePing(shared_ptr<Session> session, BYTE* payload, uint32 payloadSize)
 {
-    Protocol::Ping ping;
-    ping.ParseFromArray(payload, payloadSize);
+    Protocol::Ping message;
+    message.ParseFromArray(payload, payloadSize);
 
     // 클라에서 Ping 메세지가 정상적으로 왔다면 응답
-    if (ping.msg() == "Ping!")
-    {
-        if (shared_ptr<PacketSession> packetSession = dynamic_pointer_cast<PacketSession>(session))
-        {
-            packetSession->PushSendJob(
-                make_shared<Job>([packetSession](){ packetSession->Send(MakePing()); }), 
-                false
-            );
-        }
-    }
+    if (message.msg() == "Ping!")
+        session->Send(MakePing());
 }
 
 void ServerPacketHandler::HandleC_Enter(shared_ptr<Session> session, BYTE* payload, uint32 payloadSize)
 {
-    Protocol::C_Enter cEnter;
-    cEnter.ParseFromArray(payload, payloadSize);
+    Protocol::C_Enter message;
+    message.ParseFromArray(payload, payloadSize);
 
-    // key check
-    int32 result = cEnter.key() == "12345" ? 1 : -1;
-    shared_ptr<PacketSession> packetSession = dynamic_pointer_cast<PacketSession>(session);
+    int32 result = -1;
+    uint64 newPlayerId = 0;
 
-    if (packetSession)
+    // key가 일치하면 입장
+    if (message.key() == "12345")
     {
-        // Player 입장
-        if (result)
+        // 캐릭터 생성
+        shared_ptr<Player> newPlayer = ObjectManager::CreatePlayer(dynamic_pointer_cast<PacketSession>(session));
+
+        if (newPlayer && gRoom->EnterPlayer(newPlayer))
         {
-            GRoom->EnterPlayer(ObjectManager::CreatePlayer(packetSession));
-        }
-        else
-        {
-            packetSession->PushSendJob(
-                make_shared<Job>([packetSession, result]() { packetSession->Send(MakeS_Enter(result, -1)); }),
-                false
-            );
+            result = 1;
+            newPlayerId = newPlayer->GetPlayerId();
         }
     }
+
+    // Enter 결과 전송
+    session->Send(MakeS_Enter(result, newPlayerId));
 }
 
 void ServerPacketHandler::HandleC_Exit(shared_ptr<Session> session, BYTE* payload, uint32 payloadSize)
 {
-    Protocol::C_Exit cExit;
-    cExit.ParseFromArray(payload, payloadSize);
+    Protocol::C_Exit message;
+    message.ParseFromArray(payload, payloadSize);
 
-    GRoom->ExitPlayer(cExit.player_id());
+    int32 result = -1;
+
+    if (gRoom->ExitPlayer(message.player_id()))
+        result = 1;
+
+    session->Send(MakeS_Exit(result));
 }
 
 shared_ptr<SendBuffer> ServerPacketHandler::MakePing()
 {
-    Protocol::Ping ping;
-    ping.set_msg("Pong!");
+    Protocol::Ping payload;
+    payload.set_msg("Pong!");
 
-    return MakeSendBuffer(PacketType::Ping, &ping);
+    return MakeSendBuffer(PacketType::Ping, &payload);
 }
 
 shared_ptr<SendBuffer> ServerPacketHandler::MakeS_Enter(int32 result, uint64 playerId)
 {
-    Protocol::S_Enter sEnter;
+    Protocol::S_Enter payload;
+    payload.set_result(result);
+    payload.set_player_id(playerId);
 
-    sEnter.set_result(result);
-    sEnter.set_player_id(playerId);
-
-    return MakeSendBuffer(PacketType::S_Enter, &sEnter);
+    return MakeSendBuffer(PacketType::S_Enter, &payload);
 }
 
 shared_ptr<SendBuffer> ServerPacketHandler::MakeS_Exit(int32 result)
 {
-    Protocol::S_Exit sExit;
+    Protocol::S_Exit payload;
+    payload.set_result(result);
 
-    sExit.set_result(result);
-
-    return MakeSendBuffer(PacketType::S_Exit, &sExit);
+    return MakeSendBuffer(PacketType::S_Exit, &payload);
 }
 
 shared_ptr<SendBuffer> ServerPacketHandler::MakeS_SpawnPlayer(vector<shared_ptr<Player>> players)
 {
-    Protocol::S_SpawnPlayer spawnPlayer;
+    Protocol::S_SpawnPlayer payload;
 
     for (shared_ptr<Player>& player : players)
     {
-        Protocol::PlayerInfo* playerInfo = spawnPlayer.add_players();
+        Protocol::PlayerInfo* playerInfo = payload.add_player_infos();
         playerInfo->set_player_id(player->GetPlayerId());
         playerInfo->set_x(player->GetX());
         playerInfo->set_y(player->GetY());
@@ -109,17 +103,17 @@ shared_ptr<SendBuffer> ServerPacketHandler::MakeS_SpawnPlayer(vector<shared_ptr<
         playerInfo->set_yaw(player->GetYaw());
     }
 
-    return MakeSendBuffer(PacketType::S_SpawnPlayer, &spawnPlayer);
+    return MakeSendBuffer(PacketType::S_SpawnPlayer, &payload);
 }
 
 shared_ptr<SendBuffer> ServerPacketHandler::MakeS_DespawnPlayer(vector<uint64> playerIds)
 {
-    Protocol::S_DespawnPlayer despawnPlayer;
+    Protocol::S_DespawnPlayer payload;
 
     for (uint64 playerId : playerIds)
     {
-        despawnPlayer.add_player_ids(playerId);
+        payload.add_player_ids(playerId);
     }
 
-    return MakeSendBuffer(PacketType::S_DespawnPlayer, &despawnPlayer);
+    return MakeSendBuffer(PacketType::S_DespawnPlayer, &payload);
 }
