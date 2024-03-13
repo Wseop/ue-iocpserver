@@ -257,6 +257,12 @@ uint32 Session::ProcessPacket(uint32 numOfBytes)
 
 void Session::RegisterSend(vector<shared_ptr<SendBuffer>>& sendBuffers)
 {
+    if (sendBuffers.size() == 0)
+    {
+        _bSendRegistered.store(false);
+        return;
+    }
+
     _sendEvent.Init();
     _sendEvent.SetOwner(shared_from_this());
 
@@ -304,12 +310,5 @@ void Session::ProcessSend(uint32 numOfBytes)
     vector<shared_ptr<SendBuffer>> sendBuffers;
     _sendQueue.PopAll(sendBuffers);
 
-    if (sendBuffers.empty() == false)
-    {
-        RegisterSend(sendBuffers);
-    }
-    else
-    {
-        _bSendRegistered.store(false);
-    }
+    RegisterSend(sendBuffers);
 }
