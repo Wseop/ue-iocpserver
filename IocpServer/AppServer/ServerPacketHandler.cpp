@@ -58,6 +58,15 @@ void ServerPacketHandler::HandleC_Exit(shared_ptr<Session> session, BYTE* payloa
 
 void ServerPacketHandler::HandleC_Spawn(shared_ptr<Session> session, BYTE* payload, uint32 payloadSize)
 {
+    Protocol::C_Spawn message;
+    message.ParseFromArray(payload, payloadSize);
+
+    // spawn_count만큼 player 생성 시도
+    if (gRoom->Spawn(session->GetSessionId(), message.spawn_count()) == false)
+    {
+        // 생성 실패 시, 실패 메세지 전송
+        session->Send(MakeS_Spawn(false, {}));
+    }
 }
 
 shared_ptr<SendBuffer> ServerPacketHandler::MakePing()
@@ -88,12 +97,34 @@ shared_ptr<SendBuffer> ServerPacketHandler::MakeS_Exit(bool result, uint32 enter
     return MakeSendBuffer(PacketType::S_Exit, &payload);
 }
 
-shared_ptr<SendBuffer> ServerPacketHandler::MakeS_Spawn(vector<shared_ptr<Player>> players)
+shared_ptr<SendBuffer> ServerPacketHandler::MakeS_Spawn(bool result, vector<shared_ptr<Player>> players)
 {
-    return shared_ptr<SendBuffer>();
+    Protocol::S_Spawn payload;
+    
+    payload.set_result(result);
+
+    for (shared_ptr<Player>& player : players)
+    {
+        Protocol::PlayerInfo* playerInfo = payload.add_player_infos();
+
+        playerInfo->set_player_id(player->GetPlayerId());
+        playerInfo->set_x(player->GetX());
+        playerInfo->set_y(player->GetY());
+        playerInfo->set_z(player->GetZ());
+        playerInfo->set_yaw(player->GetYaw());
+    }
+
+    return MakeSendBuffer(PacketType::S_Spawn, &payload);
 }
 
-shared_ptr<SendBuffer> ServerPacketHandler::MakeS_Despawn(vector<uint64> playerIds)
+shared_ptr<SendBuffer> ServerPacketHandler::MakeS_Despawn(vector<uint32> playerIds)
 {
-    return shared_ptr<SendBuffer>();
+    Protocol::S_Despawn payload;
+
+    for (uint32 id : playerIds)
+    {
+        payload.add_player_ids(id);
+    }
+
+    return MakeSendBuffer(PacketType::S_Despawn, &payload);
 }

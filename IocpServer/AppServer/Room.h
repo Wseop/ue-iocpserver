@@ -14,13 +14,12 @@ public:
 	bool Enter(shared_ptr<Session> session);
 	bool Exit(uint32 sessionId);
 
-private:
-	// Exit없이 종료된 세션 정보 정리
-	void RemoveInvalidSessions();
+	bool Spawn(uint32 sessionId, uint32 spawnCount);
 
 private:
 	mutex _mutex;
 	unordered_map<uint32, weak_ptr<Session>> _sessions;
+	unordered_map<uint32, shared_ptr<Player>> _players;
 
 	shared_ptr<JobQueue> _jobQueue = nullptr;
 };

@@ -31,9 +31,22 @@ bool Room::Enter(shared_ptr<Session> session)
 
 	_sessions[sessionId] = session;
 
-	cout << "[Room] Session Enter - " << sessionId << endl;
+	// 방에 스폰되어 있는 플레이어들 전송
+	vector<shared_ptr<Player>> players;
 
-	_jobQueue->Push(make_shared<Job>(shared_from_this(), &Room::RemoveInvalidSessions), true);
+	for (auto iter = _players.begin(); iter != _players.end(); iter++)
+	{
+		shared_ptr<Player> player = iter->second;
+
+		if (player == nullptr)
+			continue;
+
+		players.push_back(player);
+	}
+
+	session->Send(ServerPacketHandler::MakeS_Spawn(true, players));
+
+	cout << format("[Room] Session {} Enter", sessionId) << endl;
 
 	return true;
 }
@@ -46,32 +59,97 @@ bool Room::Exit(uint32 sessionId)
 		return false;
 
 	_sessions.erase(sessionId);
+	
+	// 해당 session이 생성시킨 player들의 id 수집 및 제거
+	vector<uint32> playerIds;
 
-	cout << "[Room] Session Exit - " << sessionId << endl;
+	for (auto iter = _players.begin(); iter != _players.end(); iter++)
+	{
+		shared_ptr<Player> player = iter->second;
 
-	_jobQueue->Push(make_shared<Job>(shared_from_this(), &Room::RemoveInvalidSessions), true);
+		if (player == nullptr)
+			continue;
+
+		shared_ptr<Session> playerSession = player->GetSession();
+
+		if (playerSession == nullptr)
+			continue;
+
+		if (playerSession->GetSessionId() == sessionId)
+			playerIds.push_back(player->GetPlayerId());
+	}
+
+	for (uint32 id : playerIds)
+	{
+		_players.erase(id);
+	}
+
+	// 해당하는 player들을 despawn시키는 메세지를 broadcasting
+	shared_ptr<SendBuffer> sendBuffer = ServerPacketHandler::MakeS_Despawn(playerIds);
+
+	for (auto iter = _sessions.begin(); iter != _sessions.end(); iter++)
+	{
+		shared_ptr<Session> session = iter->second.lock();
+
+		if (session == nullptr)
+			continue;
+
+		session->Send(sendBuffer);
+	}
+
+	cout << format("[Room] Session {} Exit", sessionId) << endl;
 
 	return true;
 }
 
-void Room::RemoveInvalidSessions()
+bool Room::Spawn(uint32 sessionId, uint32 spawnCount)
 {
 	lock_guard<mutex> lock(_mutex);
 
-	vector<uint32> removeIds;
+	// 세션이 유효하지 않으면 종료
+	if (_sessions.find(sessionId) == _sessions.end())
+		return false;
+
+	shared_ptr<Session> session = _sessions[sessionId].lock();
+
+	if (session == nullptr)
+		return false;
+
+	// Player 생성
+	vector<shared_ptr<Player>> spawnedPlayers;
+
+	for (uint32 i = 0; i < spawnCount; i++)
+	{
+		shared_ptr<Player> player = ObjectManager::CreatePlayer(session);
+
+		if (player == nullptr)
+			continue;
+
+		if (_players.find(player->GetPlayerId()) != _players.end())
+			continue;
+
+		// 랜덤 위치 지정
+		player->SetX(Utils::GetRandom(-1000.f, 1000.f));
+		player->SetY(Utils::GetRandom(-1000.f, 1000.f));
+		player->SetZ(Utils::GetRandom(100.f, 1000.f));
+
+		spawnedPlayers.push_back(player);
+
+		_players[player->GetPlayerId()] = player;
+	}
+
+	// 방에 있는 세션들에게 스폰 정보 Broadcasting
+	shared_ptr<SendBuffer> sendBuffer = ServerPacketHandler::MakeS_Spawn(true, spawnedPlayers);
 
 	for (auto iter = _sessions.begin(); iter != _sessions.end(); iter++)
 	{
-		if ((iter->second).lock() == nullptr)
-		{
-			removeIds.push_back(iter->first);
-		}
+		session = iter->second.lock();
+
+		if (session == nullptr)
+			continue;
+
+		session->Send(sendBuffer);
 	}
 
-	for (uint32 id : removeIds)
-	{
-		_sessions.erase(id);
-	}
-
-	cout << "[Room] 세션 정리 완료, 남은 세션 수 : " << _sessions.size() << endl;
+	return true;
 }

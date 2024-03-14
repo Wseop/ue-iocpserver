@@ -16,6 +16,8 @@ void FClientPacketHandler::Init()
 	GPacketHandler[static_cast<uint16>(EPacketType::Ping)] = HandlePing;
 	GPacketHandler[static_cast<uint16>(EPacketType::S_Enter)] = HandleS_Enter;
 	GPacketHandler[static_cast<uint16>(EPacketType::S_Exit)] = HandleS_Exit;
+	GPacketHandler[static_cast<uint16>(EPacketType::S_Spawn)] = HandleS_Spawn;
+	GPacketHandler[static_cast<uint16>(EPacketType::S_Despawn)] = HandleS_Despawn;
 }
 
 void FClientPacketHandler::HandlePacket(TSharedPtr<FPacketSession> PacketSession, BYTE* Packet)
@@ -95,6 +97,7 @@ void FClientPacketHandler::HandleS_Exit(TSharedPtr<FPacketSession> PacketSession
 		if (Message.result())
 		{
 			GameInstance->SetEnterId(0);
+			GameInstance->DespawnAll();
 			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Exit Success - %d"), EnterId));
 		}
 		// Επΐε ½ΗΖΠ
@@ -111,6 +114,21 @@ void FClientPacketHandler::HandleS_Spawn(TSharedPtr<FPacketSession> PacketSessio
 	Protocol::S_Spawn Message;
 
 	Message.ParseFromArray(Payload, PayloadSize);
+
+	if (Message.result())
+	{
+		if (UClientGameInstance* GameInstance = Cast<UClientGameInstance>(GWorld->GetGameInstance()))
+		{
+			for (Protocol::PlayerInfo Info : Message.player_infos())
+			{
+				GameInstance->AddPlayer(Info);
+			}
+		}
+	}
+	else
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Spawn Fail"));
+	}
 }
 
 void FClientPacketHandler::HandleS_Despawn(TSharedPtr<FPacketSession> PacketSession, BYTE* Payload, uint32 PayloadSize)
@@ -118,6 +136,14 @@ void FClientPacketHandler::HandleS_Despawn(TSharedPtr<FPacketSession> PacketSess
 	Protocol::S_Despawn Message;
 
 	Message.ParseFromArray(Payload, PayloadSize);
+	
+	if (UClientGameInstance* GameInstance = Cast<UClientGameInstance>(GWorld->GetGameInstance()))
+	{
+		for (uint32 Id : Message.player_ids())
+		{
+			GameInstance->Despawn(Id);
+		}
+	}
 }
 
 TSharedPtr<FSendBuffer> FClientPacketHandler::MakePing()

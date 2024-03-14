@@ -25,6 +25,9 @@ public:
 	uint32 GetEnterId() { return EnterId; }
 	void SetEnterId(uint32 Id) { EnterId = Id; }
 
+	void AddPlayer(Protocol::PlayerInfo Info);
+	void RemovePlayer(uint32 PlayerId);
+
 public:
 	UFUNCTION(BlueprintCallable)
 	void ConnectToServer();
@@ -44,6 +47,12 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void ExitGame();
 
+	UFUNCTION(BlueprintCallable)
+	void Spawn();
+
+	void Despawn(uint32 Id);
+	void DespawnAll();
+
 protected:
 	UPROPERTY(Editanywhere)
 	TSubclassOf<AActor> PlayerClass;
@@ -53,4 +62,5 @@ private:
 	TSharedPtr<FPacketSession> PacketSession = nullptr;
 
 	uint32 EnterId = 0;
+	TMap<uint32, AActor*> Players;
 };

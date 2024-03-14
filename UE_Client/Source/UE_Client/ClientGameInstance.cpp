@@ -96,3 +96,45 @@ void UClientGameInstance::ExitGame()
 		EnterId = 0;
 	}
 }
+
+void UClientGameInstance::Spawn()
+{
+	// 입장된 상태일때 스폰 가능
+	if (EnterId != 0)
+	{
+		PacketSession->PushSendBuffer(FClientPacketHandler::MakeC_Spawn(1));
+	}
+}
+
+void UClientGameInstance::Despawn(uint32 Id)
+{
+	AActor** Player = Players.Find(Id);
+
+	if (Player == nullptr)
+		return;
+
+	GWorld->DestroyActor(*Player);
+	Players.Remove(Id);
+}
+
+void UClientGameInstance::DespawnAll()
+{
+	for (auto Element : Players)
+	{
+		GWorld->DestroyActor(Element.Value);
+	}
+	Players.Reset();
+}
+
+void UClientGameInstance::AddPlayer(Protocol::PlayerInfo Info)
+{
+	FVector Location(Info.x(), Info.y(), Info.z());
+	AActor* Player = GWorld->SpawnActor(PlayerClass, &Location);
+
+	Players.Add(Info.player_id(), Player);
+}
+
+void UClientGameInstance::RemovePlayer(uint32 PlayerId)
+{
+	Players.Remove(PlayerId);
+}

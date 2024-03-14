@@ -1126,9 +1126,10 @@ class S_Spawn final :
   // accessors -------------------------------------------------------
 
   enum : int {
-    kPlayerInfosFieldNumber = 1,
+    kPlayerInfosFieldNumber = 2,
+    kResultFieldNumber = 1,
   };
-  // repeated .Protocol.PlayerInfo player_infos = 1;
+  // repeated .Protocol.PlayerInfo player_infos = 2;
   int player_infos_size() const;
   private:
   int _internal_player_infos_size() const;
@@ -1146,6 +1147,15 @@ class S_Spawn final :
   const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::Protocol::PlayerInfo >&
       player_infos() const;
 
+  // bool result = 1;
+  void clear_result();
+  bool result() const;
+  void set_result(bool value);
+  private:
+  bool _internal_result() const;
+  void _internal_set_result(bool value);
+  public:
+
   // @@protoc_insertion_point(class_scope:Protocol.S_Spawn)
  private:
   class _Internal;
@@ -1155,6 +1165,7 @@ class S_Spawn final :
   typedef void DestructorSkippable_;
   struct Impl_ {
     ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::Protocol::PlayerInfo > player_infos_;
+    bool result_;
     mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   };
   union { Impl_ _impl_; };
@@ -1283,25 +1294,29 @@ class S_Despawn final :
   // accessors -------------------------------------------------------
 
   enum : int {
-    kPlayerInfosFieldNumber = 1,
+    kPlayerIdsFieldNumber = 2,
   };
-  // repeated .Protocol.PlayerInfo player_infos = 1;
-  int player_infos_size() const;
+  // repeated uint32 player_ids = 2;
+  int player_ids_size() const;
   private:
-  int _internal_player_infos_size() const;
+  int _internal_player_ids_size() const;
   public:
-  void clear_player_infos();
-  ::Protocol::PlayerInfo* mutable_player_infos(int index);
-  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::Protocol::PlayerInfo >*
-      mutable_player_infos();
+  void clear_player_ids();
   private:
-  const ::Protocol::PlayerInfo& _internal_player_infos(int index) const;
-  ::Protocol::PlayerInfo* _internal_add_player_infos();
+  uint32_t _internal_player_ids(int index) const;
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedField< uint32_t >&
+      _internal_player_ids() const;
+  void _internal_add_player_ids(uint32_t value);
+  ::PROTOBUF_NAMESPACE_ID::RepeatedField< uint32_t >*
+      _internal_mutable_player_ids();
   public:
-  const ::Protocol::PlayerInfo& player_infos(int index) const;
-  ::Protocol::PlayerInfo* add_player_infos();
-  const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::Protocol::PlayerInfo >&
-      player_infos() const;
+  uint32_t player_ids(int index) const;
+  void set_player_ids(int index, uint32_t value);
+  void add_player_ids(uint32_t value);
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedField< uint32_t >&
+      player_ids() const;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedField< uint32_t >*
+      mutable_player_ids();
 
   // @@protoc_insertion_point(class_scope:Protocol.S_Despawn)
  private:
@@ -1311,7 +1326,8 @@ class S_Despawn final :
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
   struct Impl_ {
-    ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::Protocol::PlayerInfo > player_infos_;
+    ::PROTOBUF_NAMESPACE_ID::RepeatedField< uint32_t > player_ids_;
+    mutable std::atomic<int> _player_ids_cached_byte_size_;
     mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   };
   union { Impl_ _impl_; };
@@ -1572,7 +1588,27 @@ inline void C_Spawn::set_spawn_count(uint32_t value) {
 
 // S_Spawn
 
-// repeated .Protocol.PlayerInfo player_infos = 1;
+// bool result = 1;
+inline void S_Spawn::clear_result() {
+  _impl_.result_ = false;
+}
+inline bool S_Spawn::_internal_result() const {
+  return _impl_.result_;
+}
+inline bool S_Spawn::result() const {
+  // @@protoc_insertion_point(field_get:Protocol.S_Spawn.result)
+  return _internal_result();
+}
+inline void S_Spawn::_internal_set_result(bool value) {
+  
+  _impl_.result_ = value;
+}
+inline void S_Spawn::set_result(bool value) {
+  _internal_set_result(value);
+  // @@protoc_insertion_point(field_set:Protocol.S_Spawn.result)
+}
+
+// repeated .Protocol.PlayerInfo player_infos = 2;
 inline int S_Spawn::_internal_player_infos_size() const {
   return _impl_.player_infos_.size();
 }
@@ -1613,41 +1649,51 @@ S_Spawn::player_infos() const {
 
 // S_Despawn
 
-// repeated .Protocol.PlayerInfo player_infos = 1;
-inline int S_Despawn::_internal_player_infos_size() const {
-  return _impl_.player_infos_.size();
+// repeated uint32 player_ids = 2;
+inline int S_Despawn::_internal_player_ids_size() const {
+  return _impl_.player_ids_.size();
 }
-inline int S_Despawn::player_infos_size() const {
-  return _internal_player_infos_size();
+inline int S_Despawn::player_ids_size() const {
+  return _internal_player_ids_size();
 }
-inline ::Protocol::PlayerInfo* S_Despawn::mutable_player_infos(int index) {
-  // @@protoc_insertion_point(field_mutable:Protocol.S_Despawn.player_infos)
-  return _impl_.player_infos_.Mutable(index);
+inline void S_Despawn::clear_player_ids() {
+  _impl_.player_ids_.Clear();
 }
-inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::Protocol::PlayerInfo >*
-S_Despawn::mutable_player_infos() {
-  // @@protoc_insertion_point(field_mutable_list:Protocol.S_Despawn.player_infos)
-  return &_impl_.player_infos_;
+inline uint32_t S_Despawn::_internal_player_ids(int index) const {
+  return _impl_.player_ids_.Get(index);
 }
-inline const ::Protocol::PlayerInfo& S_Despawn::_internal_player_infos(int index) const {
-  return _impl_.player_infos_.Get(index);
+inline uint32_t S_Despawn::player_ids(int index) const {
+  // @@protoc_insertion_point(field_get:Protocol.S_Despawn.player_ids)
+  return _internal_player_ids(index);
 }
-inline const ::Protocol::PlayerInfo& S_Despawn::player_infos(int index) const {
-  // @@protoc_insertion_point(field_get:Protocol.S_Despawn.player_infos)
-  return _internal_player_infos(index);
+inline void S_Despawn::set_player_ids(int index, uint32_t value) {
+  _impl_.player_ids_.Set(index, value);
+  // @@protoc_insertion_point(field_set:Protocol.S_Despawn.player_ids)
 }
-inline ::Protocol::PlayerInfo* S_Despawn::_internal_add_player_infos() {
-  return _impl_.player_infos_.Add();
+inline void S_Despawn::_internal_add_player_ids(uint32_t value) {
+  _impl_.player_ids_.Add(value);
 }
-inline ::Protocol::PlayerInfo* S_Despawn::add_player_infos() {
-  ::Protocol::PlayerInfo* _add = _internal_add_player_infos();
-  // @@protoc_insertion_point(field_add:Protocol.S_Despawn.player_infos)
-  return _add;
+inline void S_Despawn::add_player_ids(uint32_t value) {
+  _internal_add_player_ids(value);
+  // @@protoc_insertion_point(field_add:Protocol.S_Despawn.player_ids)
 }
-inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::Protocol::PlayerInfo >&
-S_Despawn::player_infos() const {
-  // @@protoc_insertion_point(field_list:Protocol.S_Despawn.player_infos)
-  return _impl_.player_infos_;
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedField< uint32_t >&
+S_Despawn::_internal_player_ids() const {
+  return _impl_.player_ids_;
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedField< uint32_t >&
+S_Despawn::player_ids() const {
+  // @@protoc_insertion_point(field_list:Protocol.S_Despawn.player_ids)
+  return _internal_player_ids();
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedField< uint32_t >*
+S_Despawn::_internal_mutable_player_ids() {
+  return &_impl_.player_ids_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedField< uint32_t >*
+S_Despawn::mutable_player_ids() {
+  // @@protoc_insertion_point(field_mutable_list:Protocol.S_Despawn.player_ids)
+  return _internal_mutable_player_ids();
 }
 
 #ifdef __GNUC__

@@ -2,11 +2,11 @@
 
 class Player;
 class Room;
-class PacketSession;
+class Session;
 
 class ObjectManager
 {
 public:
-	static shared_ptr<Player> CreatePlayer(weak_ptr<PacketSession> packetSession);
+	static shared_ptr<Player> CreatePlayer(weak_ptr<Session> session);
 };
 

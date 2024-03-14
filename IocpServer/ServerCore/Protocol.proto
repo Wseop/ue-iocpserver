@@ -37,10 +37,11 @@ message C_Spawn
 
 message S_Spawn
 {
-	repeated PlayerInfo player_infos = 1;
+	bool result = 1;
+	repeated PlayerInfo player_infos = 2;
 }
 
 message S_Despawn
 {
-	repeated PlayerInfo player_infos = 1;
+	repeated uint32 player_ids = 2;
 }

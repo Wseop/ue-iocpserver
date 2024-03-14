@@ -53,6 +53,9 @@ bool Session::Disconnect()
 
 void Session::Send(shared_ptr<SendBuffer> sendBuffer)
 {
+    if (_bConnected == false)
+        return;
+
     if (sendBuffer == nullptr)
         return;
 

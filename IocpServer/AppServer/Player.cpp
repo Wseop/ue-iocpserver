@@ -3,9 +3,9 @@
 #include "Room.h"
 #include "PacketSession.h"
 
-Player::Player(uint64 playerId, weak_ptr<PacketSession> packetSession) :
+Player::Player(uint32 playerId, weak_ptr<Session> session) :
 	_playerId(playerId),
-	_packetSession(packetSession)
+	_session(session)
 {
 }
 

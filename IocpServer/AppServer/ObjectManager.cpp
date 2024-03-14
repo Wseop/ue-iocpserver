@@ -4,12 +4,12 @@
 #include "PacketSession.h"
 #include "Utils.h"
 
-shared_ptr<Player> ObjectManager::CreatePlayer(weak_ptr<PacketSession> packetSession)
+shared_ptr<Player> ObjectManager::CreatePlayer(weak_ptr<Session> session)
 {
-    static atomic<uint64> sPlayerId = 1;
+    static atomic<uint32> sPlayerId = 1;
 
-    if (packetSession.lock() == nullptr)
+    if (session.lock() == nullptr)
         return nullptr;
 
-    return make_shared<Player>(sPlayerId.fetch_add(1), packetSession);
+    return make_shared<Player>(sPlayerId.fetch_add(1), session);
 }
