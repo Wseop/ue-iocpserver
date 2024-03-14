@@ -20,7 +20,7 @@ private:
 public:
 	static shared_ptr<SendBuffer> MakePing();
 	static shared_ptr<SendBuffer> MakeS_Enter(bool result, uint32 enterId);
-	static shared_ptr<SendBuffer> MakeS_Exit();
+	static shared_ptr<SendBuffer> MakeS_Exit(bool result, uint32 enterId);
 	static shared_ptr<SendBuffer> MakeS_Spawn(vector<shared_ptr<Player>> players);
 	static shared_ptr<SendBuffer> MakeS_Despawn(vector<uint64> playerIds);
 };

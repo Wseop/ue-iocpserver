@@ -76,6 +76,6 @@ private:
 public:
 	static TSharedPtr<FSendBuffer> MakePing();
 	static TSharedPtr<FSendBuffer> MakeC_Enter(FString Key);
-	static TSharedPtr<FSendBuffer> MakeC_Exit();
+	static TSharedPtr<FSendBuffer> MakeC_Exit(uint32 Id);
 	static TSharedPtr<FSendBuffer> MakeC_Spawn(uint32 SpawnCount);
 };

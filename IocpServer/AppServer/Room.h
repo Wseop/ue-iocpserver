@@ -11,6 +11,7 @@ public:
 
 public:
 	bool Enter(shared_ptr<Session> session);
+	bool Exit(uint32 sessionId);
 
 private:
 	mutex _mutex;

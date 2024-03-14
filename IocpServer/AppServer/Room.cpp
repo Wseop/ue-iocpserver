@@ -29,5 +29,21 @@ bool Room::Enter(shared_ptr<Session> session)
 
 	_sessions[sessionId] = session;
 
+	cout << "Session Enter - " << sessionId << endl;
+
+	return true;
+}
+
+bool Room::Exit(uint32 sessionId)
+{
+	lock_guard<mutex> lock(_mutex);
+
+	if (_sessions.find(sessionId) == _sessions.end())
+		return false;
+
+	_sessions.erase(sessionId);
+
+	cout << "Session Exit - " << sessionId << endl;
+
 	return true;
 }

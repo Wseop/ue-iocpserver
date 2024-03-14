@@ -62,15 +62,22 @@ void FClientPacketHandler::HandleS_Enter(TSharedPtr<FPacketSession> PacketSessio
 
 	Message.ParseFromArray(Payload, PayloadSize);
 
-	// 입장 성공
-	if (Message.result())
+	if (UClientGameInstance* GameInstance = Cast<UClientGameInstance>(GWorld->GetGameInstance()))
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Enter Success - %d"), Message.enter_id()));
-	}
-	// 입장 실패
-	else
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Enter Fail"));
+		const uint32 EnterId = Message.enter_id();
+
+		// 입장 성공
+		if (Message.result())
+		{
+			GameInstance->SetEnterId(EnterId);
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Enter Success - %d"), EnterId));
+		}
+		// 입장 실패
+		else
+		{
+			GameInstance->SetEnterId(0);
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Enter Fail"));
+		}
 	}
 }
 
@@ -79,6 +86,22 @@ void FClientPacketHandler::HandleS_Exit(TSharedPtr<FPacketSession> PacketSession
 	Protocol::S_Exit Message;
 
 	Message.ParseFromArray(Payload, PayloadSize);
+
+	if (UClientGameInstance* GameInstance = Cast<UClientGameInstance>(GWorld->GetGameInstance()))
+	{
+		// 퇴장 성공
+		if (Message.result())
+		{
+			GameInstance->SetEnterId(0);
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Exit Success"));
+		}
+		// 퇴장 실패
+		else
+		{
+			GameInstance->SetEnterId(Message.enter_id());
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Exit Fail"));
+		}
+	}
 }
 
 void FClientPacketHandler::HandleS_Spawn(TSharedPtr<FPacketSession> PacketSession, BYTE* Payload, uint32 PayloadSize)
@@ -113,9 +136,11 @@ TSharedPtr<FSendBuffer> FClientPacketHandler::MakeC_Enter(FString Key)
 	return MakeSendBuffer(EPacketType::C_Enter, &Payload);
 }
 
-TSharedPtr<FSendBuffer> FClientPacketHandler::MakeC_Exit()
+TSharedPtr<FSendBuffer> FClientPacketHandler::MakeC_Exit(uint32 Id)
 {
 	Protocol::C_Exit Payload;
+
+	Payload.set_enter_id(Id);
 
 	return MakeSendBuffer(EPacketType::C_Exit, &Payload);
 }

@@ -21,12 +21,13 @@ message S_Enter
 
 message C_Exit
 {
-	
+	uint32 enter_id = 1;
 }
 
 message S_Exit
 {
-	
+	bool result = 1;
+	uint32 enter_id = 2;
 }
 
 message C_Spawn

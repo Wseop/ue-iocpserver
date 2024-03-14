@@ -49,7 +49,11 @@ void ServerPacketHandler::HandleC_Exit(shared_ptr<Session> session, BYTE* payloa
     Protocol::C_Exit message;
     message.ParseFromArray(payload, payloadSize);
 
-    
+    const uint32 enterId = message.enter_id();
+
+    bool result = gRoom->Exit(enterId);
+
+    session->Send(MakeS_Exit(result, enterId));
 }
 
 void ServerPacketHandler::HandleC_Spawn(shared_ptr<Session> session, BYTE* payload, uint32 payloadSize)
@@ -74,10 +78,12 @@ shared_ptr<SendBuffer> ServerPacketHandler::MakeS_Enter(bool result, uint32 ente
     return MakeSendBuffer(PacketType::S_Enter, &payload);
 }
 
-shared_ptr<SendBuffer> ServerPacketHandler::MakeS_Exit()
+shared_ptr<SendBuffer> ServerPacketHandler::MakeS_Exit(bool result, uint32 enterId)
 {
     Protocol::S_Exit payload;
     
+    payload.set_result(result);
+    payload.set_enter_id(enterId);
 
     return MakeSendBuffer(PacketType::S_Exit, &payload);
 }

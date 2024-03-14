@@ -78,5 +78,21 @@ void UClientGameInstance::SendPing()
 
 void UClientGameInstance::EnterGame()
 {
-	PacketSession->PushSendBuffer(FClientPacketHandler::MakeC_Enter("123"));
+	if (EnterId == 0)
+	{
+		// 중복 입장 방지
+		EnterId = 1;
+		PacketSession->PushSendBuffer(FClientPacketHandler::MakeC_Enter("123"));
+	}
+}
+
+void UClientGameInstance::ExitGame()
+{
+	if (EnterId != 0)
+	{
+		PacketSession->PushSendBuffer(FClientPacketHandler::MakeC_Exit(EnterId));
+
+		// 중복 퇴장 방지
+		EnterId = 0;
+	}
 }

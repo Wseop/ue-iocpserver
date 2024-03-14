@@ -22,6 +22,10 @@ public:
 	virtual void FinishDestroy() override;
 
 public:
+	uint32 GetEnterId() { return EnterId; }
+	void SetEnterId(uint32 Id) { EnterId = Id; }
+
+public:
 	UFUNCTION(BlueprintCallable)
 	void ConnectToServer();
 	
@@ -37,6 +41,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void EnterGame();
 
+	UFUNCTION(BlueprintCallable)
+	void ExitGame();
+
 protected:
 	UPROPERTY(Editanywhere)
 	TSubclassOf<AActor> PlayerClass;
@@ -44,4 +51,6 @@ protected:
 private:
 	FSocket* Socket = nullptr;
 	TSharedPtr<FPacketSession> PacketSession = nullptr;
+
+	uint32 EnterId = 0;
 };
