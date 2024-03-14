@@ -5,11 +5,12 @@
 #include "Utils.h"
 #include "PacketSession.h"
 #include "ServerPacketHandler.h"
-#include "Job.h"
+#include "JobQueue.h"
 
 shared_ptr<Room> gRoom = make_shared<Room>();
 
-Room::Room()
+Room::Room() :
+	_jobQueue(make_shared<JobQueue>())
 {
 }
 

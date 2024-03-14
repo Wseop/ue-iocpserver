@@ -89,11 +89,13 @@ void FClientPacketHandler::HandleS_Exit(TSharedPtr<FPacketSession> PacketSession
 
 	if (UClientGameInstance* GameInstance = Cast<UClientGameInstance>(GWorld->GetGameInstance()))
 	{
+		const uint32 EnterId = Message.enter_id();
+
 		// Επΐε ΌΊ°ψ
 		if (Message.result())
 		{
 			GameInstance->SetEnterId(0);
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Exit Success"));
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Exit Success - %d"), EnterId));
 		}
 		// Επΐε ½ΗΖΠ
 		else
