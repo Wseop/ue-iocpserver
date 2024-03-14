@@ -14,7 +14,9 @@ Service::~Service()
 
 shared_ptr<Session> Service::CreateSession()
 {
-    shared_ptr<Session> session = _sessionFactory();
+    static atomic<uint32> sSessionId = 1;
+
+    shared_ptr<Session> session = _sessionFactory(sSessionId.fetch_add(1));
 
     if (session == nullptr)
         return nullptr;

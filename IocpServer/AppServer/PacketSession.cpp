@@ -2,7 +2,8 @@
 #include "PacketSession.h"
 #include "ServerPacketHandler.h"
 
-PacketSession::PacketSession()
+PacketSession::PacketSession(uint32 sessionId) :
+	Session(sessionId)
 {
 	
 }

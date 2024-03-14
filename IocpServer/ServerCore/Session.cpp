@@ -4,7 +4,8 @@
 #include "Service.h"
 #include "PacketHandler.h"
 
-Session::Session() :
+Session::Session(uint32 sessionId) :
+    _sessionId(sessionId),
     _recvBuffer(BUFFER_SIZE)
 {
 }

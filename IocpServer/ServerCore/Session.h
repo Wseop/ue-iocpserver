@@ -9,7 +9,7 @@ class Session : public IocpObject
 	const uint32 BUFFER_SIZE = 0x1000;
 
 public:
-	Session();
+	Session(uint32 sessionId);
 	virtual ~Session();
 
 	virtual void Dispatch(IocpEvent* iocpEvent, uint32 numOfBytes) override;
@@ -21,6 +21,8 @@ protected:
 	virtual void OnSend(uint32 numOfBytes) abstract;
 
 public:
+	uint32 GetSessionId() { return _sessionId; }
+
 	bool IsConnected() { return _bConnected; }
 
 	NetAddress GetNetAddress() { return _netAddress; }
@@ -55,6 +57,7 @@ private:
 	void ProcessSend(uint32 numOfBytes);
 
 private:
+	uint32 _sessionId = 0;
 	atomic<bool> _bConnected = false;
 	NetAddress _netAddress;
 	RecvBuffer _recvBuffer;
