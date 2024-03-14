@@ -49,7 +49,7 @@ void Listener::RegisterAccept(IocpEvent* acceptEvent)
 
     if (session == nullptr)
     {
-        cout << "Failed to create session" << endl;
+        cout << "[Listener] Failed to create session" << endl;
         // TODO. Retry?
         return;
     }
@@ -68,7 +68,7 @@ void Listener::RegisterAccept(IocpEvent* acceptEvent)
 
         if (errorCode != WSA_IO_PENDING)
         {
-            cout << "Accept Error : " << errorCode << endl;
+            cout << "[Listener] Accept Error : " << errorCode << endl;
 
             // use_count release
             acceptEvent->SetOwner(nullptr);
@@ -89,7 +89,7 @@ void Listener::ProcessAccept(IocpEvent* acceptEvent)
 
     if (SocketUtils::SetUpdateAcceptSocket(session->GetSocket(), _socket) == false)
     {
-        cout << "Failed to set accept socket" << endl;
+        cout << "[Listener] Failed to set accept socket" << endl;
 
         RegisterAccept(acceptEvent);
         return;
@@ -101,7 +101,7 @@ void Listener::ProcessAccept(IocpEvent* acceptEvent)
 
     if (::getpeername(session->GetSocket(), reinterpret_cast<sockaddr*>(&sockAddr), &addrLen) == SOCKET_ERROR)
     {
-        cout << "Failed to get client's address" << endl;
+        cout << "[Listener] Failed to get client's address" << endl;
 
         RegisterAccept(acceptEvent);
         return;
@@ -110,7 +110,7 @@ void Listener::ProcessAccept(IocpEvent* acceptEvent)
     // Session 시작
     if (session->OnAccept(NetAddress(sockAddr)))
     {
-        wcout << format(L"Client Connected - {}({})", session->GetNetAddress().GetIpAddress(), session->GetNetAddress().GetPort()) << endl;
+        wcout << format(L"[Listener] Client Connected - {}({})", session->GetNetAddress().GetIpAddress(), session->GetNetAddress().GetPort()) << endl;
     }
 
     // Event 재사용, 다른 Client 접속 대기

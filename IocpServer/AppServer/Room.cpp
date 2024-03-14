@@ -31,7 +31,7 @@ bool Room::Enter(shared_ptr<Session> session)
 
 	_sessions[sessionId] = session;
 
-	cout << "Session Enter - " << sessionId << endl;
+	cout << "[Room] Session Enter - " << sessionId << endl;
 
 	_jobQueue->Push(make_shared<Job>(shared_from_this(), &Room::RemoveInvalidSessions), true);
 
@@ -47,7 +47,7 @@ bool Room::Exit(uint32 sessionId)
 
 	_sessions.erase(sessionId);
 
-	cout << "Session Exit - " << sessionId << endl;
+	cout << "[Room] Session Exit - " << sessionId << endl;
 
 	_jobQueue->Push(make_shared<Job>(shared_from_this(), &Room::RemoveInvalidSessions), true);
 
@@ -73,5 +73,5 @@ void Room::RemoveInvalidSessions()
 		_sessions.erase(id);
 	}
 
-	cout << "[ROOM] 세션 정리 완료, 남은 세션 수 : " << _sessions.size() << endl;
+	cout << "[Room] 세션 정리 완료, 남은 세션 수 : " << _sessions.size() << endl;
 }

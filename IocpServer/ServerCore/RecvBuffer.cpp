@@ -38,7 +38,7 @@ bool RecvBuffer::OnRead(uint32 numOfBytes)
 {
     if (numOfBytes > DataSize())
     {
-        cout << "Buffer Read Overflow" << endl;
+        cout << "[RecvBuffer] Buffer Read Overflow" << endl;
         return false;
     }
 
@@ -50,7 +50,7 @@ bool RecvBuffer::OnWrite(uint32 numOfBytes)
 {
     if (numOfBytes > FreeSize())
     {
-        cout << "Buffer Write Overflow" << endl;
+        cout << "[RecvBuffer] Buffer Write Overflow" << endl;
         return false;
     }
 

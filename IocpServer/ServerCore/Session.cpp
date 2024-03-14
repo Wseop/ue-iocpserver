@@ -30,7 +30,7 @@ void Session::Dispatch(IocpEvent* iocpEvent, uint32 numOfBytes)
         ProcessSend(numOfBytes);
         break;
     default:
-        cout << "Invalid EventType" << endl;
+        cout << "[Session] Invalid EventType" << endl;
         break;
     }
 }
@@ -105,7 +105,7 @@ bool Session::RegisterConnect()
 
         if (errorCode != WSA_IO_PENDING)
         {
-            cout << "Connect Error : " << errorCode << endl;
+            cout << "[Session] Connect Error : " << errorCode << endl;
 
             _bConnected.store(false);
             _connectEvent.SetOwner(nullptr);
@@ -139,7 +139,7 @@ bool Session::RegisterDisconnect()
 
         if (errorCode != WSA_IO_PENDING)
         {
-            cout << "Disconnect Error : " << errorCode << endl;
+            cout << "[Session] Disconnect Error : " << errorCode << endl;
 
             _bConnected.store(true);
             _disconnectEvent.SetOwner(nullptr);
@@ -157,7 +157,7 @@ void Session::ProcessDisconnect()
     OnDisconnect();
     GetService()->RemoveSession(_sessionId);
 
-    wcout << format(L"Client Disconnect - {}({})", GetNetAddress().GetIpAddress(), GetNetAddress().GetPort()) << endl;;
+    wcout << format(L"[Session] Client Disconnect - {}({})", GetNetAddress().GetIpAddress(), GetNetAddress().GetPort()) << endl;;
 }
 
 void Session::RegisterRecv()
@@ -180,7 +180,7 @@ void Session::RegisterRecv()
 
         if (errorCode != WSA_IO_PENDING)
         {
-            cout << "Recv Error : " << errorCode << endl;
+            cout << "[Session] Recv Error : " << errorCode << endl;
 
             _recvEvent.SetOwner(nullptr);
         }
@@ -207,7 +207,7 @@ void Session::ProcessRecv(uint32 numOfBytes)
     // Overflow 예외 처리
     if (processedSize > dataSize || _recvBuffer.OnRead(processedSize) == false)
     {
-        cout << "Recv Overflow" << endl;
+        cout << "[Session] Recv Overflow" << endl;
 
         Disconnect();
         return;
@@ -289,7 +289,7 @@ void Session::RegisterSend(vector<shared_ptr<SendBuffer>>& sendBuffers)
 
         if (errorCode != WSA_IO_PENDING)
         {
-            cout << "Send Error : " << errorCode << endl;
+            cout << "[Session] Send Error : " << errorCode << endl;
 
             _sendEvent.SetOwner(nullptr);
             _sendEvent.ClearSendBuffers();

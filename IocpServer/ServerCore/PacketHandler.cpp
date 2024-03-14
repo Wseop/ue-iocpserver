@@ -34,5 +34,5 @@ BYTE* PacketHandler::HandleHeader(BYTE* packet, OUT PacketType& packetType, OUT 
 
 void PacketHandler::HandleInvalid(shared_ptr<Session> session, BYTE* payload, uint32 payloadSize)
 {
-	cout << "Invalid Packet!" << endl;
+	cout << "[PacketHandler] Invalid Packet!" << endl;
 }

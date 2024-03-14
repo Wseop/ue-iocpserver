@@ -35,7 +35,7 @@ void IocpCore::Dispatch(uint32 timeoutMs)
         case ERROR_NETNAME_DELETED:
             break;
         default:
-            cout << "Dispatch Error : " << errorCode << endl;
+            cout << "[IocpCore] Dispatch Error : " << errorCode << endl;
             break;
         }
     }
