@@ -26,22 +26,34 @@ shared_ptr<Session> Service::CreateSession()
     return session;
 }
 
+shared_ptr<Session> Service::GetSession(uint32 sessionId)
+{
+    lock_guard<mutex> lock(_mutex);
+
+    if (_sessions.find(sessionId) == _sessions.end())
+        return nullptr;
+
+    return _sessions[sessionId];
+}
+
 void Service::AddSession(shared_ptr<Session> session)
 {
     if (session == nullptr)
         return;
 
+    const uint32 sessionId = session->GetSessionId();
+
     lock_guard<mutex> lock(_mutex);
 
-    _sessions.insert(session);
-}
-
-void Service::RemoveSession(shared_ptr<Session> session)
-{
-    if (session == nullptr)
+    if (_sessions.find(sessionId) != _sessions.end())
         return;
 
+    _sessions[sessionId] = session;
+}
+
+void Service::RemoveSession(uint32 sessionId)
+{
     lock_guard<mutex> lock(_mutex);
 
-    _sessions.erase(session);
+    _sessions.erase(sessionId);
 }

@@ -20,8 +20,9 @@ public:
 
 	// Session
 	shared_ptr<Session> CreateSession();
+	shared_ptr<Session> GetSession(uint32 sessionId);
 	void AddSession(shared_ptr<Session> session);
-	void RemoveSession(shared_ptr<Session> session);
+	void RemoveSession(uint32 sessionId);
 
 private:
 	IocpCore _iocpCore;
@@ -30,6 +31,6 @@ private:
 	// Session
 	mutex _mutex;
 	SessionFactory _sessionFactory = nullptr;
-	set<shared_ptr<Session>> _sessions;
+	unordered_map<uint32, shared_ptr<Session>> _sessions;
 };
 
