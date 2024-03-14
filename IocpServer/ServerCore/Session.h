@@ -9,7 +9,7 @@ class Session : public IocpObject
 	const uint32 BUFFER_SIZE = 0x1000;
 
 public:
-	Session(uint32 sessionId);
+	Session();
 	virtual ~Session();
 
 	virtual void Dispatch(IocpEvent* iocpEvent, uint32 numOfBytes) override;
@@ -22,6 +22,7 @@ protected:
 
 public:
 	uint32 GetSessionId() { return _sessionId; }
+	void SetSessionId(uint32 sessionId) { _sessionId = sessionId; }
 
 	bool IsConnected() { return _bConnected; }
 

@@ -15,15 +15,6 @@ void UClientGameInstance::FinishDestroy()
 	Super::FinishDestroy();
 }
 
-void UClientGameInstance::ShowPlayerId()
-{
-	if (PlayerId == 0)
-		return;
-
-	FString Message = FString::Printf(TEXT("Player Id : %d"), PlayerId);
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, Message);
-}
-
 void UClientGameInstance::ConnectToServer()
 {
 	Socket = ISocketSubsystem::Get(PLATFORM_SOCKETSUBSYSTEM)->CreateSocket(TEXT("Stream"), TEXT("ClientSocket"));
@@ -85,53 +76,7 @@ void UClientGameInstance::SendPing()
 	PacketSession->PushSendBuffer(FClientPacketHandler::MakePing());
 }
 
-void UClientGameInstance::EnterGameRoom()
+void UClientGameInstance::EnterGame()
 {
-	if (PlayerId != 0)
-		return;
-
-	PacketSession->PushSendBuffer(FClientPacketHandler::MakeC_Enter());
-}
-
-void UClientGameInstance::SpawnPlayer(Protocol::PlayerInfo Player)
-{
-	// 중복 체크
-	if (Players.Find(Player.player_id()) != nullptr)
-		return;
-
-	FVector SpawnLocation(Player.x(), Player.y(), Player.z());
-	AActor* SpawnedPlayer = GWorld->SpawnActor(PlayerClass, &SpawnLocation);
-
-	Players.Add(Player.player_id(), SpawnedPlayer);
-}
-
-void UClientGameInstance::ExitGameRoom()
-{
-	if (PlayerId == 0)
-		return;
-
-	PacketSession->PushSendBuffer(FClientPacketHandler::MakeC_Exit(PlayerId));
-}
-
-void UClientGameInstance::DespawnPlayer(uint64 Id)
-{
-	if (Players.Find(Id) == nullptr)
-		return;
-
-	if (GWorld->DestroyActor(Players[Id]))
-		Players.Remove(Id);
-}
-
-void UClientGameInstance::ProcessExit()
-{
-	// player 정리
-	for (auto& Elem : Players)
-	{
-		GWorld->DestroyActor(Elem.Value);
-	}
-	Players.Reset();
-
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Player %d Leave"), PlayerId));
-	
-	PlayerId = 0;
+	PacketSession->PushSendBuffer(FClientPacketHandler::MakeC_Enter("123"));
 }

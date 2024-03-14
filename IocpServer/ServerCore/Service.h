@@ -4,7 +4,7 @@
 
 class Session;
 
-using SessionFactory = function<shared_ptr<Session>(uint32)>;
+using SessionFactory = function<shared_ptr<Session>()>;
 
 class Service : public enable_shared_from_this<Service>
 {

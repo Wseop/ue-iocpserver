@@ -13,8 +13,9 @@ enum class EPacketType : uint16
 	S_Enter,
 	C_Exit,
 	S_Exit,
-	S_SpawnPlayer,
-	S_DespawnPlayer,
+	C_Spawn,
+	S_Spawn,
+	S_Despawn,
 };
 
 struct FPacketHeader
@@ -68,12 +69,13 @@ private:
 	static void HandlePing(TSharedPtr<FPacketSession> PacketSession, BYTE* Payload, uint32 PayloadSize);
 	static void HandleS_Enter(TSharedPtr<FPacketSession> PacketSession, BYTE* Payload, uint32 PayloadSize);
 	static void HandleS_Exit(TSharedPtr<FPacketSession> PacketSession, BYTE* Payload, uint32 PayloadSize);
-	static void HandleS_SpawnPlayer(TSharedPtr<FPacketSession> PacketSession, BYTE* Payload, uint32 PayloadSize);
-	static void HandleS_DespawnPlayer(TSharedPtr<FPacketSession> PacketSession, BYTE* Payload, uint32 PayloadSize);
+	static void HandleS_Spawn(TSharedPtr<FPacketSession> PacketSession, BYTE* Payload, uint32 PayloadSize);
+	static void HandleS_Despawn(TSharedPtr<FPacketSession> PacketSession, BYTE* Payload, uint32 PayloadSize);
 
 	// Packet Makers
 public:
 	static TSharedPtr<FSendBuffer> MakePing();
-	static TSharedPtr<FSendBuffer> MakeC_Enter();
-	static TSharedPtr<FSendBuffer> MakeC_Exit(uint64 PlayerId);
+	static TSharedPtr<FSendBuffer> MakeC_Enter(FString Key);
+	static TSharedPtr<FSendBuffer> MakeC_Exit();
+	static TSharedPtr<FSendBuffer> MakeC_Spawn(uint32 SpawnCount);
 };

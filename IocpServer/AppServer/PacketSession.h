@@ -8,7 +8,7 @@ class Job;
 class PacketSession : public Session
 {
 public:
-	PacketSession(uint32 sessionId);
+	PacketSession();
 	virtual ~PacketSession();
 
 protected:

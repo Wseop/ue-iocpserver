@@ -10,31 +10,36 @@ message Ping
 
 message C_Enter
 {
-	string key = 1;
+	string enter_key = 1;
 }
 
 message S_Enter
 {
-	int32 result = 1;
-	uint64 player_id = 2;
+	bool result = 1;
+	uint32 enter_id = 2;
 }
 
 message C_Exit
 {
-	uint64 player_id = 1;
+	
 }
 
 message S_Exit
 {
-	int32 result = 1;
+	
 }
 
-message S_SpawnPlayer
+message C_Spawn
+{
+	uint32 spawn_count = 1;
+}
+
+message S_Spawn
 {
 	repeated PlayerInfo player_infos = 1;
 }
 
-message S_DespawnPlayer
+message S_Despawn
 {
-	repeated uint64 player_ids = 1;
+	repeated PlayerInfo player_infos = 1;
 }

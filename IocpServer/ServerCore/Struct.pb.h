@@ -183,13 +183,13 @@ class PlayerInfo final :
     kZFieldNumber = 4,
     kYawFieldNumber = 5,
   };
-  // int64 player_id = 1;
+  // int32 player_id = 1;
   void clear_player_id();
-  int64_t player_id() const;
-  void set_player_id(int64_t value);
+  int32_t player_id() const;
+  void set_player_id(int32_t value);
   private:
-  int64_t _internal_player_id() const;
-  void _internal_set_player_id(int64_t value);
+  int32_t _internal_player_id() const;
+  void _internal_set_player_id(int32_t value);
   public:
 
   // float x = 2;
@@ -236,7 +236,7 @@ class PlayerInfo final :
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
   struct Impl_ {
-    int64_t player_id_;
+    int32_t player_id_;
     float x_;
     float y_;
     float z_;
@@ -257,22 +257,22 @@ class PlayerInfo final :
 #endif  // __GNUC__
 // PlayerInfo
 
-// int64 player_id = 1;
+// int32 player_id = 1;
 inline void PlayerInfo::clear_player_id() {
-  _impl_.player_id_ = int64_t{0};
+  _impl_.player_id_ = 0;
 }
-inline int64_t PlayerInfo::_internal_player_id() const {
+inline int32_t PlayerInfo::_internal_player_id() const {
   return _impl_.player_id_;
 }
-inline int64_t PlayerInfo::player_id() const {
+inline int32_t PlayerInfo::player_id() const {
   // @@protoc_insertion_point(field_get:Protocol.PlayerInfo.player_id)
   return _internal_player_id();
 }
-inline void PlayerInfo::_internal_set_player_id(int64_t value) {
+inline void PlayerInfo::_internal_set_player_id(int32_t value) {
   
   _impl_.player_id_ = value;
 }
-inline void PlayerInfo::set_player_id(int64_t value) {
+inline void PlayerInfo::set_player_id(int32_t value) {
   _internal_set_player_id(value);
   // @@protoc_insertion_point(field_set:Protocol.PlayerInfo.player_id)
 }

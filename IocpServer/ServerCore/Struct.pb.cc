@@ -23,7 +23,7 @@ namespace _pbi = _pb::internal;
 namespace Protocol {
 PROTOBUF_CONSTEXPR PlayerInfo::PlayerInfo(
     ::_pbi::ConstantInitialized): _impl_{
-    /*decltype(_impl_.player_id_)*/int64_t{0}
+    /*decltype(_impl_.player_id_)*/0
   , /*decltype(_impl_.x_)*/0
   , /*decltype(_impl_.y_)*/0
   , /*decltype(_impl_.z_)*/0
@@ -66,7 +66,7 @@ static const ::_pb::Message* const file_default_instances[] = {
 
 const char descriptor_table_protodef_Struct_2eproto[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) =
   "\n\014Struct.proto\022\010Protocol\"M\n\nPlayerInfo\022\021"
-  "\n\tplayer_id\030\001 \001(\003\022\t\n\001x\030\002 \001(\002\022\t\n\001y\030\003 \001(\002\022"
+  "\n\tplayer_id\030\001 \001(\005\022\t\n\001x\030\002 \001(\002\022\t\n\001y\030\003 \001(\002\022"
   "\t\n\001z\030\004 \001(\002\022\013\n\003yaw\030\005 \001(\002b\006proto3"
   ;
 static ::_pbi::once_flag descriptor_table_Struct_2eproto_once;
@@ -121,7 +121,7 @@ inline void PlayerInfo::SharedCtor(
   (void)arena;
   (void)is_message_owned;
   new (&_impl_) Impl_{
-      decltype(_impl_.player_id_){int64_t{0}}
+      decltype(_impl_.player_id_){0}
     , decltype(_impl_.x_){0}
     , decltype(_impl_.y_){0}
     , decltype(_impl_.z_){0}
@@ -165,10 +165,10 @@ const char* PlayerInfo::_InternalParse(const char* ptr, ::_pbi::ParseContext* ct
     uint32_t tag;
     ptr = ::_pbi::ReadTag(ptr, &tag);
     switch (tag >> 3) {
-      // int64 player_id = 1;
+      // int32 player_id = 1;
       case 1:
         if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 8)) {
-          _impl_.player_id_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
+          _impl_.player_id_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr);
           CHK_(ptr);
         } else
           goto handle_unusual;
@@ -234,10 +234,10 @@ uint8_t* PlayerInfo::_InternalSerialize(
   uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  // int64 player_id = 1;
+  // int32 player_id = 1;
   if (this->_internal_player_id() != 0) {
     target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteInt64ToArray(1, this->_internal_player_id(), target);
+    target = ::_pbi::WireFormatLite::WriteInt32ToArray(1, this->_internal_player_id(), target);
   }
 
   // float x = 2;
@@ -296,9 +296,9 @@ size_t PlayerInfo::ByteSizeLong() const {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  // int64 player_id = 1;
+  // int32 player_id = 1;
   if (this->_internal_player_id() != 0) {
-    total_size += ::_pbi::WireFormatLite::Int64SizePlusOne(this->_internal_player_id());
+    total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(this->_internal_player_id());
   }
 
   // float x = 2;

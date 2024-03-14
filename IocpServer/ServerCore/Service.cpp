@@ -16,11 +16,12 @@ shared_ptr<Session> Service::CreateSession()
 {
     static atomic<uint32> sSessionId = 1;
 
-    shared_ptr<Session> session = _sessionFactory(sSessionId.fetch_add(1));
+    shared_ptr<Session> session = _sessionFactory();
 
     if (session == nullptr)
         return nullptr;
 
+    session->SetSessionId(sSessionId.fetch_add(1));
     session->SetService(shared_from_this());
 
     return session;

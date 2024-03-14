@@ -1,6 +1,7 @@
 #pragma once
 
 class Player;
+class Session;
 
 class Room : public enable_shared_from_this<Room>
 {
@@ -9,17 +10,11 @@ public:
 	virtual ~Room();
 
 public:
-	bool EnterPlayer(shared_ptr<Player> player);
-	bool ExitPlayer(uint64 playerId);
-
-private:
-	bool SpawnPlayer(shared_ptr<Player> player);
-	bool DespawnPlayer(uint64 playerId);
-	void RemovePlayer(vector<uint64> removeIds);
+	bool Enter(shared_ptr<Session> session);
 
 private:
 	mutex _mutex;
-	map<uint64, shared_ptr<Player>> _players;
+	unordered_map<uint32, weak_ptr<Session>> _sessions;
 };
 
 extern shared_ptr<Room> gRoom;
