@@ -6,6 +6,7 @@
 #include "PacketSession.h"
 #include "ServerPacketHandler.h"
 #include "JobQueue.h"
+#include "Job.h"
 
 shared_ptr<Room> gRoom = make_shared<Room>();
 
@@ -32,6 +33,8 @@ bool Room::Enter(shared_ptr<Session> session)
 
 	cout << "Session Enter - " << sessionId << endl;
 
+	_jobQueue->Push(make_shared<Job>(shared_from_this(), &Room::RemoveInvalidSessions), true);
+
 	return true;
 }
 
@@ -46,5 +49,29 @@ bool Room::Exit(uint32 sessionId)
 
 	cout << "Session Exit - " << sessionId << endl;
 
+	_jobQueue->Push(make_shared<Job>(shared_from_this(), &Room::RemoveInvalidSessions), true);
+
 	return true;
+}
+
+void Room::RemoveInvalidSessions()
+{
+	lock_guard<mutex> lock(_mutex);
+
+	vector<uint32> removeIds;
+
+	for (auto iter = _sessions.begin(); iter != _sessions.end(); iter++)
+	{
+		if ((iter->second).lock() == nullptr)
+		{
+			removeIds.push_back(iter->first);
+		}
+	}
+
+	for (uint32 id : removeIds)
+	{
+		_sessions.erase(id);
+	}
+
+	cout << "[ROOM] 세션 정리 완료, 남은 세션 수 : " << _sessions.size() << endl;
 }
