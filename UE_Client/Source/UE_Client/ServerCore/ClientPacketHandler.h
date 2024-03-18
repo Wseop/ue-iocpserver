@@ -46,7 +46,7 @@ private:
 	static inline TSharedPtr<FSendBuffer> MakeSendBuffer(EPacketType PacketType, T* Payload)
 	{
 		// Packet 크기 계산
-		uint32 PayloadSize = static_cast<uint32>(Payload->ByteSizeLong());
+		uint32 PayloadSize = StaticCast<uint32>(Payload->ByteSizeLong());
 		uint32 PacketSize = sizeof(FPacketHeader) + PayloadSize;
 
 		// SendBuffer 생성

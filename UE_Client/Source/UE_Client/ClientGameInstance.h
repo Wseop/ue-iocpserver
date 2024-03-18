@@ -25,9 +25,6 @@ public:
 	uint32 GetEnterId() { return EnterId; }
 	void SetEnterId(uint32 Id) { EnterId = Id; }
 
-	void AddPlayer(Protocol::PlayerInfo Info);
-	void RemovePlayer(uint32 PlayerId);
-
 public:
 	UFUNCTION(BlueprintCallable)
 	void ConnectToServer();
@@ -47,10 +44,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void ExitGame();
 
-	UFUNCTION(BlueprintCallable)
-	void Spawn();
-
-	void Despawn(uint32 Id);
+	void Spawn(TArray<Protocol::PlayerInfo>& PlayerInfos);
+	void Despawn(TArray<uint32> Ids);
 	void DespawnAll();
 
 protected:

@@ -90,51 +90,49 @@ void UClientGameInstance::ExitGame()
 {
 	if (EnterId != 0)
 	{
-		PacketSession->PushSendBuffer(FClientPacketHandler::MakeC_Exit(EnterId));
+		const uint32 Id = EnterId;
 
 		// 중복 퇴장 방지
 		EnterId = 0;
+		PacketSession->PushSendBuffer(FClientPacketHandler::MakeC_Exit(Id));
 	}
 }
 
-void UClientGameInstance::Spawn()
+void UClientGameInstance::Spawn(TArray<Protocol::PlayerInfo>& PlayerInfos)
 {
-	// 입장된 상태일때 스폰 가능
-	if (EnterId != 0)
+	for (auto& Info : PlayerInfos)
 	{
-		PacketSession->PushSendBuffer(FClientPacketHandler::MakeC_Spawn(1));
+		const uint32 PlayerId = Info.player_id();
+
+		if (Players.Find(PlayerId) != nullptr)
+			continue;
+
+		FVector Location(Info.x(), Info.y(), Info.z());
+		AActor* SpawnedPlayer = GWorld->SpawnActor(PlayerClass, &Location);
+
+		Players.Add(PlayerId, SpawnedPlayer);
 	}
 }
 
-void UClientGameInstance::Despawn(uint32 Id)
+void UClientGameInstance::Despawn(TArray<uint32> Ids)
 {
-	AActor** Player = Players.Find(Id);
+	for (uint32 Id : Ids)
+	{
+		AActor** Player = Players.Find(Id);
 
-	if (Player == nullptr)
-		return;
+		if (Player == nullptr)
+			continue;
 
-	GWorld->DestroyActor(*Player);
-	Players.Remove(Id);
+		GWorld->DestroyActor(*Player);
+		Players.Remove(Id);
+	}
 }
 
 void UClientGameInstance::DespawnAll()
 {
-	for (auto Element : Players)
+	for (auto& Element : Players)
 	{
 		GWorld->DestroyActor(Element.Value);
 	}
 	Players.Reset();
-}
-
-void UClientGameInstance::AddPlayer(Protocol::PlayerInfo Info)
-{
-	FVector Location(Info.x(), Info.y(), Info.z());
-	AActor* Player = GWorld->SpawnActor(PlayerClass, &Location);
-
-	Players.Add(Info.player_id(), Player);
-}
-
-void UClientGameInstance::RemovePlayer(uint32 PlayerId)
-{
-	Players.Remove(PlayerId);
 }
