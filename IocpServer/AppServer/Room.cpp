@@ -86,16 +86,7 @@ bool Room::Exit(uint32 sessionId)
 
 	// 해당하는 player들을 despawn시키는 메세지를 broadcasting
 	shared_ptr<SendBuffer> sendBuffer = ServerPacketHandler::MakeS_Despawn(playerIds);
-
-	for (auto iter = _sessions.begin(); iter != _sessions.end(); iter++)
-	{
-		shared_ptr<Session> session = iter->second.lock();
-
-		if (session == nullptr)
-			continue;
-
-		session->Send(sendBuffer);
-	}
+	Broadcast(sendBuffer);
 
 	cout << format("[Room] Session {} Exit", sessionId) << endl;
 
@@ -131,7 +122,7 @@ bool Room::Spawn(uint32 sessionId, uint32 spawnCount)
 		// 랜덤 위치 지정
 		player->SetX(Utils::GetRandom(-1000.f, 1000.f));
 		player->SetY(Utils::GetRandom(-1000.f, 1000.f));
-		player->SetZ(Utils::GetRandom(100.f, 1000.f));
+		//player->SetZ(Utils::GetRandom(0.f, 100.f));
 
 		spawnedPlayers.push_back(player);
 
@@ -140,16 +131,20 @@ bool Room::Spawn(uint32 sessionId, uint32 spawnCount)
 
 	// 방에 있는 세션들에게 스폰 정보 Broadcasting
 	shared_ptr<SendBuffer> sendBuffer = ServerPacketHandler::MakeS_Spawn(true, spawnedPlayers);
+	Broadcast(sendBuffer);
 
+	return true;
+}
+
+void Room::Broadcast(shared_ptr<SendBuffer> sendBuffer)
+{
 	for (auto iter = _sessions.begin(); iter != _sessions.end(); iter++)
 	{
-		session = iter->second.lock();
+		shared_ptr<Session> session = iter->second.lock();
 
 		if (session == nullptr)
 			continue;
 
 		session->Send(sendBuffer);
 	}
-
-	return true;
 }

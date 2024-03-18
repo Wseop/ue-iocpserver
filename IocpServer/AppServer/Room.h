@@ -3,6 +3,7 @@
 class Player;
 class Session;
 class JobQueue;
+class SendBuffer;
 
 class Room : public enable_shared_from_this<Room>
 {
@@ -15,6 +16,9 @@ public:
 	bool Exit(uint32 sessionId);
 
 	bool Spawn(uint32 sessionId, uint32 spawnCount);
+
+private:
+	void Broadcast(shared_ptr<SendBuffer> sendBuffer);
 
 private:
 	mutex _mutex;
