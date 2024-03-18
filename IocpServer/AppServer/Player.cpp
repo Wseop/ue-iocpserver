@@ -4,11 +4,21 @@
 #include "PacketSession.h"
 
 Player::Player(uint32 playerId, weak_ptr<Session> session) :
-	_playerId(playerId),
+	_playerInfo(new Protocol::PlayerInfo()),
 	_session(session)
 {
+	_playerInfo->set_player_id(playerId);
+	_playerInfo->set_x(0.f);
+	_playerInfo->set_y(0.f);
+	_playerInfo->set_z(0.f);
+	_playerInfo->set_yaw(0.f);
 }
 
 Player::~Player()
 {
+	if (_playerInfo != nullptr)
+	{
+		delete _playerInfo;
+		_playerInfo = nullptr;
+	}
 }

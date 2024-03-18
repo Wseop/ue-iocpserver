@@ -106,12 +106,7 @@ shared_ptr<SendBuffer> ServerPacketHandler::MakeS_Spawn(bool result, vector<shar
     for (shared_ptr<Player>& player : players)
     {
         Protocol::PlayerInfo* playerInfo = payload.add_player_infos();
-
-        playerInfo->set_player_id(player->GetPlayerId());
-        playerInfo->set_x(player->GetX());
-        playerInfo->set_y(player->GetY());
-        playerInfo->set_z(player->GetZ());
-        playerInfo->set_yaw(player->GetYaw());
+        playerInfo->CopyFrom(player->GetPlayerInfo());
     }
 
     return MakeSendBuffer(PacketType::S_Spawn, &payload);
