@@ -100,7 +100,7 @@ bool FRecvWorker::RecvDataBySize(uint32 DataSize, OUT BYTE* Buffer)
 		if (Socket->Recv(Buffer + BufferOffset, DataSize, NumOfBytes) == false)
 			return false;
 
-		check(NumOfBytes <= static_cast<int32>(DataSize));
+		check(NumOfBytes <= StaticCast<int32>(DataSize));
 
 		BufferOffset += NumOfBytes;
 		DataSize -= NumOfBytes;
@@ -158,17 +158,20 @@ bool FSendWorker::SendPacket(TSharedPtr<FSendBuffer> SendBuffer)
 	return SendDataBySize(SendBuffer->GetBufferSize(), SendBuffer->GetBuffer());
 }
 
-bool FSendWorker::SendDataBySize(uint32 DataSize, BYTE* Data)
+bool FSendWorker::SendDataBySize(uint32 DataSize, BYTE* Buffer)
 {
 	// dataSize 만큼의 데이터 전송
 	while (DataSize > 0)
 	{
 		int32 NumOfBytes = 0;
 
-		if (Socket->Send(Data, DataSize, NumOfBytes) == false)
+		if (Socket->Send(Buffer, DataSize, NumOfBytes) == false)
 			return false;
 
+		check(NumOfBytes <= StaticCast<int32>(DataSize));
+
 		DataSize -= NumOfBytes;
+		Buffer += NumOfBytes;
 	}
 
 	return true;

@@ -58,5 +58,5 @@ public:
 	
 private:
 	bool SendPacket(TSharedPtr<FSendBuffer> SendBuffer);
-	bool SendDataBySize(uint32 DataSize, BYTE* Data);
+	bool SendDataBySize(uint32 DataSize, BYTE* Buffer);
 };
