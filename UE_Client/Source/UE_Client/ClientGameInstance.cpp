@@ -68,6 +68,9 @@ void UClientGameInstance::DisconnectFromServer()
 
 void UClientGameInstance::ProcessRecvPacket()
 {
+	if (PacketSession == nullptr)
+		return;
+
 	TArray<BYTE> RecvPacket;
 
 	while (PacketSession->PopRecvPacket(RecvPacket))
@@ -78,6 +81,9 @@ void UClientGameInstance::ProcessRecvPacket()
 
 void UClientGameInstance::SendPing()
 {
+	if (PacketSession == nullptr)
+		return;
+
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Ping!"));
 
 	PacketSession->PushSendBuffer(FClientPacketHandler::MakePing());
@@ -85,6 +91,9 @@ void UClientGameInstance::SendPing()
 
 void UClientGameInstance::EnterGame()
 {
+	if (PacketSession == nullptr)
+		return;
+
 	if (EnterId == 0)
 	{
 		// 중복 입장 방지
@@ -95,6 +104,9 @@ void UClientGameInstance::EnterGame()
 
 void UClientGameInstance::ExitGame()
 {
+	if (PacketSession == nullptr)
+		return;
+
 	if (EnterId != 0)
 	{
 		const uint32 Id = EnterId;
