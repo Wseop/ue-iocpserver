@@ -43,14 +43,16 @@ uint32 FRecvWorker::Run()
 	// Packet을 수신하여 Session에 전달
 	while (bRunning)
 	{
-		if (TSharedPtr<FPacketSession> Session = PacketSession.Pin())
-		{
-			TArray<BYTE> Packet;
+		TSharedPtr<FPacketSession> Session = PacketSession.Pin();
 
-			if (RecvPacket(Packet))
-			{
-				Session->PushRecvPacket(Packet);
-			}
+		if (Session == nullptr)
+			break;
+
+		TArray<BYTE> Packet;
+
+		if (RecvPacket(Packet))
+		{
+			Session->PushRecvPacket(Packet);
 		}
 	}
 
@@ -131,14 +133,16 @@ uint32 FSendWorker::Run()
 	// SendQueue에 보낼 데이터가 있으면 전송
 	while (bRunning)
 	{
-		if (TSharedPtr<FPacketSession> Session = PacketSession.Pin())
-		{
-			TSharedPtr<FSendBuffer> SendBuffer = nullptr;
+		TSharedPtr<FPacketSession> Session = PacketSession.Pin();
 
-			if (Session->PopSendBuffer(SendBuffer))
-			{
-				SendPacket(SendBuffer);
-			}
+		if (Session == nullptr)
+			break;
+
+		TSharedPtr<FSendBuffer> SendBuffer = nullptr;
+
+		if (Session->PopSendBuffer(SendBuffer))
+		{
+			SendPacket(SendBuffer);
 		}
 	}
 
