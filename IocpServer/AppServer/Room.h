@@ -12,12 +12,13 @@ public:
 	virtual ~Room();
 
 public:
-	bool Enter(shared_ptr<Session> session);
+	void Enter(shared_ptr<Session> session);
 	bool Exit(uint32 sessionId);
 
-	bool Spawn(uint32 sessionId, uint32 spawnCount);
-
 private:
+	shared_ptr<Player> SpawnPlayer(weak_ptr<Session> session);
+	void DespawnPlayer(uint32 playerId);
+
 	void Broadcast(shared_ptr<SendBuffer> sendBuffer);
 
 private:

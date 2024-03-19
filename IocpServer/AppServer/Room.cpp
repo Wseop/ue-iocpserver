@@ -19,73 +19,86 @@ Room::~Room()
 {
 }
 
-bool Room::Enter(shared_ptr<Session> session)
+void Room::Enter(shared_ptr<Session> session)
 {
 	lock_guard<mutex> lock(_mutex);
 
 	const uint32 sessionId = session->GetSessionId();
 
-	// 중복 체크
+	// 세션 중복 체크
 	if (_sessions.find(sessionId) != _sessions.end())
-		return false;
+		return;
 
-	_sessions[sessionId] = session;
+	// 플레이어 스폰
+	shared_ptr<Player> player = SpawnPlayer(session);
+
+	if (player == nullptr)
+		return;
+
+	// 스폰 위치 전송
+	session->Send(ServerPacketHandler::MakeS_Enter(true, sessionId, &player->GetPlayerInfo()));
 
 	// 방에 스폰되어 있는 플레이어들 전송
-	vector<shared_ptr<Player>> players;
+	vector<shared_ptr<Player>> others;
 
 	for (auto iter = _players.begin(); iter != _players.end(); iter++)
 	{
-		shared_ptr<Player> player = iter->second;
+		shared_ptr<Player> other = iter->second;
 
-		if (player == nullptr)
+		if (player == nullptr || other->GetPlayerId() == player->GetPlayerId())
 			continue;
 
-		players.push_back(player);
+		others.push_back(other);
 	}
 
-	session->Send(ServerPacketHandler::MakeS_Spawn(true, players));
+	session->Send(ServerPacketHandler::MakeS_Spawn(others));
+
+	// 방에 있는 다른 세션들에게 Broadcast
+	Broadcast(ServerPacketHandler::MakeS_Spawn({ player }));
+
+	_sessions[sessionId] = session;
 
 	cout << format("[Room] Session {} Enter", sessionId) << endl;
-
-	return true;
 }
 
 bool Room::Exit(uint32 sessionId)
 {
 	lock_guard<mutex> lock(_mutex);
 
+	// 방에 존재하는 세션인지 체크
 	if (_sessions.find(sessionId) == _sessions.end())
 		return false;
 
 	_sessions.erase(sessionId);
 	
-	// 해당 session이 생성시킨 player들의 id 수집 및 제거
-	vector<uint32> playerIds;
+	// 해당 세션이 생성한 플레이어 검색
+	shared_ptr<Player> player = nullptr;
 
 	for (auto iter = _players.begin(); iter != _players.end(); iter++)
 	{
-		shared_ptr<Player> player = iter->second;
+		player = iter->second;
 
 		if (player == nullptr)
 			continue;
 
-		shared_ptr<Session> playerSession = player->GetSession();
+		shared_ptr<Session> session = player->GetSession();
 
-		if (playerSession == nullptr)
+		if (session == nullptr)
 			continue;
 
-		if (playerSession->GetSessionId() == sessionId)
-			playerIds.push_back(player->GetPlayerId());
+		if (session->GetSessionId() == sessionId)
+			break;
 	}
 
-	for (uint32 id : playerIds)
-	{
-		_players.erase(id);
-	}
+	// 해당 세션이 생성한 플레이어가 없으면 종료
+	if (player == nullptr)
+		return true;
 
-	// 해당하는 player들을 despawn시키는 메세지를 broadcasting
-	shared_ptr<SendBuffer> sendBuffer = ServerPacketHandler::MakeS_Despawn(playerIds);
+	// 플레이어 Despawn
+	DespawnPlayer(player->GetPlayerId());
+
+	// 다른 세션들에게 Broadcast
+	shared_ptr<SendBuffer> sendBuffer = ServerPacketHandler::MakeS_Despawn({ player->GetPlayerId()});
 	Broadcast(sendBuffer);
 
 	cout << format("[Room] Session {} Exit", sessionId) << endl;
@@ -93,47 +106,36 @@ bool Room::Exit(uint32 sessionId)
 	return true;
 }
 
-bool Room::Spawn(uint32 sessionId, uint32 spawnCount)
+shared_ptr<Player> Room::SpawnPlayer(weak_ptr<Session> session)
 {
-	lock_guard<mutex> lock(_mutex);
+	shared_ptr<Player> player = ObjectManager::CreatePlayer(session);
 
-	// 세션이 유효하지 않으면 종료
-	if (_sessions.find(sessionId) == _sessions.end())
-		return false;
+	if (player == nullptr)
+		return nullptr;
 
-	shared_ptr<Session> session = _sessions[sessionId].lock();
+	const uint32 playerId = player->GetPlayerId();
 
-	if (session == nullptr)
-		return false;
+	// 중복 체크
+	if (_players.find(playerId) != _players.end())
+		return nullptr;
 
-	// Player 생성
-	vector<shared_ptr<Player>> spawnedPlayers;
+	// 스폰 위치 지정
+	player->SetX(Utils::GetRandom(-1000.f, 1000.f));
+	player->SetY(Utils::GetRandom(-1000.f, 1000.f));
+	player->SetZ(100.f);
 
-	for (uint32 i = 0; i < spawnCount; i++)
-	{
-		shared_ptr<Player> player = ObjectManager::CreatePlayer(session);
+	// 플레이어 추가
+	_players[playerId] = player;
 
-		if (player == nullptr)
-			continue;
+	return player;
+}
 
-		if (_players.find(player->GetPlayerId()) != _players.end())
-			continue;
+void Room::DespawnPlayer(uint32 playerId)
+{
+	if (_players.find(playerId) == _players.end())
+		return;
 
-		// 랜덤 위치 지정
-		player->SetX(Utils::GetRandom(-1000.f, 1000.f));
-		player->SetY(Utils::GetRandom(-1000.f, 1000.f));
-		//player->SetZ(Utils::GetRandom(0.f, 100.f));
-
-		spawnedPlayers.push_back(player);
-
-		_players[player->GetPlayerId()] = player;
-	}
-
-	// 방에 있는 세션들에게 스폰 정보 Broadcasting
-	shared_ptr<SendBuffer> sendBuffer = ServerPacketHandler::MakeS_Spawn(true, spawnedPlayers);
-	Broadcast(sendBuffer);
-
-	return true;
+	_players.erase(playerId);
 }
 
 void Room::Broadcast(shared_ptr<SendBuffer> sendBuffer)

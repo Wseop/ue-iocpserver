@@ -13,7 +13,6 @@ enum class EPacketType : uint16
 	S_Enter,
 	C_Exit,
 	S_Exit,
-	C_Spawn,
 	S_Spawn,
 	S_Despawn,
 };
@@ -77,5 +76,4 @@ public:
 	static TSharedPtr<FSendBuffer> MakePing();
 	static TSharedPtr<FSendBuffer> MakeC_Enter(FString Key);
 	static TSharedPtr<FSendBuffer> MakeC_Exit(uint32 Id);
-	static TSharedPtr<FSendBuffer> MakeC_Spawn(uint32 SpawnCount);
 };

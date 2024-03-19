@@ -4,7 +4,9 @@
 #include "ClientPacketHandler.h"
 #include "PacketSession.h"
 #include "Protocol.pb.h"
+#include "Kismet/GameplayStatics.h"
 #include "../ClientGameInstance.h"
+#include "../Game/MyPlayer.h"
 
 PacketHandlerFunc GPacketHandler[UINT16_MAX];
 
@@ -75,8 +77,17 @@ void FClientPacketHandler::HandleS_Enter(TSharedPtr<FPacketSession> PacketSessio
 		GameInstance->SetEnterId(EnterId);
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Enter Success - %d"), EnterId));
 
-		// 캐릭터 스폰 요청
-		PacketSession->PushSendBuffer(MakeC_Spawn(1));
+		// GameInstance에 MyPlayer 등록 및 위치 지정
+		AMyPlayer* MyPlayer = Cast<AMyPlayer>(UGameplayStatics::GetPlayerController(GameInstance, 0)->GetPawn());
+		
+		if (MyPlayer == nullptr)
+			return;
+
+		GameInstance->SetMyPlayer(MyPlayer);
+
+		Protocol::PlayerInfo PlayerInfo = Message.player_info();
+		FVector NewLocation(PlayerInfo.x(), PlayerInfo.y(), PlayerInfo.z());
+		MyPlayer->SetActorLocation(NewLocation);
 	}
 	// 입장 실패
 	else
@@ -123,19 +134,12 @@ void FClientPacketHandler::HandleS_Spawn(TSharedPtr<FPacketSession> PacketSessio
 	if (GameInstance == nullptr)
 		return;
 
-	if (Message.result())
-	{
-		TArray<Protocol::PlayerInfo> PlayerInfos;
+	TArray<Protocol::PlayerInfo> PlayerInfos;
 
-		for (auto& Info : Message.player_infos())
-			PlayerInfos.Add(Info);
+	for (auto& Info : Message.player_infos())
+		PlayerInfos.Add(Info);
 
-		GameInstance->Spawn(PlayerInfos);
-	}
-	else
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Spawn Fail"));
-	}
+	GameInstance->Spawn(PlayerInfos);
 }
 
 void FClientPacketHandler::HandleS_Despawn(TSharedPtr<FPacketSession> PacketSession, BYTE* Payload, uint32 PayloadSize)
@@ -181,12 +185,4 @@ TSharedPtr<FSendBuffer> FClientPacketHandler::MakeC_Exit(uint32 Id)
 	Payload.set_enter_id(Id);
 
 	return MakeSendBuffer(EPacketType::C_Exit, &Payload);
-}
-
-TSharedPtr<FSendBuffer> FClientPacketHandler::MakeC_Spawn(uint32 SpawnCount)
-{
-	Protocol::C_Spawn Payload;
-	Payload.set_spawn_count(SpawnCount);
-
-	return MakeSendBuffer(EPacketType::C_Spawn, &Payload);
 }

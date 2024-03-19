@@ -7,6 +7,13 @@
 #include "Common/TcpSocketBuilder.h"
 #include "ServerCore/PacketSession.h"
 #include "ServerCore/ClientPacketHandler.h"
+#include "Game/DevPlayer.h"
+#include "Game/MyPlayer.h"
+
+void UClientGameInstance::Init()
+{
+	Super::Init();
+}
 
 void UClientGameInstance::FinishDestroy()
 {
@@ -108,8 +115,7 @@ void UClientGameInstance::Spawn(TArray<Protocol::PlayerInfo>& PlayerInfos)
 			continue;
 
 		FVector Location(Info.x(), Info.y(), Info.z());
-		AActor* SpawnedPlayer = GWorld->SpawnActor(PlayerClass, &Location);
-
+		ADevPlayer* SpawnedPlayer = Cast<ADevPlayer>(GWorld->SpawnActor(PlayerClass, &Location));
 		Players.Add(PlayerId, SpawnedPlayer);
 	}
 }
@@ -118,7 +124,7 @@ void UClientGameInstance::Despawn(TArray<uint32> Ids)
 {
 	for (uint32 Id : Ids)
 	{
-		AActor** Player = Players.Find(Id);
+		ADevPlayer** Player = Players.Find(Id);
 
 		if (Player == nullptr)
 			continue;

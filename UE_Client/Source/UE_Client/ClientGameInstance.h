@@ -9,6 +9,8 @@
 
 class FSocket;
 class FPacketSession;
+class ADevPlayer;
+class AMyPlayer;
 
 /**
  * 
@@ -19,11 +21,15 @@ class UE_CLIENT_API UClientGameInstance : public UGameInstance
 	GENERATED_BODY()
 	
 public:
+	virtual void Init() override;
 	virtual void FinishDestroy() override;
 
 public:
 	uint32 GetEnterId() { return EnterId; }
 	void SetEnterId(uint32 Id) { EnterId = Id; }
+
+	AMyPlayer* GetMyPlayer() { return MyPlayer; }
+	void SetMyPlayer(AMyPlayer* Player) { MyPlayer = Player; }
 
 public:
 	UFUNCTION(BlueprintCallable)
@@ -57,5 +63,6 @@ private:
 	TSharedPtr<FPacketSession> PacketSession = nullptr;
 
 	uint32 EnterId = 0;
-	TMap<uint32, AActor*> Players;
+	AMyPlayer* MyPlayer = nullptr;
+	TMap<uint32, ADevPlayer*> Players;
 };

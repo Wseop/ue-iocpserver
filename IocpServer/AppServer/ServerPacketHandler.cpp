@@ -14,7 +14,6 @@ void ServerPacketHandler::Init()
     gPacketHandler[static_cast<uint16>(PacketType::Ping)] = HandlePing;
     gPacketHandler[static_cast<uint16>(PacketType::C_Enter)] = HandleC_Enter;
     gPacketHandler[static_cast<uint16>(PacketType::C_Exit)] = HandleC_Exit;
-    gPacketHandler[static_cast<uint16>(PacketType::C_Spawn)] = HandleC_Spawn;
 }
 
 void ServerPacketHandler::HandlePing(shared_ptr<Session> session, BYTE* payload, uint32 payloadSize)
@@ -32,16 +31,12 @@ void ServerPacketHandler::HandleC_Enter(shared_ptr<Session> session, BYTE* paylo
     Protocol::C_Enter message;
     message.ParseFromArray(payload, payloadSize);
 
-    bool result = false;
-
     // 키가 일치하면 방에 입장
     if (message.enter_key() == "123")
-    {
-        result = gRoom->Enter(session);
-    }
-
-    // 입장 처리 결과 전송
-    session->Send(MakeS_Enter(result, session->GetSessionId()));
+        gRoom->Enter(session);
+    // 키가 일치하지 않으면 입장 실패 메세지 전송
+    else
+        session->Send(MakeS_Enter(false, session->GetSessionId(), nullptr));
 }
 
 void ServerPacketHandler::HandleC_Exit(shared_ptr<Session> session, BYTE* payload, uint32 payloadSize)
@@ -51,22 +46,17 @@ void ServerPacketHandler::HandleC_Exit(shared_ptr<Session> session, BYTE* payloa
 
     const uint32 enterId = message.enter_id();
 
-    bool result = gRoom->Exit(enterId);
+    bool result = true;
+
+    // EnterId 값은 Packet을 전달한 세션의 Id와 일치해야 함
+    if (session->GetSessionId() != enterId)
+        result = false;
+
+    // Exit 처리
+    if (result)
+        result = gRoom->Exit(enterId);
 
     session->Send(MakeS_Exit(result, enterId));
-}
-
-void ServerPacketHandler::HandleC_Spawn(shared_ptr<Session> session, BYTE* payload, uint32 payloadSize)
-{
-    Protocol::C_Spawn message;
-    message.ParseFromArray(payload, payloadSize);
-
-    // spawn_count만큼 player 생성 시도
-    if (gRoom->Spawn(session->GetSessionId(), message.spawn_count()) == false)
-    {
-        // 생성 실패 시, 실패 메세지 전송
-        session->Send(MakeS_Spawn(false, {}));
-    }
 }
 
 shared_ptr<SendBuffer> ServerPacketHandler::MakePing()
@@ -77,12 +67,15 @@ shared_ptr<SendBuffer> ServerPacketHandler::MakePing()
     return MakeSendBuffer(PacketType::Ping, &payload);
 }
 
-shared_ptr<SendBuffer> ServerPacketHandler::MakeS_Enter(bool result, uint32 enterId)
+shared_ptr<SendBuffer> ServerPacketHandler::MakeS_Enter(bool result, uint32 enterId, Protocol::PlayerInfo* playerInfo)
 {
     Protocol::S_Enter payload;
     
     payload.set_result(result);
     payload.set_enter_id(enterId);
+
+    if (playerInfo != nullptr)
+        payload.mutable_player_info()->CopyFrom(*playerInfo);
 
     return MakeSendBuffer(PacketType::S_Enter, &payload);
 }
@@ -97,12 +90,10 @@ shared_ptr<SendBuffer> ServerPacketHandler::MakeS_Exit(bool result, uint32 enter
     return MakeSendBuffer(PacketType::S_Exit, &payload);
 }
 
-shared_ptr<SendBuffer> ServerPacketHandler::MakeS_Spawn(bool result, vector<shared_ptr<Player>> players)
+shared_ptr<SendBuffer> ServerPacketHandler::MakeS_Spawn(vector<shared_ptr<Player>> players)
 {
     Protocol::S_Spawn payload;
     
-    payload.set_result(result);
-
     for (shared_ptr<Player>& player : players)
     {
         Protocol::PlayerInfo* playerInfo = payload.add_player_infos();
@@ -117,9 +108,7 @@ shared_ptr<SendBuffer> ServerPacketHandler::MakeS_Despawn(vector<uint32> playerI
     Protocol::S_Despawn payload;
 
     for (uint32 id : playerIds)
-    {
         payload.add_player_ids(id);
-    }
 
     return MakeSendBuffer(PacketType::S_Despawn, &payload);
 }
