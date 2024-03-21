@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Protocol.pb.h"
+
 class Player;
 class Session;
 class JobQueue;
@@ -14,6 +16,8 @@ public:
 public:
 	void Enter(shared_ptr<Session> session);
 	bool Exit(uint32 sessionId);
+
+	void MovePlayer(shared_ptr<Session> playerOwner, Protocol::PlayerInfo& playerInfo);
 
 private:
 	shared_ptr<Player> SpawnPlayer(weak_ptr<Session> session);

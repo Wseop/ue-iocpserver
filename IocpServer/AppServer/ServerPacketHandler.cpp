@@ -14,6 +14,7 @@ void ServerPacketHandler::Init()
     gPacketHandler[static_cast<uint16>(PacketType::Ping)] = HandlePing;
     gPacketHandler[static_cast<uint16>(PacketType::C_Enter)] = HandleC_Enter;
     gPacketHandler[static_cast<uint16>(PacketType::C_Exit)] = HandleC_Exit;
+    gPacketHandler[static_cast<uint16>(PacketType::C_Move)] = HandleC_Move;
 }
 
 void ServerPacketHandler::HandlePing(shared_ptr<Session> session, BYTE* payload, uint32 payloadSize)
@@ -57,6 +58,15 @@ void ServerPacketHandler::HandleC_Exit(shared_ptr<Session> session, BYTE* payloa
         result = gRoom->Exit(enterId);
 
     session->Send(MakeS_Exit(result, enterId));
+}
+
+void ServerPacketHandler::HandleC_Move(shared_ptr<Session> session, BYTE* payload, uint32 payloadSize)
+{
+    Protocol::C_Move message;
+    message.ParseFromArray(payload, payloadSize);
+
+    Protocol::PlayerInfo playerInfo = message.player_info();
+    gRoom->MovePlayer(session, playerInfo);
 }
 
 shared_ptr<SendBuffer> ServerPacketHandler::MakePing()
@@ -111,4 +121,13 @@ shared_ptr<SendBuffer> ServerPacketHandler::MakeS_Despawn(vector<uint32> playerI
         payload.add_player_ids(id);
 
     return MakeSendBuffer(PacketType::S_Despawn, &payload);
+}
+
+shared_ptr<SendBuffer> ServerPacketHandler::MakeS_Move(Protocol::PlayerInfo* playerInfo)
+{
+    Protocol::S_Move payload;
+
+    payload.mutable_player_info()->CopyFrom(*playerInfo);
+
+    return MakeSendBuffer(PacketType::S_Move, &payload);
 }

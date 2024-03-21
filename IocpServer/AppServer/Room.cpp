@@ -106,6 +106,33 @@ bool Room::Exit(uint32 sessionId)
 	return true;
 }
 
+void Room::MovePlayer(shared_ptr<Session> playerOwner, Protocol::PlayerInfo& playerInfo)
+{
+	lock_guard<mutex> lock(_mutex);
+
+	// 검증) 세션, 플레이어가 방에 있는지 체크
+	if (_sessions.find(playerOwner->GetSessionId()) == _sessions.end())
+		return;
+
+	const uint32 playerId = playerInfo.player_id();
+	auto findResult = _players.find(playerId);
+
+	if (findResult == _players.end())
+		return;
+
+	shared_ptr<Player> player = findResult->second;
+
+	// 검증) 이동시킬 플레이어의 Owner와 세션이 일치하는지 체크
+	if (playerOwner->GetSessionId() != player->GetSession()->GetSessionId())
+		return;
+
+	// 플레이어 이동
+	player->Move(playerInfo);
+
+	// Broadcast
+	Broadcast(ServerPacketHandler::MakeS_Move(&playerInfo));
+}
+
 shared_ptr<Player> Room::SpawnPlayer(weak_ptr<Session> session)
 {
 	shared_ptr<Player> player = ObjectManager::CreatePlayer(session);

@@ -22,3 +22,11 @@ Player::~Player()
 		_playerInfo = nullptr;
 	}
 }
+
+void Player::Move(Protocol::PlayerInfo& info)
+{
+	if (GetPlayerId() != info.player_id())
+		return;
+
+	_playerInfo->CopyFrom(info);
+}

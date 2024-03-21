@@ -33,6 +33,9 @@ public:
 
 	shared_ptr<Session> GetSession() { return _session.lock(); }
 
+public:
+	void Move(Protocol::PlayerInfo& info);
+
 private:
 	Protocol::PlayerInfo* _playerInfo = nullptr;
 

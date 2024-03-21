@@ -40,3 +40,13 @@ message S_Despawn
 {
 	repeated uint32 player_ids = 1;
 }
+
+message C_Move
+{
+	PlayerInfo player_info = 1;
+}
+
+message S_Move
+{
+	PlayerInfo player_info = 1;
+}
