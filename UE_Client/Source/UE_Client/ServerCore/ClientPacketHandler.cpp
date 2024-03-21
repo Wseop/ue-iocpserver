@@ -20,6 +20,7 @@ void FClientPacketHandler::Init()
 	GPacketHandler[StaticCast<uint16>(EPacketType::S_Exit)] = HandleS_Exit;
 	GPacketHandler[StaticCast<uint16>(EPacketType::S_Spawn)] = HandleS_Spawn;
 	GPacketHandler[StaticCast<uint16>(EPacketType::S_Despawn)] = HandleS_Despawn;
+	GPacketHandler[StaticCast<uint16>(EPacketType::S_Move)] = HandleS_Move;
 }
 
 void FClientPacketHandler::HandlePacket(TSharedPtr<FPacketSession> PacketSession, BYTE* Packet)
@@ -87,6 +88,11 @@ void FClientPacketHandler::HandleS_Enter(TSharedPtr<FPacketSession> PacketSessio
 
 		Protocol::PlayerInfo PlayerInfo = Message.player_info();
 		FVector NewLocation(PlayerInfo.x(), PlayerInfo.y(), PlayerInfo.z());
+
+		// MyPlayer 정보 초기화
+		MyPlayer->SetMyPlayer(true);
+		MyPlayer->SetCurrentInfo(PlayerInfo, true);
+		MyPlayer->SetNextInfo(PlayerInfo, true);
 		MyPlayer->SetActorLocation(NewLocation);
 	}
 	// 입장 실패
@@ -160,6 +166,21 @@ void FClientPacketHandler::HandleS_Despawn(TSharedPtr<FPacketSession> PacketSess
 	GameInstance->Despawn(Ids);
 }
 
+void FClientPacketHandler::HandleS_Move(TSharedPtr<FPacketSession> PacketSession, BYTE* Payload, uint32 PayloadSize)
+{
+	Protocol::S_Move Message;
+	Message.ParseFromArray(Payload, PayloadSize);
+
+	UClientGameInstance* GameInstance = Cast<UClientGameInstance>(GWorld->GetGameInstance());
+
+	if (GameInstance == nullptr)
+		return;
+
+	Protocol::PlayerInfo Info = Message.player_info();
+
+	GameInstance->UpdatePlayerInfo(Info);
+}
+
 TSharedPtr<FSendBuffer> FClientPacketHandler::MakePing()
 {
 	Protocol::Ping Payload;
@@ -185,4 +206,13 @@ TSharedPtr<FSendBuffer> FClientPacketHandler::MakeC_Exit(uint32 Id)
 	Payload.set_enter_id(Id);
 
 	return MakeSendBuffer(EPacketType::C_Exit, &Payload);
+}
+
+TSharedPtr<FSendBuffer> FClientPacketHandler::MakeC_Move(Protocol::PlayerInfo& Info)
+{
+	Protocol::C_Move Payload;
+
+	Payload.mutable_player_info()->CopyFrom(Info);
+
+	return MakeSendBuffer(EPacketType::C_Move, &Payload);
 }

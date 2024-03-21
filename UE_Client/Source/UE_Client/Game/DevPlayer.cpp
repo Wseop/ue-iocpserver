@@ -50,6 +50,11 @@ void ADevPlayer::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	if (UpdatePlayerInfo())
+	{
+		SetActorLocation(FVector(NextInfo.x(), NextInfo.y(), NextInfo.z()));
+		SetActorRotation(FRotator(0, NextInfo.yaw(), 0));
+	}
 }
 
 // Called to bind functionality to input
@@ -59,3 +64,34 @@ void ADevPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent
 
 }
 
+bool ADevPlayer::UpdatePlayerInfo()
+{
+	// PlayerInfo에 변경점이 있을 경우 갱신 후 true를 반환
+	if (CurrentInfo.x() != NextInfo.x() ||
+		CurrentInfo.y() != NextInfo.y() ||
+		CurrentInfo.z() != NextInfo.z() ||
+		CurrentInfo.yaw() != NextInfo.yaw())
+	{
+		CurrentInfo = NextInfo;
+		return true;
+	}
+
+	// 변경점이 없으면 false를 반환
+	return false;
+}
+
+void ADevPlayer::SetCurrentInfo(Protocol::PlayerInfo& Info, bool bForce)
+{
+	if (CurrentInfo.player_id() != Info.player_id() && bForce == false)
+		return;
+
+	CurrentInfo = Info;
+}
+
+void ADevPlayer::SetNextInfo(Protocol::PlayerInfo& Info, bool bForce)
+{
+	if (NextInfo.player_id() != Info.player_id() && bForce == false)
+		return;
+
+	NextInfo = Info;
+}

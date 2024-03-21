@@ -127,7 +127,11 @@ void UClientGameInstance::Spawn(TArray<Protocol::PlayerInfo>& PlayerInfos)
 			continue;
 
 		FVector Location(Info.x(), Info.y(), Info.z());
+		
 		ADevPlayer* SpawnedPlayer = Cast<ADevPlayer>(GWorld->SpawnActor(PlayerClass, &Location));
+		SpawnedPlayer->SetCurrentInfo(Info, true);
+		SpawnedPlayer->SetNextInfo(Info, true);
+		
 		Players.Add(PlayerId, SpawnedPlayer);
 	}
 }
@@ -153,4 +157,22 @@ void UClientGameInstance::DespawnAll()
 		GWorld->DestroyActor(Element.Value);
 	}
 	Players.Reset();
+}
+
+void UClientGameInstance::SendMove(Protocol::PlayerInfo& Info)
+{
+	if (PacketSession == nullptr || EnterId == 0)
+		return;
+
+	PacketSession->PushSendBuffer(FClientPacketHandler::MakeC_Move(Info));
+}
+
+void UClientGameInstance::UpdatePlayerInfo(Protocol::PlayerInfo& Info)
+{
+	ADevPlayer** Player = Players.Find(Info.player_id());
+
+	if (Player == nullptr)
+		return;
+
+	(*Player)->SetNextInfo(Info, false);
 }

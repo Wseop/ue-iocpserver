@@ -29,5 +29,24 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 protected:
-	Protocol::PlayerInfo PlayerInfo;
+	bool UpdatePlayerInfo();
+
+public:
+	bool IsMyPlayer() { return bMyPlayer; }
+	void SetMyPlayer(bool bValue) { bMyPlayer = bValue; }
+
+	Protocol::PlayerInfo& GetCurrentInfo() { return CurrentInfo; }
+	void SetCurrentInfo(Protocol::PlayerInfo& Info, bool bForce);
+
+	Protocol::PlayerInfo& GetNextInfo() { return NextInfo; }
+	void SetNextInfo(Protocol::PlayerInfo& Info, bool bForce);
+
+protected:
+	const float TICK_SEND_MOVE = 0.2f;
+	float CurrentTickSendMove = TICK_SEND_MOVE;
+
+	bool bMyPlayer = false;
+
+	Protocol::PlayerInfo CurrentInfo;
+	Protocol::PlayerInfo NextInfo;
 };

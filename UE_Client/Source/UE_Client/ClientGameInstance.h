@@ -54,6 +54,9 @@ public:
 	void Despawn(TArray<uint32> Ids);
 	void DespawnAll();
 
+	void SendMove(Protocol::PlayerInfo& Info);
+	void UpdatePlayerInfo(Protocol::PlayerInfo& Info);
+
 protected:
 	UPROPERTY(Editanywhere)
 	TSubclassOf<AActor> PlayerClass;

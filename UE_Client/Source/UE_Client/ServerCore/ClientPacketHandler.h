@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "SendBuffer.h"
+#include "Protocol.pb.h"
 
 enum class EPacketType : uint16
 {
@@ -15,6 +16,8 @@ enum class EPacketType : uint16
 	S_Exit,
 	S_Spawn,
 	S_Despawn,
+	C_Move,
+	S_Move,
 };
 
 struct FPacketHeader
@@ -70,10 +73,12 @@ private:
 	static void HandleS_Exit(TSharedPtr<FPacketSession> PacketSession, BYTE* Payload, uint32 PayloadSize);
 	static void HandleS_Spawn(TSharedPtr<FPacketSession> PacketSession, BYTE* Payload, uint32 PayloadSize);
 	static void HandleS_Despawn(TSharedPtr<FPacketSession> PacketSession, BYTE* Payload, uint32 PayloadSize);
+	static void HandleS_Move(TSharedPtr<FPacketSession> PacketSession, BYTE* Payload, uint32 PayloadSize);
 
 	// Packet Makers
 public:
 	static TSharedPtr<FSendBuffer> MakePing();
 	static TSharedPtr<FSendBuffer> MakeC_Enter(FString Key);
 	static TSharedPtr<FSendBuffer> MakeC_Exit(uint32 Id);
+	static TSharedPtr<FSendBuffer> MakeC_Move(Protocol::PlayerInfo& Info);
 };

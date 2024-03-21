@@ -11,6 +11,7 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
+#include "../ClientGameInstance.h"
 
 AMyPlayer::AMyPlayer()
 {
@@ -100,4 +101,37 @@ void AMyPlayer::BeginPlay()
 void AMyPlayer::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	CurrentTickSendMove -= DeltaTime;
+
+	if (CurrentTickSendMove < 0.f)
+	{
+		if (UpdatePlayerInfo())
+		{
+			UClientGameInstance* GameInstance = Cast<UClientGameInstance>(GWorld->GetGameInstance());
+			if (GameInstance)
+			{
+				GameInstance->SendMove(CurrentInfo);
+			}
+		}
+
+		CurrentTickSendMove = TICK_SEND_MOVE;
+	}
+}
+
+bool AMyPlayer::UpdatePlayerInfo()
+{
+	// 현재 위치를 기반으로 NextInfo 갱신
+	FVector Location = GetActorLocation();
+	FRotator Rotator = GetActorRotation();
+
+	NextInfo.set_x(Location.X);
+	NextInfo.set_y(Location.Y);
+	NextInfo.set_z(Location.Z);
+	NextInfo.set_yaw(Rotator.Yaw);
+
+	if (Super::UpdatePlayerInfo() == false)
+		return false;
+
+	return true;
 }
