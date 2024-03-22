@@ -36,9 +36,8 @@ void FClientPacketHandler::HandlePacket(TSharedPtr<FPacketSession> PacketSession
 
 BYTE* FClientPacketHandler::HandleHeader(BYTE* Packet, OUT EPacketType& PacketType, OUT uint32& PayloadSize)
 {
-	FPacketHeader* Header = reinterpret_cast<FPacketHeader*>(Packet);
-
 	// PacketType, PayloadSize 추출
+	FPacketHeader* Header = reinterpret_cast<FPacketHeader*>(Packet);
 	PacketType = Header->PacketType;
 	PayloadSize = Header->PacketSize - sizeof(FPacketHeader);
 
@@ -66,7 +65,6 @@ void FClientPacketHandler::HandleS_Enter(TSharedPtr<FPacketSession> PacketSessio
 	Message.ParseFromArray(Payload, PayloadSize);
 
 	UClientGameInstance* GameInstance = Cast<UClientGameInstance>(GWorld->GetGameInstance());
-
 	if (GameInstance == nullptr)
 		return;
 
@@ -80,17 +78,13 @@ void FClientPacketHandler::HandleS_Enter(TSharedPtr<FPacketSession> PacketSessio
 
 		// GameInstance에 MyPlayer 등록 및 위치 지정
 		AMyPlayer* MyPlayer = Cast<AMyPlayer>(UGameplayStatics::GetPlayerController(GameInstance, 0)->GetPawn());
-		
 		if (MyPlayer == nullptr)
 			return;
-
-		GameInstance->SetMyPlayer(MyPlayer);
 
 		Protocol::PlayerInfo PlayerInfo = Message.player_info();
 		FVector NewLocation(PlayerInfo.x(), PlayerInfo.y(), PlayerInfo.z());
 
 		// MyPlayer 정보 초기화
-		MyPlayer->SetMyPlayer(true);
 		MyPlayer->SetCurrentInfo(PlayerInfo, true);
 		MyPlayer->SetNextInfo(PlayerInfo, true);
 		MyPlayer->SetActorLocation(NewLocation);
@@ -109,7 +103,6 @@ void FClientPacketHandler::HandleS_Exit(TSharedPtr<FPacketSession> PacketSession
 	Message.ParseFromArray(Payload, PayloadSize);
 
 	UClientGameInstance* GameInstance = Cast<UClientGameInstance>(GWorld->GetGameInstance());
-
 	if (GameInstance == nullptr)
 		return;
 
@@ -136,7 +129,6 @@ void FClientPacketHandler::HandleS_Spawn(TSharedPtr<FPacketSession> PacketSessio
 	Message.ParseFromArray(Payload, PayloadSize);
 
 	UClientGameInstance* GameInstance = Cast<UClientGameInstance>(GWorld->GetGameInstance());
-
 	if (GameInstance == nullptr)
 		return;
 
@@ -154,7 +146,6 @@ void FClientPacketHandler::HandleS_Despawn(TSharedPtr<FPacketSession> PacketSess
 	Message.ParseFromArray(Payload, PayloadSize);
 	
 	UClientGameInstance* GameInstance = Cast<UClientGameInstance>(GWorld->GetGameInstance());
-
 	if (GameInstance == nullptr)
 		return;
 
@@ -172,7 +163,6 @@ void FClientPacketHandler::HandleS_Move(TSharedPtr<FPacketSession> PacketSession
 	Message.ParseFromArray(Payload, PayloadSize);
 
 	UClientGameInstance* GameInstance = Cast<UClientGameInstance>(GWorld->GetGameInstance());
-
 	if (GameInstance == nullptr)
 		return;
 
@@ -184,7 +174,6 @@ void FClientPacketHandler::HandleS_Move(TSharedPtr<FPacketSession> PacketSession
 TSharedPtr<FSendBuffer> FClientPacketHandler::MakePing()
 {
 	Protocol::Ping Payload;
-
 	Payload.set_msg("Ping!");
 
 	return MakeSendBuffer(EPacketType::Ping, &Payload);
@@ -193,7 +182,6 @@ TSharedPtr<FSendBuffer> FClientPacketHandler::MakePing()
 TSharedPtr<FSendBuffer> FClientPacketHandler::MakeC_Enter(FString Key)
 {
 	Protocol::C_Enter Payload;
-
 	Payload.set_enter_key(TCHAR_TO_ANSI(*Key));
 
 	return MakeSendBuffer(EPacketType::C_Enter, &Payload);
@@ -202,7 +190,6 @@ TSharedPtr<FSendBuffer> FClientPacketHandler::MakeC_Enter(FString Key)
 TSharedPtr<FSendBuffer> FClientPacketHandler::MakeC_Exit(uint32 Id)
 {
 	Protocol::C_Exit Payload;
-
 	Payload.set_enter_id(Id);
 
 	return MakeSendBuffer(EPacketType::C_Exit, &Payload);
@@ -211,7 +198,6 @@ TSharedPtr<FSendBuffer> FClientPacketHandler::MakeC_Exit(uint32 Id)
 TSharedPtr<FSendBuffer> FClientPacketHandler::MakeC_Move(Protocol::PlayerInfo& Info)
 {
 	Protocol::C_Move Payload;
-
 	Payload.mutable_player_info()->CopyFrom(Info);
 
 	return MakeSendBuffer(EPacketType::C_Move, &Payload);

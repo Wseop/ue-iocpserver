@@ -233,6 +233,7 @@
     <ClCompile Include="Utils.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Enum.proto" />
     <None Include="GenPackets.bat" />
     <None Include="Protocol.proto" />
     <None Include="Struct.proto" />

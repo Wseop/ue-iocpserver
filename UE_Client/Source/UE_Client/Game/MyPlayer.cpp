@@ -96,6 +96,16 @@ void AMyPlayer::BeginPlay()
 			Subsystem->AddMappingContext(DefaultMappingContext, 0);
 		}
 	}
+
+	// 내 플레이어로 설정
+	SetMyPlayer(true);
+	UClientGameInstance* GameInstance = Cast<UClientGameInstance>(GWorld->GetGameInstance());
+	if (GameInstance != nullptr)
+		GameInstance->SetMyPlayer(this);
+
+	// 상태값 초기화
+	CurrentInfo.set_move_state(Protocol::MOVE_STATE_IDLE);
+	NextInfo.set_move_state(Protocol::MOVE_STATE_IDLE);
 }
 
 void AMyPlayer::Tick(float DeltaTime)
@@ -103,35 +113,47 @@ void AMyPlayer::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	CurrentTickSendMove -= DeltaTime;
-
 	if (CurrentTickSendMove < 0.f)
 	{
 		if (UpdatePlayerInfo())
 		{
 			UClientGameInstance* GameInstance = Cast<UClientGameInstance>(GWorld->GetGameInstance());
 			if (GameInstance)
-			{
 				GameInstance->SendMove(CurrentInfo);
-			}
 		}
-
 		CurrentTickSendMove = TICK_SEND_MOVE;
 	}
 }
 
 bool AMyPlayer::UpdatePlayerInfo()
 {
-	// 현재 위치를 기반으로 NextInfo 갱신
+	// 위치 정보 가져오기
 	FVector Location = GetActorLocation();
-	FRotator Rotator = GetActorRotation();
-
 	NextInfo.set_x(Location.X);
 	NextInfo.set_y(Location.Y);
 	NextInfo.set_z(Location.Z);
+	FRotator Rotator = GetActorRotation();
 	NextInfo.set_yaw(Rotator.Yaw);
 
-	if (Super::UpdatePlayerInfo() == false)
+	// 속도가 0이 아니면 이동 상태로 판정
+	float Velocity = GetVelocity().Length();
+	if (Velocity > 0.f)
+		NextInfo.set_move_state(Protocol::MOVE_STATE_RUN);
+	else
+		NextInfo.set_move_state(Protocol::MOVE_STATE_IDLE);
+	
+	// 상태값에 변동이 있다면 갱신 후 true를 반환
+	if (CurrentInfo.x() != NextInfo.x() ||
+		CurrentInfo.y() != NextInfo.y() ||
+		CurrentInfo.z() != NextInfo.z() ||
+		CurrentInfo.yaw() != NextInfo.yaw() ||
+		CurrentInfo.move_state() != NextInfo.move_state())
+	{
+		CurrentInfo = NextInfo;
+		return true;
+	}
+	else
+	{
 		return false;
-
-	return true;
+	}
 }

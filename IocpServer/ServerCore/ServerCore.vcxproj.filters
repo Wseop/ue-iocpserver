@@ -171,5 +171,8 @@
     <None Include="Struct.proto">
       <Filter>소스 파일\Network\Packet\Protobuf</Filter>
     </None>
+    <None Include="Enum.proto">
+      <Filter>소스 파일\Network\Packet\Protobuf</Filter>
+    </None>
   </ItemGroup>
 </Project>

@@ -1,5 +1,6 @@
 pushd %~dp0
 
+protoc.exe -I=./ --cpp_out=./ ./Enum.proto
 protoc.exe -I=./ --cpp_out=./ ./Struct.proto
 protoc.exe -I=./ --cpp_out=./ ./Protocol.proto
 
@@ -10,3 +11,6 @@ XCOPY /Y Protocol.pb.cc "../../UE_Client/Source/UE_Client/ServerCore"
 
 XCOPY /Y Struct.pb.h "../../UE_Client/Source/UE_Client/ServerCore"
 XCOPY /Y Struct.pb.cc "../../UE_Client/Source/UE_Client/ServerCore"
+
+XCOPY /Y Enum.pb.h "../../UE_Client/Source/UE_Client/ServerCore"
+XCOPY /Y Enum.pb.cc "../../UE_Client/Source/UE_Client/ServerCore"

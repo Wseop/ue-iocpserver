@@ -126,11 +126,9 @@ void Room::MovePlayer(shared_ptr<Session> playerOwner, Protocol::PlayerInfo& pla
 	if (playerOwner->GetSessionId() != player->GetSession()->GetSessionId())
 		return;
 
-	// 플레이어 이동
-	player->Move(playerInfo);
-
-	// Broadcast
-	Broadcast(ServerPacketHandler::MakeS_Move(&playerInfo));
+	// 플레이어 이동 & Broadcast
+	if (player->Move(playerInfo))
+		Broadcast(ServerPacketHandler::MakeS_Move(&playerInfo));
 }
 
 shared_ptr<Player> Room::SpawnPlayer(weak_ptr<Session> session)

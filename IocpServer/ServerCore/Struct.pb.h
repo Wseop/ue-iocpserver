@@ -30,6 +30,7 @@
 #include <google/protobuf/repeated_field.h>  // IWYU pragma: export
 #include <google/protobuf/extension_set.h>  // IWYU pragma: export
 #include <google/protobuf/unknown_field_set.h>
+#include "Enum.pb.h"
 // @@protoc_insertion_point(includes)
 #include <google/protobuf/port_def.inc>
 #define PROTOBUF_INTERNAL_EXPORT_Struct_2eproto
@@ -182,6 +183,7 @@ class PlayerInfo final :
     kYFieldNumber = 3,
     kZFieldNumber = 4,
     kYawFieldNumber = 5,
+    kMoveStateFieldNumber = 6,
   };
   // uint32 player_id = 1;
   void clear_player_id();
@@ -228,6 +230,15 @@ class PlayerInfo final :
   void _internal_set_yaw(float value);
   public:
 
+  // .Protocol.MoveState move_state = 6;
+  void clear_move_state();
+  ::Protocol::MoveState move_state() const;
+  void set_move_state(::Protocol::MoveState value);
+  private:
+  ::Protocol::MoveState _internal_move_state() const;
+  void _internal_set_move_state(::Protocol::MoveState value);
+  public:
+
   // @@protoc_insertion_point(class_scope:Protocol.PlayerInfo)
  private:
   class _Internal;
@@ -241,6 +252,7 @@ class PlayerInfo final :
     float y_;
     float z_;
     float yaw_;
+    int move_state_;
     mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   };
   union { Impl_ _impl_; };
@@ -355,6 +367,26 @@ inline void PlayerInfo::_internal_set_yaw(float value) {
 inline void PlayerInfo::set_yaw(float value) {
   _internal_set_yaw(value);
   // @@protoc_insertion_point(field_set:Protocol.PlayerInfo.yaw)
+}
+
+// .Protocol.MoveState move_state = 6;
+inline void PlayerInfo::clear_move_state() {
+  _impl_.move_state_ = 0;
+}
+inline ::Protocol::MoveState PlayerInfo::_internal_move_state() const {
+  return static_cast< ::Protocol::MoveState >(_impl_.move_state_);
+}
+inline ::Protocol::MoveState PlayerInfo::move_state() const {
+  // @@protoc_insertion_point(field_get:Protocol.PlayerInfo.move_state)
+  return _internal_move_state();
+}
+inline void PlayerInfo::_internal_set_move_state(::Protocol::MoveState value) {
+  
+  _impl_.move_state_ = value;
+}
+inline void PlayerInfo::set_move_state(::Protocol::MoveState value) {
+  _internal_set_move_state(value);
+  // @@protoc_insertion_point(field_set:Protocol.PlayerInfo.move_state)
 }
 
 #ifdef __GNUC__

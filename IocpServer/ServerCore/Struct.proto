@@ -1,6 +1,8 @@
 syntax = "proto3";
 package Protocol;
 
+import "Enum.proto";
+
 // Protocol.proto에서 사용할 구조체를 여기에 정의
 
 message PlayerInfo
@@ -10,4 +12,5 @@ message PlayerInfo
 	float y = 3;
 	float z = 4;
 	float yaw = 5;
+	MoveState move_state = 6;
 }

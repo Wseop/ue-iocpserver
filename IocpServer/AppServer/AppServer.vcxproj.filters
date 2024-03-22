@@ -56,6 +56,9 @@
     <ClCompile Include="ObjectManager.cpp">
       <Filter>소스 파일\Game</Filter>
     </ClCompile>
+    <ClCompile Include="..\ServerCore\Enum.pb.cc">
+      <Filter>소스 파일\Packet\Protobuf</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -84,6 +87,9 @@
     </ClInclude>
     <ClInclude Include="ObjectManager.h">
       <Filter>소스 파일\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ServerCore\Enum.pb.h">
+      <Filter>소스 파일\Packet\Protobuf</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

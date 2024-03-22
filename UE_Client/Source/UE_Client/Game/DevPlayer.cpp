@@ -42,7 +42,6 @@ ADevPlayer::~ADevPlayer()
 void ADevPlayer::BeginPlay()
 {
 	Super::BeginPlay();
-	
 }
 
 // Called every frame
@@ -50,10 +49,27 @@ void ADevPlayer::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (UpdatePlayerInfo())
+	if (bMyPlayer == false)
 	{
-		SetActorLocation(FVector(NextInfo.x(), NextInfo.y(), NextInfo.z()));
-		SetActorRotation(FRotator(0, NextInfo.yaw(), 0));
+		UpdatePlayerInfo();
+
+		FVector DirVector = FVector(CurrentInfo.x(), CurrentInfo.y(), CurrentInfo.z()) - GetActorLocation();
+		if (CurrentInfo.move_state() == Protocol::MOVE_STATE_RUN)
+		{
+			// 목적지까지의 방향벡터를 구한 뒤 이동
+			DirVector.Normalize();
+			AddMovementInput(DirVector);
+		}
+		else if (CurrentInfo.move_state() == Protocol::MOVE_STATE_IDLE)
+		{
+			// 목적지와 현재 위치간 오차가 기준 초과일 경우 위치 보정
+			if (DirVector.Length() > 2.f)
+			{
+				DirVector.Normalize();
+				AddMovementInput(DirVector);
+			}
+		}
+		
 	}
 }
 
@@ -66,18 +82,19 @@ void ADevPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent
 
 bool ADevPlayer::UpdatePlayerInfo()
 {
-	// PlayerInfo에 변경점이 있을 경우 갱신 후 true를 반환
 	if (CurrentInfo.x() != NextInfo.x() ||
 		CurrentInfo.y() != NextInfo.y() ||
 		CurrentInfo.z() != NextInfo.z() ||
-		CurrentInfo.yaw() != NextInfo.yaw())
+		CurrentInfo.yaw() != NextInfo.yaw() ||
+		CurrentInfo.move_state() != CurrentInfo.move_state())
 	{
 		CurrentInfo = NextInfo;
 		return true;
 	}
-
-	// 변경점이 없으면 false를 반환
-	return false;
+	else
+	{
+		return false;
+	}
 }
 
 void ADevPlayer::SetCurrentInfo(Protocol::PlayerInfo& Info, bool bForce)
