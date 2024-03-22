@@ -72,7 +72,6 @@ void UClientGameInstance::ProcessRecvPacket()
 		return;
 
 	TArray<BYTE> RecvPacket;
-
 	while (PacketSession->PopRecvPacket(RecvPacket))
 	{
 		FClientPacketHandler::HandlePacket(PacketSession, RecvPacket.GetData());
@@ -85,7 +84,6 @@ void UClientGameInstance::SendPing()
 		return;
 
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Ping!"));
-
 	PacketSession->PushSendBuffer(FClientPacketHandler::MakePing());
 }
 
@@ -123,15 +121,13 @@ void UClientGameInstance::Spawn(TArray<Protocol::PlayerInfo>& PlayerInfos)
 	{
 		const uint32 PlayerId = Info.player_id();
 
-		if (Players.Find(PlayerId) != nullptr)
+		if (Players.Find(PlayerId) != nullptr) 
 			continue;
 
 		FVector Location(Info.x(), Info.y(), Info.z());
-		
 		ADevPlayer* SpawnedPlayer = Cast<ADevPlayer>(GWorld->SpawnActor(PlayerClass, &Location));
 		SpawnedPlayer->SetCurrentInfo(Info, true);
 		SpawnedPlayer->SetNextInfo(Info, true);
-		
 		Players.Add(PlayerId, SpawnedPlayer);
 	}
 }
@@ -141,8 +137,7 @@ void UClientGameInstance::Despawn(TArray<uint32> Ids)
 	for (uint32 Id : Ids)
 	{
 		ADevPlayer** Player = Players.Find(Id);
-
-		if (Player == nullptr)
+		if (Player == nullptr || *Player == nullptr) 
 			continue;
 
 		GWorld->DestroyActor(*Player);
@@ -153,9 +148,7 @@ void UClientGameInstance::Despawn(TArray<uint32> Ids)
 void UClientGameInstance::DespawnAll()
 {
 	for (auto& Element : Players)
-	{
 		GWorld->DestroyActor(Element.Value);
-	}
 	Players.Reset();
 }
 
@@ -170,8 +163,7 @@ void UClientGameInstance::SendMove(Protocol::PlayerInfo& Info)
 void UClientGameInstance::UpdatePlayerInfo(Protocol::PlayerInfo& Info)
 {
 	ADevPlayer** Player = Players.Find(Info.player_id());
-
-	if (Player == nullptr)
+	if (Player == nullptr || *Player == nullptr)
 		return;
 
 	(*Player)->SetNextInfo(Info, false);

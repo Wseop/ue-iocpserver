@@ -53,6 +53,7 @@ void ADevPlayer::Tick(float DeltaTime)
 	{
 		UpdatePlayerInfo();
 
+		// 현재위치 -> 목적지 벡터
 		FVector DirVector = FVector(CurrentInfo.x(), CurrentInfo.y(), CurrentInfo.z()) - GetActorLocation();
 		if (CurrentInfo.move_state() == Protocol::MOVE_STATE_RUN)
 		{
@@ -63,7 +64,7 @@ void ADevPlayer::Tick(float DeltaTime)
 		else if (CurrentInfo.move_state() == Protocol::MOVE_STATE_IDLE)
 		{
 			// 목적지와 현재 위치간 오차가 기준 초과일 경우 위치 보정
-			if (DirVector.Length() > 2.f)
+			if (DirVector.Length() > 2.0)
 			{
 				DirVector.Normalize();
 				AddMovementInput(DirVector);

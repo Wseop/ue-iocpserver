@@ -68,26 +68,26 @@ void FClientPacketHandler::HandleS_Enter(TSharedPtr<FPacketSession> PacketSessio
 	if (GameInstance == nullptr)
 		return;
 
-	const uint32 EnterId = Message.enter_id();
-
 	// 입장 성공
 	if (Message.result())
 	{
+		const uint32 EnterId = Message.enter_id();
+
+		// Set 입장 ID (세션 ID)
 		GameInstance->SetEnterId(EnterId);
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Enter Success - %d"), EnterId));
 
-		// GameInstance에 MyPlayer 등록 및 위치 지정
+		// Set PlayerInfo
+		Protocol::PlayerInfo PlayerInfo = Message.player_info();
 		AMyPlayer* MyPlayer = Cast<AMyPlayer>(UGameplayStatics::GetPlayerController(GameInstance, 0)->GetPawn());
 		if (MyPlayer == nullptr)
 			return;
-
-		Protocol::PlayerInfo PlayerInfo = Message.player_info();
-		FVector NewLocation(PlayerInfo.x(), PlayerInfo.y(), PlayerInfo.z());
-
-		// MyPlayer 정보 초기화
 		MyPlayer->SetCurrentInfo(PlayerInfo, true);
 		MyPlayer->SetNextInfo(PlayerInfo, true);
-		MyPlayer->SetActorLocation(NewLocation);
+		
+		// Set Location
+		FVector Location(PlayerInfo.x(), PlayerInfo.y(), PlayerInfo.z());
+		MyPlayer->SetActorLocation(Location);
 	}
 	// 입장 실패
 	else
@@ -111,6 +111,7 @@ void FClientPacketHandler::HandleS_Exit(TSharedPtr<FPacketSession> PacketSession
 	// 퇴장 성공
 	if (Message.result())
 	{
+		// 데이터 초기화
 		GameInstance->SetEnterId(0);
 		GameInstance->DespawnAll();
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Exit Success - %d"), EnterId));
@@ -118,7 +119,8 @@ void FClientPacketHandler::HandleS_Exit(TSharedPtr<FPacketSession> PacketSession
 	// 퇴장 실패
 	else
 	{
-		GameInstance->SetEnterId(Message.enter_id());
+		// 입장 ID 복구
+		GameInstance->SetEnterId(EnterId);
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Exit Fail"));
 	}
 }
@@ -133,7 +135,6 @@ void FClientPacketHandler::HandleS_Spawn(TSharedPtr<FPacketSession> PacketSessio
 		return;
 
 	TArray<Protocol::PlayerInfo> PlayerInfos;
-
 	for (auto& Info : Message.player_infos())
 		PlayerInfos.Add(Info);
 
@@ -150,7 +151,6 @@ void FClientPacketHandler::HandleS_Despawn(TSharedPtr<FPacketSession> PacketSess
 		return;
 
 	TArray<uint32> Ids;
-
 	for (auto& Id : Message.player_ids())
 		Ids.Add(Id);
 

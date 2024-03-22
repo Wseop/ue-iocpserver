@@ -127,7 +127,7 @@ void AMyPlayer::Tick(float DeltaTime)
 
 bool AMyPlayer::UpdatePlayerInfo()
 {
-	// 위치 정보 가져오기
+	// 위치 정보 업데이트
 	FVector Location = GetActorLocation();
 	NextInfo.set_x(Location.X);
 	NextInfo.set_y(Location.Y);
@@ -136,24 +136,11 @@ bool AMyPlayer::UpdatePlayerInfo()
 	NextInfo.set_yaw(Rotator.Yaw);
 
 	// 속도가 0이 아니면 이동 상태로 판정
-	float Velocity = GetVelocity().Length();
-	if (Velocity > 0.f)
+	double Velocity = GetVelocity().Length();
+	if (Velocity > 0)
 		NextInfo.set_move_state(Protocol::MOVE_STATE_RUN);
 	else
 		NextInfo.set_move_state(Protocol::MOVE_STATE_IDLE);
 	
-	// 상태값에 변동이 있다면 갱신 후 true를 반환
-	if (CurrentInfo.x() != NextInfo.x() ||
-		CurrentInfo.y() != NextInfo.y() ||
-		CurrentInfo.z() != NextInfo.z() ||
-		CurrentInfo.yaw() != NextInfo.yaw() ||
-		CurrentInfo.move_state() != NextInfo.move_state())
-	{
-		CurrentInfo = NextInfo;
-		return true;
-	}
-	else
-	{
-		return false;
-	}
+	return Super::UpdatePlayerInfo();
 }
