@@ -46,7 +46,6 @@ void ServerPacketHandler::HandleC_Exit(shared_ptr<Session> session, BYTE* payloa
     message.ParseFromArray(payload, payloadSize);
 
     const uint32 enterId = message.enter_id();
-
     bool result = true;
 
     // EnterId 값은 Packet을 전달한 세션의 Id와 일치해야 함
@@ -80,10 +79,8 @@ shared_ptr<SendBuffer> ServerPacketHandler::MakePing()
 shared_ptr<SendBuffer> ServerPacketHandler::MakeS_Enter(bool result, uint32 enterId, Protocol::PlayerInfo* playerInfo)
 {
     Protocol::S_Enter payload;
-    
     payload.set_result(result);
     payload.set_enter_id(enterId);
-
     if (playerInfo != nullptr)
         payload.mutable_player_info()->CopyFrom(*playerInfo);
 
@@ -93,7 +90,6 @@ shared_ptr<SendBuffer> ServerPacketHandler::MakeS_Enter(bool result, uint32 ente
 shared_ptr<SendBuffer> ServerPacketHandler::MakeS_Exit(bool result, uint32 enterId)
 {
     Protocol::S_Exit payload;
-    
     payload.set_result(result);
     payload.set_enter_id(enterId);
 
@@ -103,7 +99,6 @@ shared_ptr<SendBuffer> ServerPacketHandler::MakeS_Exit(bool result, uint32 enter
 shared_ptr<SendBuffer> ServerPacketHandler::MakeS_Spawn(vector<shared_ptr<Player>> players)
 {
     Protocol::S_Spawn payload;
-    
     for (shared_ptr<Player>& player : players)
     {
         Protocol::PlayerInfo* playerInfo = payload.add_player_infos();
@@ -116,7 +111,6 @@ shared_ptr<SendBuffer> ServerPacketHandler::MakeS_Spawn(vector<shared_ptr<Player
 shared_ptr<SendBuffer> ServerPacketHandler::MakeS_Despawn(vector<uint32> playerIds)
 {
     Protocol::S_Despawn payload;
-
     for (uint32 id : playerIds)
         payload.add_player_ids(id);
 
@@ -126,7 +120,6 @@ shared_ptr<SendBuffer> ServerPacketHandler::MakeS_Despawn(vector<uint32> playerI
 shared_ptr<SendBuffer> ServerPacketHandler::MakeS_Move(Protocol::PlayerInfo* playerInfo)
 {
     Protocol::S_Move payload;
-
     payload.mutable_player_info()->CopyFrom(*playerInfo);
 
     return MakeSendBuffer(PacketType::S_Move, &payload);
