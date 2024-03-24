@@ -14,15 +14,14 @@ public:
 	virtual ~Room();
 
 public:
-	void Enter(shared_ptr<Session> session, const string key);
-	void Exit(shared_ptr<Session> session, const uint32 enterId);
-
-	void MovePlayer(shared_ptr<Session> playerOwner, Protocol::PlayerInfo playerInfo);
+	void Enter(shared_ptr<Session> session, Protocol::C_Enter payload);
+	void Exit(shared_ptr<Session> session, Protocol::C_Exit payload);
+	void MovePlayer(shared_ptr<Session> session, Protocol::C_Move payload);
 
 private:
 	shared_ptr<Player> SpawnPlayer(weak_ptr<Session> session);
 	void DespawnPlayer(uint32 playerId);
-
+	
 	void Broadcast(shared_ptr<SendBuffer> sendBuffer);
 
 private:

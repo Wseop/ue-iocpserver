@@ -22,91 +22,32 @@ void ServerPacketHandler::HandlePing(shared_ptr<Session> session, BYTE* payload,
     Protocol::Ping message;
     message.ParseFromArray(payload, payloadSize);
 
-    // 클라에서 Ping 메세지가 정상적으로 왔다면 응답
+    // 클라에서 Ping 메세지가 정상적으로 왔다면 Pong으로 응답
     if (message.msg() == "Ping!")
-        session->Send(MakePing());
+    {
+        Protocol::Ping reply;
+        reply.set_msg("Pong!");
+        session->Send(MakePing(&reply));
+    }
 }
 
 void ServerPacketHandler::HandleC_Enter(shared_ptr<Session> session, BYTE* payload, uint32 payloadSize)
 {
     Protocol::C_Enter message;
     message.ParseFromArray(payload, payloadSize);
-
-    const string key = message.enter_key();
-    gRoom->Push(make_shared<Job>(gRoom, &Room::Enter, session, key));
+    gRoom->Push(make_shared<Job>(gRoom, &Room::Enter, session, message));
 }
 
 void ServerPacketHandler::HandleC_Exit(shared_ptr<Session> session, BYTE* payload, uint32 payloadSize)
 {
-    Protocol::C_Exit message;
+    Protocol::C_Exit message; 
     message.ParseFromArray(payload, payloadSize);
-
-    const uint32 enterId = message.enter_id();
-    gRoom->Push(make_shared<Job>(gRoom, &Room::Exit, session, enterId));
+    gRoom->Push(make_shared<Job>(gRoom, &Room::Exit, session, message));
 }
 
 void ServerPacketHandler::HandleC_Move(shared_ptr<Session> session, BYTE* payload, uint32 payloadSize)
 {
     Protocol::C_Move message;
     message.ParseFromArray(payload, payloadSize);
-
-    const Protocol::PlayerInfo playerInfo = message.player_info();
-    gRoom->Push(make_shared<Job>(gRoom, &Room::MovePlayer, session, playerInfo));
-}
-
-shared_ptr<SendBuffer> ServerPacketHandler::MakePing()
-{
-    Protocol::Ping payload;
-    payload.set_msg("Pong!");
-
-    return MakeSendBuffer(PacketType::Ping, &payload);
-}
-
-shared_ptr<SendBuffer> ServerPacketHandler::MakeS_Enter(bool result, uint32 enterId, Protocol::PlayerInfo* playerInfo)
-{
-    Protocol::S_Enter payload;
-    payload.set_result(result);
-    payload.set_enter_id(enterId);
-    if (playerInfo != nullptr)
-        payload.mutable_player_info()->CopyFrom(*playerInfo);
-
-    return MakeSendBuffer(PacketType::S_Enter, &payload);
-}
-
-shared_ptr<SendBuffer> ServerPacketHandler::MakeS_Exit(bool result, uint32 enterId)
-{
-    Protocol::S_Exit payload;
-    payload.set_result(result);
-    payload.set_enter_id(enterId);
-
-    return MakeSendBuffer(PacketType::S_Exit, &payload);
-}
-
-shared_ptr<SendBuffer> ServerPacketHandler::MakeS_Spawn(vector<shared_ptr<Player>> players)
-{
-    Protocol::S_Spawn payload;
-    for (shared_ptr<Player>& player : players)
-    {
-        Protocol::PlayerInfo* playerInfo = payload.add_player_infos();
-        playerInfo->CopyFrom(player->GetPlayerInfo());
-    }
-
-    return MakeSendBuffer(PacketType::S_Spawn, &payload);
-}
-
-shared_ptr<SendBuffer> ServerPacketHandler::MakeS_Despawn(vector<uint32> playerIds)
-{
-    Protocol::S_Despawn payload;
-    for (uint32 id : playerIds)
-        payload.add_player_ids(id);
-
-    return MakeSendBuffer(PacketType::S_Despawn, &payload);
-}
-
-shared_ptr<SendBuffer> ServerPacketHandler::MakeS_Move(Protocol::PlayerInfo* playerInfo)
-{
-    Protocol::S_Move payload;
-    payload.mutable_player_info()->CopyFrom(*playerInfo);
-
-    return MakeSendBuffer(PacketType::S_Move, &payload);
+    gRoom->Push(make_shared<Job>(gRoom, &Room::MovePlayer, session, message));
 }

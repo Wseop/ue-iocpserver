@@ -18,115 +18,120 @@ Room::~Room()
 {
 }
 
-void Room::Enter(shared_ptr<Session> session, const string key)
+void Room::Enter(shared_ptr<Session> session, Protocol::C_Enter payload)
 {
 	const uint32 sessionId = session->GetSessionId();
-
-	// key 체크
-	if (key != "123")
-	{
-		session->Send(ServerPacketHandler::MakeS_Enter(false, sessionId, nullptr));
-		return;
-	}
+	Protocol::S_Enter enterPacket;
 
 	// 세션 중복 체크
 	if (_sessions.find(sessionId) != _sessions.end())
+	{
+		enterPacket.set_result(false);
+		enterPacket.set_session_id(0);
+		session->Send(ServerPacketHandler::MakeS_Enter(&enterPacket));
 		return;
+	}
 
 	// 플레이어 스폰
-	shared_ptr<Player> player = SpawnPlayer(session);
-	if (player == nullptr)
+	shared_ptr<Player> newPlayer = SpawnPlayer(session);
+	if (newPlayer == nullptr)
+	{
+		enterPacket.set_result(false);
+		enterPacket.set_session_id(0);
+		session->Send(ServerPacketHandler::MakeS_Enter(&enterPacket));
 		return;
+	}
 
-	// 스폰 위치 전송
-	session->Send(ServerPacketHandler::MakeS_Enter(true, sessionId, &player->GetPlayerInfo()));
-
-	// 방에 스폰되어 있는 플레이어들을 새로 입장한 세션으로 전송
-	vector<shared_ptr<Player>> others;
+	// S_Enter 패킷 전송
+	enterPacket.set_result(true);
+	enterPacket.set_session_id(sessionId);
+	enterPacket.mutable_my_object_info()->CopyFrom(*newPlayer->GetObjectInfo());
 	for (auto iter = _players.begin(); iter != _players.end(); iter++)
 	{
 		shared_ptr<Player> other = iter->second;
-		if (other->GetPlayerId() == player->GetPlayerId())
+		if (other == nullptr || other->GetObjectId() == newPlayer->GetObjectId())
 			continue;
-		others.push_back(other);
+		enterPacket.add_other_object_infos()->CopyFrom(*other->GetObjectInfo());
 	}
-	session->Send(ServerPacketHandler::MakeS_Spawn(others));
+	session->Send(ServerPacketHandler::MakeS_Enter(&enterPacket));
 
-	// 새로 스폰된 플레이어 정보를 방에 있는 다른 세션들에게 Broadcast
-	Broadcast(ServerPacketHandler::MakeS_Spawn({ player }));
+	// 다른 세션들에게 새 플레이어 정보를 알림
+	Protocol::S_Spawn spawnPacket;
+	spawnPacket.add_object_infos()->CopyFrom(*newPlayer->GetObjectInfo());
+	Broadcast(ServerPacketHandler::MakeS_Spawn(&spawnPacket));
 
-	// 방에 세션 추가
+	// 세션 목록에 추가
 	_sessions[sessionId] = session;
-
-	cout << format("[Room] Session {} Enter", sessionId) << endl;
+	cout << format("[Room] Session[{}] Enter. Player[{}] spawned", sessionId, newPlayer->GetObjectId()) << endl;
 }
 
-void Room::Exit(shared_ptr<Session> session, const uint32 enterId)
+void Room::Exit(shared_ptr<Session> session, Protocol::C_Exit payload)
 {
 	const uint32 sessionId = session->GetSessionId();
+	Protocol::S_Exit exitPacket;
+	exitPacket.set_session_id(sessionId);
 
-	// SessionId와 EnterId는 동일해야함
-	if (sessionId != enterId)
-	{
-		session->Send(ServerPacketHandler::MakeS_Exit(false, sessionId));
-		return;
-	}
-	else
-	{
-		session->Send(ServerPacketHandler::MakeS_Exit(true, sessionId));
-	}
-
-	// 방에서 세션 제거
+	// 세션 유무 확인
 	if (_sessions.find(sessionId) == _sessions.end())
+	{
+		exitPacket.set_result(false);
+		session->Send(ServerPacketHandler::MakeS_Exit(&exitPacket));
 		return;
-	_sessions.erase(sessionId);
+	}
 	
-	// 퇴장하는 세션이 생성한 플레이어 검색
-	shared_ptr<Player> player = nullptr;
+	// 세션 목록에서 제거
+	_sessions.erase(sessionId);
+	// Exit 패킷 전송
+	exitPacket.set_result(true);
+	session->Send(ServerPacketHandler::MakeS_Exit(&exitPacket));
+
+	// 제거할 플레이어들 검색
+	Protocol::S_Despawn despawnPacket;
 	for (auto iter = _players.begin(); iter != _players.end(); iter++)
 	{
-		player = iter->second;
+		shared_ptr<Player> player = iter->second;
 		if (player == nullptr)
 			continue;
-
+		
 		shared_ptr<Session> playerSession = player->GetSession();
-		if (playerSession == nullptr)
+		if (playerSession == nullptr || playerSession != session)
 			continue;
-		if (playerSession == session)
-			break;
+
+		despawnPacket.add_object_ids(player->GetObjectId());
 	}
-	if (player == nullptr)
-		return;
+	// 다른 세션들에게 Despawn 패킷 전송
+	Broadcast(ServerPacketHandler::MakeS_Despawn(&despawnPacket));
 
-	// 플레이어 Despawn
-	DespawnPlayer(player->GetPlayerId());
+	// 플레이어 목록에서 제거
+	for (uint32 playerId : despawnPacket.object_ids())
+		_players.erase(playerId);
 
-	// 다른 세션들에게 퇴장알림 - Broadcast
-	shared_ptr<SendBuffer> sendBuffer = ServerPacketHandler::MakeS_Despawn({ player->GetPlayerId()});
-	Broadcast(sendBuffer);
-
-	cout << format("[Room] Session {} Exit", sessionId) << endl;
+	cout << format("[Room] Session[{}] Exit. {} Players despawned", sessionId, despawnPacket.object_ids_size()) << endl;
 }
 
-void Room::MovePlayer(shared_ptr<Session> playerOwner, Protocol::PlayerInfo playerInfo)
+void Room::MovePlayer(shared_ptr<Session> session, Protocol::C_Move payload)
 {
-	// 검증) 세션이 방에 있는지 체크
-	if (_sessions.find(playerOwner->GetSessionId()) == _sessions.end())
+	// 세션 입장 여부 확인
+	if (_sessions.find(session->GetSessionId()) == _sessions.end())
 		return;
 
-	// 검증) 플레이어가 방에 있는지 체크
-	auto findResult = _players.find(playerInfo.player_id());
-	if (findResult == _players.end() || findResult->second == nullptr)
+	// 이동 시킬 플레이어 검색
+	const Protocol::PosInfo& posInfo = payload.pos_info();
+	auto playerIter = _players.find(posInfo.object_id());
+	if (playerIter == _players.end())
 		return;
 
-	shared_ptr<Player> player = findResult->second;
-	// 검증) 이동시킬 플레이어의 Owner와 세션이 일치하는지 체크
-	if (playerOwner->GetSessionId() != player->GetSession()->GetSessionId())
+	shared_ptr<Player> player = playerIter->second;
+	if (player == nullptr || player->GetSession() != session)
 		return;
 
-	// 플레이어 이동 & Broadcast
-	if (player->Move(playerInfo))
-		Broadcast(ServerPacketHandler::MakeS_Move(&playerInfo));
+	// 플레이어 이동
+	player->SetPosInfo(posInfo);
+
+	// Move 패킷 Broadcast
+	Protocol::S_Move movePacket;
+	movePacket.mutable_pos_info()->CopyFrom(posInfo);
+	Broadcast(ServerPacketHandler::MakeS_Move(&movePacket));
 }
 
 shared_ptr<Player> Room::SpawnPlayer(weak_ptr<Session> session)
@@ -135,16 +140,16 @@ shared_ptr<Player> Room::SpawnPlayer(weak_ptr<Session> session)
 	if (player == nullptr)
 		return nullptr;
 
-	const uint32 playerId = player->GetPlayerId();
+	const uint32 playerId = player->GetObjectId();
 	// 중복 체크
 	if (_players.find(playerId) != _players.end())
 		return nullptr;
 
-	// 스폰 위치 지정
+	// 스폰 위치 랜덤 지정
 	player->SetX(Utils::GetRandom(-1000.f, 1000.f));
 	player->SetY(Utils::GetRandom(-1000.f, 1000.f));
 	player->SetZ(100.f);
-	// 플레이어 추가
+
 	_players[playerId] = player;
 
 	return player;

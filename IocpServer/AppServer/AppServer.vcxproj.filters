@@ -24,6 +24,9 @@
     <Filter Include="소스 파일\Game">
       <UniqueIdentifier>{0669a008-7cce-4581-aed4-4e0cf95650f6}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\Game\Object">
+      <UniqueIdentifier>{f1d72f5b-8187-4dfe-b059-542b5b45dff6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -47,17 +50,20 @@
     <ClCompile Include="..\ServerCore\Struct.pb.cc">
       <Filter>소스 파일\Packet\Protobuf</Filter>
     </ClCompile>
-    <ClCompile Include="Player.cpp">
-      <Filter>소스 파일\Game</Filter>
-    </ClCompile>
     <ClCompile Include="Room.cpp">
-      <Filter>소스 파일\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="ObjectManager.cpp">
       <Filter>소스 파일\Game</Filter>
     </ClCompile>
     <ClCompile Include="..\ServerCore\Enum.pb.cc">
       <Filter>소스 파일\Packet\Protobuf</Filter>
+    </ClCompile>
+    <ClCompile Include="Object.cpp">
+      <Filter>소스 파일\Game\Object</Filter>
+    </ClCompile>
+    <ClCompile Include="ObjectManager.cpp">
+      <Filter>소스 파일\Game\Object</Filter>
+    </ClCompile>
+    <ClCompile Include="Player.cpp">
+      <Filter>소스 파일\Game\Object</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -79,17 +85,20 @@
     <ClInclude Include="..\ServerCore\Struct.pb.h">
       <Filter>소스 파일\Packet\Protobuf</Filter>
     </ClInclude>
-    <ClInclude Include="Player.h">
-      <Filter>소스 파일\Game</Filter>
-    </ClInclude>
     <ClInclude Include="Room.h">
-      <Filter>소스 파일\Game</Filter>
-    </ClInclude>
-    <ClInclude Include="ObjectManager.h">
       <Filter>소스 파일\Game</Filter>
     </ClInclude>
     <ClInclude Include="..\ServerCore\Enum.pb.h">
       <Filter>소스 파일\Packet\Protobuf</Filter>
+    </ClInclude>
+    <ClInclude Include="Player.h">
+      <Filter>소스 파일\Game\Object</Filter>
+    </ClInclude>
+    <ClInclude Include="Object.h">
+      <Filter>소스 파일\Game\Object</Filter>
+    </ClInclude>
+    <ClInclude Include="ObjectManager.h">
+      <Filter>소스 파일\Game\Object</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

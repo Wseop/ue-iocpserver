@@ -19,11 +19,11 @@ private:
 
 	// Packet Makers
 public:
-	static shared_ptr<SendBuffer> MakePing();
-	static shared_ptr<SendBuffer> MakeS_Enter(bool result, uint32 enterId, Protocol::PlayerInfo* playerInfo);
-	static shared_ptr<SendBuffer> MakeS_Exit(bool result, uint32 enterId);
-	static shared_ptr<SendBuffer> MakeS_Spawn(vector<shared_ptr<Player>> players);
-	static shared_ptr<SendBuffer> MakeS_Despawn(vector<uint32> playerIds);
-	static shared_ptr<SendBuffer> MakeS_Move(Protocol::PlayerInfo* playerInfo);
+	static inline shared_ptr<SendBuffer> MakePing(Protocol::Ping* payload) { return MakeSendBuffer(PacketType::Ping, payload); }
+	static inline shared_ptr<SendBuffer> MakeS_Enter(Protocol::S_Enter* payload) { return MakeSendBuffer(PacketType::S_Enter, payload); }
+	static inline shared_ptr<SendBuffer> MakeS_Exit(Protocol::S_Exit* payload) { return MakeSendBuffer(PacketType::S_Exit, payload); }
+	static inline shared_ptr<SendBuffer> MakeS_Spawn(Protocol::S_Spawn* payload) { return MakeSendBuffer(PacketType::S_Spawn, payload); }
+	static inline shared_ptr<SendBuffer> MakeS_Despawn(Protocol::S_Despawn* payload) { return MakeSendBuffer(PacketType::S_Despawn, payload); }
+	static inline shared_ptr<SendBuffer> MakeS_Move(Protocol::S_Move* payload) { return MakeSendBuffer(PacketType::S_Move, payload); }
 };
 
