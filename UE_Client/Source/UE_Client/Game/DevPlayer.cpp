@@ -51,7 +51,7 @@ void ADevPlayer::Tick(float DeltaTime)
 
 	if (bMyPlayer == false)
 	{
-		UpdatePlayerInfo();
+		bool bUpdated = UpdatePlayerInfo();
 
 		// 현재위치 -> 목적지 벡터
 		FVector DirVector = FVector(CurrentInfo.x(), CurrentInfo.y(), CurrentInfo.z()) - GetActorLocation();
@@ -69,8 +69,9 @@ void ADevPlayer::Tick(float DeltaTime)
 				DirVector.Normalize();
 				AddMovementInput(DirVector);
 			}
+
+			SetActorRotation(FRotator(0, CurrentInfo.yaw(), 0));
 		}
-		
 	}
 }
 
