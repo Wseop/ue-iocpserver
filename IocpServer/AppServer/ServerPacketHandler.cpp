@@ -32,12 +32,8 @@ void ServerPacketHandler::HandleC_Enter(shared_ptr<Session> session, BYTE* paylo
     Protocol::C_Enter message;
     message.ParseFromArray(payload, payloadSize);
 
-    // 키가 일치하면 방에 입장
-    if (message.enter_key() == "123")
-        gRoom->Enter(session);
-    // 키가 일치하지 않으면 입장 실패 메세지 전송
-    else
-        session->Send(MakeS_Enter(false, session->GetSessionId(), nullptr));
+    const string key = message.enter_key();
+    gRoom->Push(make_shared<Job>(gRoom, &Room::Enter, session, key));
 }
 
 void ServerPacketHandler::HandleC_Exit(shared_ptr<Session> session, BYTE* payload, uint32 payloadSize)
@@ -46,17 +42,7 @@ void ServerPacketHandler::HandleC_Exit(shared_ptr<Session> session, BYTE* payloa
     message.ParseFromArray(payload, payloadSize);
 
     const uint32 enterId = message.enter_id();
-    bool result = true;
-
-    // EnterId 값은 Packet을 전달한 세션의 Id와 일치해야 함
-    if (session->GetSessionId() != enterId)
-        result = false;
-
-    // Exit 처리
-    if (result)
-        result = gRoom->Exit(enterId);
-
-    session->Send(MakeS_Exit(result, enterId));
+    gRoom->Push(make_shared<Job>(gRoom, &Room::Exit, session, enterId));
 }
 
 void ServerPacketHandler::HandleC_Move(shared_ptr<Session> session, BYTE* payload, uint32 payloadSize)
@@ -64,8 +50,8 @@ void ServerPacketHandler::HandleC_Move(shared_ptr<Session> session, BYTE* payloa
     Protocol::C_Move message;
     message.ParseFromArray(payload, payloadSize);
 
-    Protocol::PlayerInfo playerInfo = message.player_info();
-    gRoom->MovePlayer(session, playerInfo);
+    const Protocol::PlayerInfo playerInfo = message.player_info();
+    gRoom->Push(make_shared<Job>(gRoom, &Room::MovePlayer, session, playerInfo));
 }
 
 shared_ptr<SendBuffer> ServerPacketHandler::MakePing()

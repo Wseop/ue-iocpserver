@@ -10,8 +10,7 @@
 
 shared_ptr<Room> gRoom = make_shared<Room>();
 
-Room::Room() :
-	_jobQueue(make_shared<JobQueue>())
+Room::Room()
 {
 }
 
@@ -19,11 +18,16 @@ Room::~Room()
 {
 }
 
-void Room::Enter(shared_ptr<Session> session)
+void Room::Enter(shared_ptr<Session> session, const string key)
 {
-	lock_guard<mutex> lock(_mutex);
-
 	const uint32 sessionId = session->GetSessionId();
+
+	// key 체크
+	if (key != "123")
+	{
+		session->Send(ServerPacketHandler::MakeS_Enter(false, sessionId, nullptr));
+		return;
+	}
 
 	// 세션 중복 체크
 	if (_sessions.find(sessionId) != _sessions.end())
@@ -42,7 +46,8 @@ void Room::Enter(shared_ptr<Session> session)
 	for (auto iter = _players.begin(); iter != _players.end(); iter++)
 	{
 		shared_ptr<Player> other = iter->second;
-		if (other->GetPlayerId() == player->GetPlayerId()) continue;
+		if (other->GetPlayerId() == player->GetPlayerId())
+			continue;
 		others.push_back(other);
 	}
 	session->Send(ServerPacketHandler::MakeS_Spawn(others));
@@ -56,15 +61,24 @@ void Room::Enter(shared_ptr<Session> session)
 	cout << format("[Room] Session {} Enter", sessionId) << endl;
 }
 
-bool Room::Exit(uint32 sessionId)
+void Room::Exit(shared_ptr<Session> session, const uint32 enterId)
 {
-	lock_guard<mutex> lock(_mutex);
+	const uint32 sessionId = session->GetSessionId();
 
-	// 방에 존재하는 세션인지 체크
-	if (_sessions.find(sessionId) == _sessions.end())
-		return false;
+	// SessionId와 EnterId는 동일해야함
+	if (sessionId != enterId)
+	{
+		session->Send(ServerPacketHandler::MakeS_Exit(false, sessionId));
+		return;
+	}
+	else
+	{
+		session->Send(ServerPacketHandler::MakeS_Exit(true, sessionId));
+	}
 
 	// 방에서 세션 제거
+	if (_sessions.find(sessionId) == _sessions.end())
+		return;
 	_sessions.erase(sessionId);
 	
 	// 퇴장하는 세션이 생성한 플레이어 검색
@@ -72,15 +86,17 @@ bool Room::Exit(uint32 sessionId)
 	for (auto iter = _players.begin(); iter != _players.end(); iter++)
 	{
 		player = iter->second;
-		if (player == nullptr) continue;
+		if (player == nullptr)
+			continue;
 
-		shared_ptr<Session> session = player->GetSession();
-		if (session == nullptr) continue;
-		if (session->GetSessionId() == sessionId)
+		shared_ptr<Session> playerSession = player->GetSession();
+		if (playerSession == nullptr)
+			continue;
+		if (playerSession == session)
 			break;
 	}
 	if (player == nullptr)
-		return true;
+		return;
 
 	// 플레이어 Despawn
 	DespawnPlayer(player->GetPlayerId());
@@ -90,14 +106,10 @@ bool Room::Exit(uint32 sessionId)
 	Broadcast(sendBuffer);
 
 	cout << format("[Room] Session {} Exit", sessionId) << endl;
-
-	return true;
 }
 
-void Room::MovePlayer(shared_ptr<Session> playerOwner, Protocol::PlayerInfo& playerInfo)
+void Room::MovePlayer(shared_ptr<Session> playerOwner, Protocol::PlayerInfo playerInfo)
 {
-	lock_guard<mutex> lock(_mutex);
-
 	// 검증) 세션이 방에 있는지 체크
 	if (_sessions.find(playerOwner->GetSessionId()) == _sessions.end())
 		return;
@@ -151,7 +163,8 @@ void Room::Broadcast(shared_ptr<SendBuffer> sendBuffer)
 	for (auto iter = _sessions.begin(); iter != _sessions.end(); iter++)
 	{
 		shared_ptr<Session> session = iter->second.lock();
-		if (session == nullptr) continue;
+		if (session == nullptr)
+			continue;
 		session->Send(sendBuffer);
 	}
 }

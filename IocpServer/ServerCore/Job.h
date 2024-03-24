@@ -5,7 +5,7 @@ using JobFunc = function<void(void)>;
 class Job
 {
 public:
-	inline Job(JobFunc&& jobFunc) : _jobFunc(jobFunc) {}
+	inline Job(JobFunc&& jobFunc) : _jobFunc(std::move(jobFunc)) {}
 
 	template<typename T, typename Ret, typename... Args>
 	inline Job(shared_ptr<T> owner, Ret(T::*func)(Args...), Args... args)
