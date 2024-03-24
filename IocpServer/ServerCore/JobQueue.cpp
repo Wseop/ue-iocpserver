@@ -7,19 +7,23 @@ void JobQueue::Push(shared_ptr<Job> job, bool pushOnly)
 	if (job == nullptr)
 		return;
 
-	_jobCount++;
+	const uint32 prevCount = _jobCount.fetch_add(1);
 	_jobs.Push(job);
 
-	// 처리중인 JobQueue가 없다면 현재 JobQueue를 담당
-	if (pushOnly == false && tJobQueue == nullptr)
+	// 가장 먼저 Job을 Push한 Thread가 실행을 담당
+	if (prevCount == 0)
 	{
-		tJobQueue = shared_from_this();
-		Execute();
-	}
-	// 바로 처리할 수 없다면 다른 Thread에서 가져갈 수 있도록 Global Queue에 등록
-	else
-	{
-		gJobQueue->Push(shared_from_this());
+		// 처리중인 JobQueue가 없다면 현재 JobQueue를 담당
+		if (pushOnly == false && tJobQueue == nullptr)
+		{
+			tJobQueue = shared_from_this();
+			Execute();
+		}
+		// 바로 처리할 수 없다면 다른 Thread에서 가져갈 수 있도록 Global Queue에 등록
+		else
+		{
+			gJobQueue->Push(shared_from_this());
+		}
 	}
 }
 
