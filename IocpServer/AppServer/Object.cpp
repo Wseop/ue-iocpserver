@@ -15,7 +15,6 @@ Object::Object(uint32 objectId, Protocol::ObjectType objectType) :
 
 Object::~Object()
 {
-	delete _posInfo;
 	delete _objectInfo;
 }
 
