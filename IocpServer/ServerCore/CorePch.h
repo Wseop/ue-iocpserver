@@ -29,3 +29,5 @@ using namespace std;
 
 #include "SocketUtils.h"
 #include "NetAddress.h"
+
+#include "spdlog/spdlog.h"

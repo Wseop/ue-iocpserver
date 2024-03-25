@@ -4,8 +4,10 @@
 
 #ifdef _DEBUG
 #pragma comment(lib, "Protobuf\\libprotobufd.lib")
+#pragma comment(lib, "Spdlog\\Debug\\spdlogd.lib")
 #else
 #pragma comment(lib, "Protobuf\\libprotobuf.lib")
+#pragma comment(lib, "Spdlog\\Release\\spdlog.lib")
 #endif // _DEBUG
 
 #include "CorePch.h"
