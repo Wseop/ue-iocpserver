@@ -52,153 +52,66 @@ void FClientPacketHandler::HandleInvalid(TSharedPtr<FPacketSession> PacketSessio
 
 void FClientPacketHandler::HandlePing(TSharedPtr<FPacketSession> PacketSession, BYTE* Payload, uint32 PayloadSize)
 {
-	Protocol::Ping Message;
-	Message.ParseFromArray(Payload, PayloadSize);
+	Protocol::Ping Response;
+	Response.ParseFromArray(Payload, PayloadSize);
 
-	FString Log = FString::Printf(TEXT("%s"), *FString(Message.msg().c_str()));
+	FString Log = FString::Printf(TEXT("%s"), *FString(Response.msg().c_str()));
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, Log);
 }
 
 void FClientPacketHandler::HandleS_Enter(TSharedPtr<FPacketSession> PacketSession, BYTE* Payload, uint32 PayloadSize)
 {
-	Protocol::S_Enter Message;
-	Message.ParseFromArray(Payload, PayloadSize);
+	Protocol::S_Enter EnterPacket;
+	EnterPacket.ParseFromArray(Payload, PayloadSize);
 
 	UClientGameInstance* GameInstance = Cast<UClientGameInstance>(GWorld->GetGameInstance());
 	if (GameInstance == nullptr)
 		return;
-
-	// 입장 성공
-	if (Message.result())
-	{
-		const uint32 EnterId = Message.enter_id();
-
-		// Set 입장 ID (세션 ID)
-		GameInstance->SetEnterId(EnterId);
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Enter Success - %d"), EnterId));
-
-		// Set PlayerInfo
-		Protocol::PlayerInfo PlayerInfo = Message.player_info();
-		AMyPlayer* MyPlayer = Cast<AMyPlayer>(UGameplayStatics::GetPlayerController(GameInstance, 0)->GetPawn());
-		if (MyPlayer == nullptr)
-			return;
-		MyPlayer->SetCurrentInfo(PlayerInfo, true);
-		MyPlayer->SetNextInfo(PlayerInfo, true);
-		
-		// Set Location
-		FVector Location(PlayerInfo.x(), PlayerInfo.y(), PlayerInfo.z());
-		MyPlayer->SetActorLocation(Location);
-	}
-	// 입장 실패
-	else
-	{
-		GameInstance->SetEnterId(0);
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Enter Fail"));
-	}
+	GameInstance->HandleEnterGame(EnterPacket);
 }
 
 void FClientPacketHandler::HandleS_Exit(TSharedPtr<FPacketSession> PacketSession, BYTE* Payload, uint32 PayloadSize)
 {
-	Protocol::S_Exit Message;
-	Message.ParseFromArray(Payload, PayloadSize);
+	Protocol::S_Exit ExitPacket;
+	ExitPacket.ParseFromArray(Payload, PayloadSize);
 
 	UClientGameInstance* GameInstance = Cast<UClientGameInstance>(GWorld->GetGameInstance());
 	if (GameInstance == nullptr)
 		return;
-
-	const uint32 EnterId = Message.enter_id();
-
-	// 퇴장 성공
-	if (Message.result())
-	{
-		// 데이터 초기화
-		GameInstance->SetEnterId(0);
-		GameInstance->DespawnAll();
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Exit Success - %d"), EnterId));
-	}
-	// 퇴장 실패
-	else
-	{
-		// 입장 ID 복구
-		GameInstance->SetEnterId(EnterId);
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Exit Fail"));
-	}
+	GameInstance->HandleExitGame(ExitPacket);
 }
 
 void FClientPacketHandler::HandleS_Spawn(TSharedPtr<FPacketSession> PacketSession, BYTE* Payload, uint32 PayloadSize)
 {
-	Protocol::S_Spawn Message;
-	Message.ParseFromArray(Payload, PayloadSize);
+	Protocol::S_Spawn SpawnPacket;
+	SpawnPacket.ParseFromArray(Payload, PayloadSize);
 
 	UClientGameInstance* GameInstance = Cast<UClientGameInstance>(GWorld->GetGameInstance());
 	if (GameInstance == nullptr)
 		return;
-
-	TArray<Protocol::PlayerInfo> PlayerInfos;
-	for (auto& Info : Message.player_infos())
-		PlayerInfos.Add(Info);
-
-	GameInstance->Spawn(PlayerInfos);
+	for (const Protocol::ObjectInfo& Info : SpawnPacket.object_infos())
+		GameInstance->SpawnPlayer(Info);
 }
 
 void FClientPacketHandler::HandleS_Despawn(TSharedPtr<FPacketSession> PacketSession, BYTE* Payload, uint32 PayloadSize)
 {
-	Protocol::S_Despawn Message;
-	Message.ParseFromArray(Payload, PayloadSize);
+	Protocol::S_Despawn DespawnPacket;
+	DespawnPacket.ParseFromArray(Payload, PayloadSize);
 	
 	UClientGameInstance* GameInstance = Cast<UClientGameInstance>(GWorld->GetGameInstance());
 	if (GameInstance == nullptr)
 		return;
-
-	TArray<uint32> Ids;
-	for (auto& Id : Message.player_ids())
-		Ids.Add(Id);
-
-	GameInstance->Despawn(Ids);
+	for (const uint32 Id : DespawnPacket.object_ids())
+		GameInstance->DespawnPlayer(Id);
 }
 
 void FClientPacketHandler::HandleS_Move(TSharedPtr<FPacketSession> PacketSession, BYTE* Payload, uint32 PayloadSize)
 {
-	Protocol::S_Move Message;
-	Message.ParseFromArray(Payload, PayloadSize);
+	Protocol::S_Move MovePacket;
+	MovePacket.ParseFromArray(Payload, PayloadSize);
 
 	UClientGameInstance* GameInstance = Cast<UClientGameInstance>(GWorld->GetGameInstance());
 	if (GameInstance == nullptr)
 		return;
-
-	Protocol::PlayerInfo Info = Message.player_info();
-
-	GameInstance->UpdatePlayerInfo(Info);
-}
-
-TSharedPtr<FSendBuffer> FClientPacketHandler::MakePing()
-{
-	Protocol::Ping Payload;
-	Payload.set_msg("Ping!");
-
-	return MakeSendBuffer(EPacketType::Ping, &Payload);
-}
-
-TSharedPtr<FSendBuffer> FClientPacketHandler::MakeC_Enter(FString Key)
-{
-	Protocol::C_Enter Payload;
-	Payload.set_enter_key(TCHAR_TO_ANSI(*Key));
-
-	return MakeSendBuffer(EPacketType::C_Enter, &Payload);
-}
-
-TSharedPtr<FSendBuffer> FClientPacketHandler::MakeC_Exit(uint32 Id)
-{
-	Protocol::C_Exit Payload;
-	Payload.set_enter_id(Id);
-
-	return MakeSendBuffer(EPacketType::C_Exit, &Payload);
-}
-
-TSharedPtr<FSendBuffer> FClientPacketHandler::MakeC_Move(Protocol::PlayerInfo& Info)
-{
-	Protocol::C_Move Payload;
-	Payload.mutable_player_info()->CopyFrom(Info);
-
-	return MakeSendBuffer(EPacketType::C_Move, &Payload);
+	GameInstance->HandleMove(MovePacket.pos_info());
 }

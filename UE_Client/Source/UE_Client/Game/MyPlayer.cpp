@@ -28,6 +28,8 @@ AMyPlayer::AMyPlayer()
 
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
+
+	bMyPlayer = true;
 }
 
 void AMyPlayer::Move(const FInputActionValue& Value)
@@ -96,16 +98,6 @@ void AMyPlayer::BeginPlay()
 			Subsystem->AddMappingContext(DefaultMappingContext, 0);
 		}
 	}
-
-	// 내 플레이어로 설정
-	SetMyPlayer(true);
-	UClientGameInstance* GameInstance = Cast<UClientGameInstance>(GWorld->GetGameInstance());
-	if (GameInstance != nullptr)
-		GameInstance->SetMyPlayer(this);
-
-	// 상태값 초기화
-	CurrentInfo.set_move_state(Protocol::MOVE_STATE_IDLE);
-	NextInfo.set_move_state(Protocol::MOVE_STATE_IDLE);
 }
 
 void AMyPlayer::Tick(float DeltaTime)
@@ -115,32 +107,32 @@ void AMyPlayer::Tick(float DeltaTime)
 	CurrentTickSendMove -= DeltaTime;
 	if (CurrentTickSendMove < 0.f)
 	{
-		if (UpdatePlayerInfo())
+		if (UpdatePos())
 		{
 			UClientGameInstance* GameInstance = Cast<UClientGameInstance>(GWorld->GetGameInstance());
-			if (GameInstance)
-				GameInstance->SendMove(CurrentInfo);
+			if (GameInstance != nullptr)
+				GameInstance->MovePlayer(*CurrentPos);
 		}
 		CurrentTickSendMove = TICK_SEND_MOVE;
 	}
 }
 
-bool AMyPlayer::UpdatePlayerInfo()
+bool AMyPlayer::UpdatePos()
 {
 	// 위치 정보 업데이트
 	FVector Location = GetActorLocation();
-	NextInfo.set_x(Location.X);
-	NextInfo.set_y(Location.Y);
-	NextInfo.set_z(Location.Z);
+	NextPos->set_x(Location.X);
+	NextPos->set_y(Location.Y);
+	NextPos->set_z(Location.Z);
 	FRotator Rotator = GetActorRotation();
-	NextInfo.set_yaw(Rotator.Yaw);
+	NextPos->set_yaw(Rotator.Yaw);
 
 	// 속도가 0이 아니면 이동 상태로 판정
 	double Velocity = GetVelocity().Length();
 	if (Velocity > 0)
-		NextInfo.set_move_state(Protocol::MOVE_STATE_RUN);
+		NextPos->set_move_state(Protocol::MOVE_STATE_RUN);
 	else
-		NextInfo.set_move_state(Protocol::MOVE_STATE_IDLE);
+		NextPos->set_move_state(Protocol::MOVE_STATE_IDLE);
 	
-	return Super::UpdatePlayerInfo();
+	return Super::UpdatePos();
 }

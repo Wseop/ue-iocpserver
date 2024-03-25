@@ -25,13 +25,6 @@ public:
 	virtual void FinishDestroy() override;
 
 public:
-	uint32 GetEnterId() { return EnterId; }
-	void SetEnterId(uint32 Id) { EnterId = Id; }
-
-	AMyPlayer* GetMyPlayer() { return MyPlayer; }
-	void SetMyPlayer(AMyPlayer* Player) { MyPlayer = Player; }
-
-public:
 	UFUNCTION(BlueprintCallable)
 	void ConnectToServer();
 	
@@ -46,16 +39,17 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void EnterGame();
+	void HandleEnterGame(const Protocol::S_Enter& Payload);
+	void SpawnPlayer(const Protocol::ObjectInfo& PlayerInfo);
 
 	UFUNCTION(BlueprintCallable)
 	void ExitGame();
-
-	void Spawn(TArray<Protocol::PlayerInfo>& PlayerInfos);
-	void Despawn(TArray<uint32> Ids);
+	void HandleExitGame(const Protocol::S_Exit& Payload);
+	void DespawnPlayer(const uint32 Id);
 	void DespawnAll();
 
-	void SendMove(Protocol::PlayerInfo& Info);
-	void UpdatePlayerInfo(Protocol::PlayerInfo& Info);
+	void MovePlayer(const Protocol::PosInfo& PosInfo);
+	void HandleMove(const Protocol::PosInfo& PosInfo);
 
 protected:
 	UPROPERTY(Editanywhere)
@@ -65,7 +59,7 @@ private:
 	FSocket* Socket = nullptr;
 	TSharedPtr<FPacketSession> PacketSession = nullptr;
 
-	uint32 EnterId = 0;
+	bool bEntered = false;
 	AMyPlayer* MyPlayer = nullptr;
 	TMap<uint32, ADevPlayer*> Players;
 };

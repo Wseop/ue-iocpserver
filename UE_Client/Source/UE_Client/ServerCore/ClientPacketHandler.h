@@ -77,8 +77,8 @@ private:
 
 	// Packet Makers
 public:
-	static TSharedPtr<FSendBuffer> MakePing();
-	static TSharedPtr<FSendBuffer> MakeC_Enter(FString Key);
-	static TSharedPtr<FSendBuffer> MakeC_Exit(uint32 Id);
-	static TSharedPtr<FSendBuffer> MakeC_Move(Protocol::PlayerInfo& Info);
+	static inline TSharedPtr<FSendBuffer> MakePing(Protocol::Ping* Payload) { return MakeSendBuffer(EPacketType::Ping, Payload); }
+	static inline TSharedPtr<FSendBuffer> MakeC_Enter(Protocol::C_Enter* Payload) { return MakeSendBuffer(EPacketType::C_Enter, Payload); }
+	static inline TSharedPtr<FSendBuffer> MakeC_Exit(Protocol::C_Exit* Payload) { return MakeSendBuffer(EPacketType::C_Exit, Payload); }
+	static inline TSharedPtr<FSendBuffer> MakeC_Move(Protocol::C_Move* Payload) { return MakeSendBuffer(EPacketType::C_Move, Payload); }
 };

@@ -41,7 +41,7 @@ protected:
 	virtual void Tick(float DeltaTime) override;
 
 protected:
-	bool UpdatePlayerInfo();
+	bool UpdatePos();
 
 public:
 	/** Returns CameraBoom subobject **/

@@ -9,6 +9,7 @@
 #include "ServerCore/ClientPacketHandler.h"
 #include "Game/DevPlayer.h"
 #include "Game/MyPlayer.h"
+#include "Kismet/GameplayStatics.h"
 
 void UClientGameInstance::Init()
 {
@@ -82,9 +83,12 @@ void UClientGameInstance::SendPing()
 {
 	if (PacketSession == nullptr)
 		return;
+	
+	Protocol::Ping Payload;
+	Payload.set_msg("Ping!");
+	PacketSession->PushSendBuffer(FClientPacketHandler::MakePing(&Payload));
 
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Ping!"));
-	PacketSession->PushSendBuffer(FClientPacketHandler::MakePing());
 }
 
 void UClientGameInstance::EnterGame()
@@ -92,12 +96,54 @@ void UClientGameInstance::EnterGame()
 	if (PacketSession == nullptr)
 		return;
 
-	if (EnterId == 0)
+	if (bEntered == false)
 	{
-		// 중복 입장 방지
-		EnterId = 1;
-		PacketSession->PushSendBuffer(FClientPacketHandler::MakeC_Enter("123"));
+		bEntered = true;
+
+		Protocol::C_Enter Payload;
+		PacketSession->PushSendBuffer(FClientPacketHandler::MakeC_Enter(&Payload));
 	}
+}
+
+void UClientGameInstance::HandleEnterGame(const Protocol::S_Enter& Payload)
+{
+	if (Payload.result())
+	{
+		// Set MyPlayer
+		const Protocol::ObjectInfo& PlayerInfo = Payload.my_object_info();
+		MyPlayer = Cast<AMyPlayer>(UGameplayStatics::GetPlayerController(this, 0)->GetPawn());
+		if (MyPlayer == nullptr)
+			return;
+		MyPlayer->SetPlayerInfo(PlayerInfo);
+		
+		const Protocol::PosInfo& PosInfo = PlayerInfo.pos_info();
+		MyPlayer->SetActorLocation(FVector(PosInfo.x(), PosInfo.y(), PosInfo.z()));
+
+		// Spawn Other Players
+		for (const Protocol::ObjectInfo& Info : Payload.other_object_infos())
+			SpawnPlayer(Info);
+
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Enter Success")));
+	}
+	else
+	{
+		bEntered = false;
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Enter Fail"));
+	}
+}
+
+void UClientGameInstance::SpawnPlayer(const Protocol::ObjectInfo& PlayerInfo)
+{
+	const uint32 PlayerId = PlayerInfo.object_id();
+	if (Players.Find(PlayerId) != nullptr)
+		return;
+
+	const Protocol::PosInfo& Pos = PlayerInfo.pos_info();
+	FVector Location(Pos.x(), Pos.y(), Pos.z());
+
+	ADevPlayer* NewPlayer = Cast<ADevPlayer>(GWorld->SpawnActor(PlayerClass, &Location));
+	NewPlayer->SetPlayerInfo(PlayerInfo);
+	Players.Add(PlayerId, NewPlayer);
 }
 
 void UClientGameInstance::ExitGame()
@@ -105,44 +151,36 @@ void UClientGameInstance::ExitGame()
 	if (PacketSession == nullptr)
 		return;
 
-	if (EnterId != 0)
+	if (bEntered)
 	{
-		const uint32 Id = EnterId;
+		bEntered = false;
 
-		// 중복 퇴장 방지
-		EnterId = 0;
-		PacketSession->PushSendBuffer(FClientPacketHandler::MakeC_Exit(Id));
+		Protocol::C_Exit Payload;
+		PacketSession->PushSendBuffer(FClientPacketHandler::MakeC_Exit(&Payload));
 	}
 }
 
-void UClientGameInstance::Spawn(TArray<Protocol::PlayerInfo>& PlayerInfos)
+void UClientGameInstance::HandleExitGame(const Protocol::S_Exit& Payload)
 {
-	for (auto& Info : PlayerInfos)
+	if (Payload.result())
 	{
-		const uint32 PlayerId = Info.player_id();
-
-		if (Players.Find(PlayerId) != nullptr) 
-			continue;
-
-		FVector Location(Info.x(), Info.y(), Info.z());
-		ADevPlayer* SpawnedPlayer = Cast<ADevPlayer>(GWorld->SpawnActor(PlayerClass, &Location));
-		SpawnedPlayer->SetCurrentInfo(Info, true);
-		SpawnedPlayer->SetNextInfo(Info, true);
-		Players.Add(PlayerId, SpawnedPlayer);
+		DespawnAll();
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Exit Success")));
+	}
+	else
+	{
+		bEntered = true;
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Exit Fail"));
 	}
 }
 
-void UClientGameInstance::Despawn(TArray<uint32> Ids)
+void UClientGameInstance::DespawnPlayer(const uint32 Id)
 {
-	for (uint32 Id : Ids)
-	{
-		ADevPlayer** Player = Players.Find(Id);
-		if (Player == nullptr || *Player == nullptr) 
-			continue;
-
-		GWorld->DestroyActor(*Player);
-		Players.Remove(Id);
-	}
+	ADevPlayer** Player = Players.Find(Id);
+	if (Player == nullptr)
+		return;
+	GWorld->DestroyActor(*Player);
+	Players.Remove(Id);
 }
 
 void UClientGameInstance::DespawnAll()
@@ -152,19 +190,20 @@ void UClientGameInstance::DespawnAll()
 	Players.Reset();
 }
 
-void UClientGameInstance::SendMove(Protocol::PlayerInfo& Info)
+void UClientGameInstance::MovePlayer(const Protocol::PosInfo& PosInfo)
 {
-	if (PacketSession == nullptr || EnterId == 0)
+	if (PacketSession == nullptr || bEntered == false)
 		return;
 
-	PacketSession->PushSendBuffer(FClientPacketHandler::MakeC_Move(Info));
+	Protocol::C_Move Payload;
+	Payload.mutable_pos_info()->CopyFrom(PosInfo);
+	PacketSession->PushSendBuffer(FClientPacketHandler::MakeC_Move(&Payload));
 }
 
-void UClientGameInstance::UpdatePlayerInfo(Protocol::PlayerInfo& Info)
+void UClientGameInstance::HandleMove(const Protocol::PosInfo& PosInfo)
 {
-	ADevPlayer** Player = Players.Find(Info.player_id());
-	if (Player == nullptr || *Player == nullptr)
+	ADevPlayer** Player = Players.Find(PosInfo.object_id());
+	if (Player == nullptr)
 		return;
-
-	(*Player)->SetNextInfo(Info, false);
+	(*Player)->SetNextPos(PosInfo);
 }

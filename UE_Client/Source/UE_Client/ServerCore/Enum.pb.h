@@ -73,6 +73,31 @@ inline bool MoveState_Parse(
   return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<MoveState>(
     MoveState_descriptor(), name, value);
 }
+enum ObjectType : int {
+  OBJECT_TYPE_NONE = 0,
+  OBJECT_TYPE_PLAYER = 1,
+  ObjectType_INT_MIN_SENTINEL_DO_NOT_USE_ = std::numeric_limits<int32_t>::min(),
+  ObjectType_INT_MAX_SENTINEL_DO_NOT_USE_ = std::numeric_limits<int32_t>::max()
+};
+bool ObjectType_IsValid(int value);
+constexpr ObjectType ObjectType_MIN = OBJECT_TYPE_NONE;
+constexpr ObjectType ObjectType_MAX = OBJECT_TYPE_PLAYER;
+constexpr int ObjectType_ARRAYSIZE = ObjectType_MAX + 1;
+
+const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* ObjectType_descriptor();
+template<typename T>
+inline const std::string& ObjectType_Name(T enum_t_value) {
+  static_assert(::std::is_same<T, ObjectType>::value ||
+    ::std::is_integral<T>::value,
+    "Incorrect type passed to function ObjectType_Name.");
+  return ::PROTOBUF_NAMESPACE_ID::internal::NameOfEnum(
+    ObjectType_descriptor(), enum_t_value);
+}
+inline bool ObjectType_Parse(
+    ::PROTOBUF_NAMESPACE_ID::ConstStringParam name, ObjectType* value) {
+  return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<ObjectType>(
+    ObjectType_descriptor(), name, value);
+}
 // ===================================================================
 
 
@@ -99,6 +124,11 @@ template <> struct is_proto_enum< ::Protocol::MoveState> : ::std::true_type {};
 template <>
 inline const EnumDescriptor* GetEnumDescriptor< ::Protocol::MoveState>() {
   return ::Protocol::MoveState_descriptor();
+}
+template <> struct is_proto_enum< ::Protocol::ObjectType> : ::std::true_type {};
+template <>
+inline const EnumDescriptor* GetEnumDescriptor< ::Protocol::ObjectType>() {
+  return ::Protocol::ObjectType_descriptor();
 }
 
 PROTOBUF_NAMESPACE_CLOSE

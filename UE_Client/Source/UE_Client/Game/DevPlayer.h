@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
-#include "../ServerCore/Protocol.pb.h"
+#include "../ServerCore/Struct.pb.h"
 #include "DevPlayer.generated.h"
 
 UCLASS()
@@ -29,24 +29,27 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 protected:
-	bool UpdatePlayerInfo();
+	bool UpdatePos();
 
 public:
 	bool IsMyPlayer() { return bMyPlayer; }
 	void SetMyPlayer(bool bValue) { bMyPlayer = bValue; }
 
-	Protocol::PlayerInfo& GetCurrentInfo() { return CurrentInfo; }
-	void SetCurrentInfo(Protocol::PlayerInfo& Info, bool bForce);
+	Protocol::ObjectInfo* GetPlayerInfo() const { return PlayerInfo; }
+	void SetPlayerInfo(const Protocol::ObjectInfo& Info);
 
-	Protocol::PlayerInfo& GetNextInfo() { return NextInfo; }
-	void SetNextInfo(Protocol::PlayerInfo& Info, bool bForce);
+	Protocol::PosInfo* GetCurrentPos() const { return CurrentPos; }
+	void SetCurrentPos(const Protocol::PosInfo& PosInfo);
+
+	Protocol::PosInfo* GetNextPos() const { return NextPos; }
+	void SetNextPos(const Protocol::PosInfo& PosInfo);
 
 protected:
 	const float TICK_SEND_MOVE = 0.2f;
 	float CurrentTickSendMove = TICK_SEND_MOVE;
 
 	bool bMyPlayer = false;
-
-	Protocol::PlayerInfo CurrentInfo;
-	Protocol::PlayerInfo NextInfo;
+	Protocol::ObjectInfo* PlayerInfo = nullptr;
+	Protocol::PosInfo* CurrentPos = nullptr;
+	Protocol::PosInfo* NextPos = nullptr;
 };

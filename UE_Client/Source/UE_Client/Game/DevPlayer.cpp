@@ -6,7 +6,9 @@
 #include "GameFramework/CharacterMovementComponent.h"
 
 // Sets default values
-ADevPlayer::ADevPlayer()
+ADevPlayer::ADevPlayer() :
+	PlayerInfo(new Protocol::ObjectInfo()),
+	NextPos(new Protocol::PosInfo())
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -32,10 +34,17 @@ ADevPlayer::ADevPlayer()
 	GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
 
 	GetCharacterMovement()->bRunPhysicsWithNoController = true;
+
+	// Set Protocols
+	CurrentPos = PlayerInfo->mutable_pos_info();
+	CurrentPos->set_move_state(Protocol::MOVE_STATE_IDLE);
+	NextPos->set_move_state(Protocol::MOVE_STATE_IDLE);
 }
 
 ADevPlayer::~ADevPlayer()
 {
+	delete NextPos;
+	delete PlayerInfo;
 }
 
 // Called when the game starts or when spawned
@@ -51,17 +60,17 @@ void ADevPlayer::Tick(float DeltaTime)
 
 	if (bMyPlayer == false)
 	{
-		bool bUpdated = UpdatePlayerInfo();
+		bool bUpdated = UpdatePos();
 
 		// 현재위치 -> 목적지 벡터
-		FVector DirVector = FVector(CurrentInfo.x(), CurrentInfo.y(), CurrentInfo.z()) - GetActorLocation();
-		if (CurrentInfo.move_state() == Protocol::MOVE_STATE_RUN)
+		FVector DirVector = FVector(CurrentPos->x(), CurrentPos->y(), CurrentPos->z()) - GetActorLocation();
+		if (CurrentPos->move_state() == Protocol::MOVE_STATE_RUN)
 		{
 			// 목적지까지의 방향벡터를 구한 뒤 이동
 			DirVector.Normalize();
 			AddMovementInput(DirVector);
 		}
-		else if (CurrentInfo.move_state() == Protocol::MOVE_STATE_IDLE)
+		else if (CurrentPos->move_state() == Protocol::MOVE_STATE_IDLE)
 		{
 			// 목적지와 현재 위치간 오차가 기준 초과일 경우 위치 보정
 			if (DirVector.Length() > 2.0)
@@ -70,7 +79,7 @@ void ADevPlayer::Tick(float DeltaTime)
 				AddMovementInput(DirVector);
 			}
 
-			SetActorRotation(FRotator(0, CurrentInfo.yaw(), 0));
+			SetActorRotation(FRotator(0, CurrentPos->yaw(), 0));
 		}
 	}
 }
@@ -82,15 +91,15 @@ void ADevPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent
 
 }
 
-bool ADevPlayer::UpdatePlayerInfo()
+bool ADevPlayer::UpdatePos()
 {
-	if (CurrentInfo.x() != NextInfo.x() ||
-		CurrentInfo.y() != NextInfo.y() ||
-		CurrentInfo.z() != NextInfo.z() ||
-		CurrentInfo.yaw() != NextInfo.yaw() ||
-		CurrentInfo.move_state() != CurrentInfo.move_state())
+	if (CurrentPos->x() != NextPos->x() ||
+		CurrentPos->y() != NextPos->y() ||
+		CurrentPos->z() != NextPos->z() ||
+		CurrentPos->yaw() != NextPos->yaw() ||
+		CurrentPos->move_state() != NextPos->move_state())
 	{
-		CurrentInfo = NextInfo;
+		SetCurrentPos(*NextPos);
 		return true;
 	}
 	else
@@ -99,18 +108,19 @@ bool ADevPlayer::UpdatePlayerInfo()
 	}
 }
 
-void ADevPlayer::SetCurrentInfo(Protocol::PlayerInfo& Info, bool bForce)
+void ADevPlayer::SetPlayerInfo(const Protocol::ObjectInfo& Info)
 {
-	if (CurrentInfo.player_id() != Info.player_id() && bForce == false)
-		return;
-
-	CurrentInfo = Info;
+	PlayerInfo->CopyFrom(Info);
+	CurrentPos = PlayerInfo->mutable_pos_info();
+	SetNextPos(Info.pos_info());
 }
 
-void ADevPlayer::SetNextInfo(Protocol::PlayerInfo& Info, bool bForce)
+void ADevPlayer::SetCurrentPos(const Protocol::PosInfo& PosInfo)
 {
-	if (NextInfo.player_id() != Info.player_id() && bForce == false)
-		return;
+	CurrentPos->CopyFrom(PosInfo);
+}
 
-	NextInfo = Info;
+void ADevPlayer::SetNextPos(const Protocol::PosInfo& PosInfo)
+{
+	NextPos->CopyFrom(PosInfo);
 }
