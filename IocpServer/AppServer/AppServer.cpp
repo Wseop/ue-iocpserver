@@ -7,6 +7,10 @@
 
 int main()
 {
+#ifndef _DEBUG
+    spdlog::set_level(spdlog::level::info);
+#endif // _DEBUG
+
     ServerPacketHandler::Init();
 
     shared_ptr<ServerService> service = make_shared<ServerService>(
@@ -14,6 +18,8 @@ int main()
         [](){ return make_shared<PacketSession>(); }, 
         5);
     assert(service->Start());
+
+    spdlog::info("Server Start");
 
     // Worker 실행 - Dispatch & ExecuteJobQueue
     for (uint32 i = 0; i < thread::hardware_concurrency(); i++)

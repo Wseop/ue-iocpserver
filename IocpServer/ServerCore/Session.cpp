@@ -30,7 +30,7 @@ void Session::Dispatch(IocpEvent* iocpEvent, uint32 numOfBytes)
         ProcessSend(numOfBytes);
         break;
     default:
-        cout << "[Session] Invalid EventType" << endl;
+        spdlog::warn("Invalid EventType");
         break;
     }
 }
@@ -108,7 +108,7 @@ bool Session::RegisterConnect()
 
         if (errorCode != WSA_IO_PENDING)
         {
-            cout << "[Session] Connect Error : " << errorCode << endl;
+            spdlog::error("Connect Error : {}", errorCode);
 
             _bConnected.store(false);
             _connectEvent.SetOwner(nullptr);
@@ -142,7 +142,7 @@ bool Session::RegisterDisconnect()
 
         if (errorCode != WSA_IO_PENDING)
         {
-            cout << "[Session] Disconnect Error : " << errorCode << endl;
+            spdlog::error("Disconnect Error : ", errorCode);
 
             _bConnected.store(true);
             _disconnectEvent.SetOwner(nullptr);
@@ -160,7 +160,7 @@ void Session::ProcessDisconnect()
     OnDisconnect();
     GetService()->RemoveSession(_sessionId);
 
-    wcout << format(L"[Session] Client Disconnect - {}({})", GetNetAddress().GetIpAddress(), GetNetAddress().GetPort()) << endl;;
+    spdlog::info("Client Disconnected");
 }
 
 void Session::RegisterRecv()
@@ -183,7 +183,7 @@ void Session::RegisterRecv()
 
         if (errorCode != WSA_IO_PENDING)
         {
-            cout << "[Session] Recv Error : " << errorCode << endl;
+            spdlog::error("Recv Error : {}", errorCode);
 
             _recvEvent.SetOwner(nullptr);
         }
@@ -210,7 +210,7 @@ void Session::ProcessRecv(uint32 numOfBytes)
     // Overflow 예외 처리
     if (processedSize > dataSize || _recvBuffer.OnRead(processedSize) == false)
     {
-        cout << "[Session] Recv Overflow" << endl;
+        spdlog::error("Recv Overflow");
 
         Disconnect();
         return;
@@ -292,7 +292,7 @@ void Session::RegisterSend(vector<shared_ptr<SendBuffer>>& sendBuffers)
 
         if (errorCode != WSA_IO_PENDING)
         {
-            cout << "[Session] Send Error : " << errorCode << endl;
+            spdlog::error("Send Error : {}", errorCode);
 
             _sendEvent.SetOwner(nullptr);
             _sendEvent.ClearSendBuffers();

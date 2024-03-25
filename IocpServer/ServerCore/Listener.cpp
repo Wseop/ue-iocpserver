@@ -49,7 +49,7 @@ void Listener::RegisterAccept(IocpEvent* acceptEvent)
 
     if (session == nullptr)
     {
-        cout << "[Listener] Failed to create session" << endl;
+        spdlog::warn("Failed to create session");
         // TODO. Retry?
         return;
     }
@@ -68,7 +68,7 @@ void Listener::RegisterAccept(IocpEvent* acceptEvent)
 
         if (errorCode != WSA_IO_PENDING)
         {
-            cout << "[Listener] Accept Error : " << errorCode << endl;
+            spdlog::error("Accept Error : {}", errorCode);
 
             // use_count release
             acceptEvent->SetOwner(nullptr);
@@ -89,7 +89,7 @@ void Listener::ProcessAccept(IocpEvent* acceptEvent)
 
     if (SocketUtils::SetUpdateAcceptSocket(session->GetSocket(), _socket) == false)
     {
-        cout << "[Listener] Failed to set accept socket" << endl;
+        spdlog::warn("Failed to set accept socket");
 
         RegisterAccept(acceptEvent);
         return;
@@ -101,7 +101,7 @@ void Listener::ProcessAccept(IocpEvent* acceptEvent)
 
     if (::getpeername(session->GetSocket(), reinterpret_cast<sockaddr*>(&sockAddr), &addrLen) == SOCKET_ERROR)
     {
-        cout << "[Listener] Failed to get client's address" << endl;
+        spdlog::warn("Failed to get client's address");
 
         RegisterAccept(acceptEvent);
         return;
@@ -109,9 +109,7 @@ void Listener::ProcessAccept(IocpEvent* acceptEvent)
 
     // Session 시작
     if (session->OnAccept(NetAddress(sockAddr)))
-    {
-        wcout << format(L"[Listener] Client Connected - {}({})", session->GetNetAddress().GetIpAddress(), session->GetNetAddress().GetPort()) << endl;
-    }
+        spdlog::info("Client Connected");
 
     // Event 재사용, 다른 Client 접속 대기
     RegisterAccept(acceptEvent);
