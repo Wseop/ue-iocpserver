@@ -133,7 +133,7 @@ void Room::MovePlayer(shared_ptr<Session> session, Protocol::C_Move payload)
 	Protocol::S_Move movePacket;
 	movePacket.mutable_pos_info()->CopyFrom(posInfo);
 	Broadcast(ServerPacketHandler::MakeS_Move(&movePacket));
-	spdlog::info("Broadcast S_Move : Player({}) - [{}, {}, {}]", player->GetObjectId(), posInfo.x(), posInfo.y(), posInfo.z());
+	spdlog::info("Broadcast S_Move : Player({}) - [{}, {}, {}][{}]", player->GetObjectId(), posInfo.x(), posInfo.y(), posInfo.z(), static_cast<int32>(posInfo.move_state()));
 }
 
 shared_ptr<Player> Room::SpawnPlayer(weak_ptr<Session> session)
