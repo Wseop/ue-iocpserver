@@ -54,16 +54,16 @@ void Room::Enter(shared_ptr<Session> session, Protocol::C_Enter payload)
 		enterPacket.add_other_object_infos()->CopyFrom(*other->GetObjectInfo());
 	}
 	session->Send(ServerPacketHandler::MakeS_Enter(&enterPacket));
-	spdlog::info("Send S_Enter : Session({}), Player({})", sessionId, newPlayer->GetObjectId());
 
 	// 다른 세션들에게 새 플레이어 정보를 알림
 	Protocol::S_Spawn spawnPacket;
 	spawnPacket.add_object_infos()->CopyFrom(*newPlayer->GetObjectInfo());
 	Broadcast(ServerPacketHandler::MakeS_Spawn(&spawnPacket));
-	spdlog::info("Broadcast S_Spawn : Player({})", newPlayer->GetObjectId());
 
 	// 세션 목록에 추가
 	_sessions[sessionId] = session;
+
+	spdlog::info("Enter : SessionId : {}", sessionId);
 }
 
 void Room::Exit(shared_ptr<Session> session, Protocol::C_Exit payload)
@@ -85,7 +85,8 @@ void Room::Exit(shared_ptr<Session> session, Protocol::C_Exit payload)
 	// Exit 패킷 전송
 	exitPacket.set_result(true);
 	session->Send(ServerPacketHandler::MakeS_Exit(&exitPacket));
-	spdlog::info("Send S_Exit : Session({})", sessionId);
+
+	spdlog::info("Exit : SessionId : {}", sessionId);
 
 	// 제거할 플레이어 검색
 	Protocol::S_Despawn despawnPacket;
@@ -103,7 +104,6 @@ void Room::Exit(shared_ptr<Session> session, Protocol::C_Exit payload)
 	}
 	// 다른 세션들에게 Despawn 패킷 전송
 	Broadcast(ServerPacketHandler::MakeS_Despawn(&despawnPacket));
-	spdlog::info("Broadcast S_Despawn : Player({})", despawnPacket.object_ids(0));
 
 	// 플레이어 목록에서 제거
 	for (uint32 playerId : despawnPacket.object_ids())
@@ -129,11 +129,12 @@ void Room::MovePlayer(shared_ptr<Session> session, Protocol::C_Move payload)
 	// 플레이어 이동
 	player->SetPosInfo(posInfo);
 
+	spdlog::info("MovePlayer : {} : [{}, {}, {}, {}]", player->GetObjectId(), static_cast<int32>(posInfo.move_state()), posInfo.x(), posInfo.y(), posInfo.z());
+
 	// Move 패킷 Broadcast
 	Protocol::S_Move movePacket;
 	movePacket.mutable_pos_info()->CopyFrom(posInfo);
 	Broadcast(ServerPacketHandler::MakeS_Move(&movePacket));
-	spdlog::info("Broadcast S_Move : Player({}) - [{}, {}, {}][{}]", player->GetObjectId(), posInfo.x(), posInfo.y(), posInfo.z(), static_cast<int32>(posInfo.move_state()));
 }
 
 shared_ptr<Player> Room::SpawnPlayer(weak_ptr<Session> session)
@@ -154,7 +155,7 @@ shared_ptr<Player> Room::SpawnPlayer(weak_ptr<Session> session)
 
 	_players[playerId] = player;
 
-	spdlog::info("Spawn Player - {}", playerId);
+	spdlog::info("SpawnPlayer : {}", playerId);
 
 	return player;
 }
@@ -166,7 +167,7 @@ void Room::DespawnPlayer(uint32 playerId)
 
 	_players.erase(playerId);
 
-	spdlog::info("Despawn Player - {}", playerId);
+	spdlog::info("DespawnPlayer : {}", playerId);
 }
 
 void Room::Broadcast(shared_ptr<SendBuffer> sendBuffer)

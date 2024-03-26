@@ -142,7 +142,7 @@ bool Session::RegisterDisconnect()
 
         if (errorCode != WSA_IO_PENDING)
         {
-            spdlog::error("Disconnect Error : ", errorCode);
+            spdlog::error("Disconnect Error : {}", errorCode);
 
             _bConnected.store(true);
             _disconnectEvent.SetOwner(nullptr);
@@ -160,7 +160,7 @@ void Session::ProcessDisconnect()
     OnDisconnect();
     GetService()->RemoveSession(_sessionId);
 
-    spdlog::info("Client Disconnected");
+    spdlog::info("Client Disconnected : Remove SessionId : {}", _sessionId);
 }
 
 void Session::RegisterRecv()

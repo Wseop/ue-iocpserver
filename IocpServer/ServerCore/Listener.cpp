@@ -49,7 +49,7 @@ void Listener::RegisterAccept(IocpEvent* acceptEvent)
 
     if (session == nullptr)
     {
-        spdlog::warn("Failed to create session");
+        spdlog::error("Failed to create session");
         // TODO. Retry?
         return;
     }
@@ -90,7 +90,6 @@ void Listener::ProcessAccept(IocpEvent* acceptEvent)
     if (SocketUtils::SetUpdateAcceptSocket(session->GetSocket(), _socket) == false)
     {
         spdlog::warn("Failed to set accept socket");
-
         RegisterAccept(acceptEvent);
         return;
     }
@@ -102,14 +101,13 @@ void Listener::ProcessAccept(IocpEvent* acceptEvent)
     if (::getpeername(session->GetSocket(), reinterpret_cast<sockaddr*>(&sockAddr), &addrLen) == SOCKET_ERROR)
     {
         spdlog::warn("Failed to get client's address");
-
         RegisterAccept(acceptEvent);
         return;
     }
 
     // Session 시작
     if (session->OnAccept(NetAddress(sockAddr)))
-        spdlog::info("Client Connected");
+        spdlog::info("Client Connected : SessionId : {}", session->GetSessionId());
 
     // Event 재사용, 다른 Client 접속 대기
     RegisterAccept(acceptEvent);
