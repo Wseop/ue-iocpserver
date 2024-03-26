@@ -2,13 +2,11 @@
 #include "Object.h"
 
 Object::Object(uint32 objectId, Protocol::ObjectType objectType) :
-	_objectInfo(new Protocol::ObjectInfo()),
-	_posInfo(new Protocol::PosInfo())
+	_objectInfo(new Protocol::ObjectInfo())
 {
 	_objectInfo->set_object_id(objectId);
 	_objectInfo->set_object_type(objectType);
-	_objectInfo->set_allocated_pos_info(_posInfo);
-
+	_posInfo = _objectInfo->mutable_pos_info();
 	_posInfo->set_object_id(objectId);
 	_posInfo->set_move_state(Protocol::MOVE_STATE_IDLE);
 }
