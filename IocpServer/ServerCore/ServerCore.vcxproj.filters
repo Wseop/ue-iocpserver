@@ -95,6 +95,9 @@
     <ClCompile Include="IocpObject.cpp">
       <Filter>소스 파일\Network\Iocp</Filter>
     </ClCompile>
+    <ClCompile Include="JobTimer.cpp">
+      <Filter>소스 파일\Job</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CorePch.h">
@@ -159,6 +162,9 @@
     </ClInclude>
     <ClInclude Include="IocpObject.h">
       <Filter>소스 파일\Network\Iocp</Filter>
+    </ClInclude>
+    <ClInclude Include="JobTimer.h">
+      <Filter>소스 파일\Job</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "ThreadManager.h"
 #include "JobQueue.h"
+#include "JobTimer.h"
 
 ThreadManager::ThreadManager()
 {
@@ -46,4 +47,9 @@ void ThreadManager::ExecuteJobQueue()
 	{
 		tJobQueue->Execute();
 	}
+}
+
+void ThreadManager::DistributeReservedJob()
+{
+	gJobTimer->Distribute(::GetTickCount64());
 }

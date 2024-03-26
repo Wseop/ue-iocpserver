@@ -7,6 +7,7 @@
 #include "ServerPacketHandler.h"
 #include "JobQueue.h"
 #include "Job.h"
+#include "JobTimer.h"
 
 shared_ptr<Room> gRoom = make_shared<Room>();
 
@@ -179,4 +180,33 @@ void Room::Broadcast(shared_ptr<SendBuffer> sendBuffer)
 			continue;
 		session->Send(sendBuffer);
 	}
+}
+
+void Room::Cleanup()
+{
+	spdlog::debug("Cleanup Room");
+
+	{
+		auto iter = _sessions.begin();
+		while (iter != _sessions.end())
+		{
+			if (iter->second.lock() == nullptr)
+				iter = _sessions.erase(iter);
+			else
+				iter++;
+		}
+	}
+
+	{
+		auto iter = _players.begin();
+		while (iter != _players.end())
+		{
+			if (iter->second == nullptr || iter->second->GetSession() == nullptr)
+				iter = _players.erase(iter);
+			else
+				iter++;
+		}
+	}
+
+	gJobTimer->Reserve(CLEANUP_TICK, shared_from_this(), make_shared<Job>(dynamic_pointer_cast<Room>(shared_from_this()), &Room::Cleanup));
 }

@@ -21,6 +21,9 @@
 #include <format>
 using namespace std;
 
+#include <concurrent_queue.h>
+#include <concurrent_priority_queue.h>
+
 #include "Types.h"
 #include "LockQueue.h"
 

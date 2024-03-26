@@ -15,6 +15,7 @@ public:
 public:
 	static void InitTLS();
 	static void ExecuteJobQueue();
+	static void DistributeReservedJob();
 
 private:
 	mutex _mutex;

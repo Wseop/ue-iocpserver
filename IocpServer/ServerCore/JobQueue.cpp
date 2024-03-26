@@ -2,6 +2,10 @@
 #include "JobQueue.h"
 #include "Job.h"
 
+JobQueue::~JobQueue()
+{
+}
+
 void JobQueue::Push(shared_ptr<Job> job, bool pushOnly)
 {
 	if (job == nullptr)

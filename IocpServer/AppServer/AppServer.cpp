@@ -7,7 +7,9 @@
 
 int main()
 {
-#ifndef _DEBUG
+#ifdef _DEBUG
+    spdlog::set_level(spdlog::level::debug);
+#else
     spdlog::set_level(spdlog::level::info);
 #endif // _DEBUG
 
@@ -30,6 +32,7 @@ int main()
                 {
                     service->GetIocpCore().Dispatch(10);
                     ThreadManager::ExecuteJobQueue();
+                    ThreadManager::DistributeReservedJob();
                 }
             });
     }
