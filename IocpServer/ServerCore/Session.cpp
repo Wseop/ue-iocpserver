@@ -59,14 +59,19 @@ void Session::Send(shared_ptr<SendBuffer> sendBuffer)
     if (sendBuffer == nullptr)
         return;
 
-    _sendQueue.Push(sendBuffer);
+    _sendQueue.push(sendBuffer);
 
     // Send를 처리중인 Thread가 없으면 현재 Thread가 담당
     if (_bSendRegistered.exchange(true) == false)
     {
         vector<shared_ptr<SendBuffer>> sendBuffers;
-        _sendQueue.PopAll(sendBuffers);
-
+        while (true)
+        {
+            shared_ptr<SendBuffer> buffer = nullptr;
+            if (_sendQueue.try_pop(buffer) == false)
+                break;
+            sendBuffers.push_back(buffer);
+        }
         RegisterSend(sendBuffers);
     }
 }
@@ -311,7 +316,12 @@ void Session::ProcessSend(uint32 numOfBytes)
 
     // 보낼 데이터가 남아있으면 추가로 전송
     vector<shared_ptr<SendBuffer>> sendBuffers;
-    _sendQueue.PopAll(sendBuffers);
-
+    while (true)
+    {
+        shared_ptr<SendBuffer> sendBuffer = nullptr;
+        if (_sendQueue.try_pop(sendBuffer) == false)
+            break;
+        sendBuffers.push_back(sendBuffer);
+    }
     RegisterSend(sendBuffers);
 }

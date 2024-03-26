@@ -71,6 +71,6 @@ private:
 
 	// Send
 	atomic<bool> _bSendRegistered = false;
-	LockQueue<shared_ptr<SendBuffer>> _sendQueue;
+	Concurrency::concurrent_queue<shared_ptr<SendBuffer>> _sendQueue;
 };
 

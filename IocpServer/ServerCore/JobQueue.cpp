@@ -25,7 +25,7 @@ void JobQueue::Push(shared_ptr<Job> job)
 		// 이미 다른 JobQueue를 잡고 있었다면 다른 Thread가 가져갈 수 있도록 GlobalQueue에 추가
 		else
 		{
-			gJobQueue->Push(shared_from_this());
+			gJobQueue->push(shared_from_this());
 		}
 	}
 }
@@ -43,7 +43,7 @@ void JobQueue::Execute()
 
 	// 남아있는 Job이 더 있으면 다른 Thread가 처리할 수 있도록 GlobalQueue에 추가
 	if (_jobCount.fetch_sub(executeCount) != executeCount)
-		gJobQueue->Push(shared_from_this());
+		gJobQueue->push(shared_from_this());
 
 	tJobQueue = nullptr;
 }
