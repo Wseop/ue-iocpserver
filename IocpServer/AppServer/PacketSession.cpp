@@ -1,9 +1,9 @@
 #include "pch.h"
 #include "PacketSession.h"
 #include "ServerPacketHandler.h"
+#include "Protocol.pb.h"
 #include "Room.h"
 #include "Job.h"
-#include "Protocol.pb.h"
 
 PacketSession::PacketSession()
 {
@@ -20,7 +20,6 @@ void PacketSession::OnConnect()
 
 void PacketSession::OnDisconnect()
 {
-	// Room에서 Exit 처리
 	gRoom->Push(make_shared<Job>(gRoom, &Room::Exit, dynamic_pointer_cast<Session>(shared_from_this()), Protocol::C_Exit()));
 }
 

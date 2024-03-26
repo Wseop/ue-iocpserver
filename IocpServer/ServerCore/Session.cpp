@@ -108,7 +108,7 @@ bool Session::RegisterConnect()
 
         if (errorCode != WSA_IO_PENDING)
         {
-            spdlog::error("Connect Error : {}", errorCode);
+            spdlog::error("Connect Error : {} : SessionId : {}", errorCode, _sessionId);
 
             _bConnected.store(false);
             _connectEvent.SetOwner(nullptr);
@@ -142,7 +142,7 @@ bool Session::RegisterDisconnect()
 
         if (errorCode != WSA_IO_PENDING)
         {
-            spdlog::error("Disconnect Error : {}", errorCode);
+            spdlog::error("Disconnect Error : {} : SessionId : {}", errorCode, _sessionId);
 
             _bConnected.store(true);
             _disconnectEvent.SetOwner(nullptr);
@@ -160,7 +160,7 @@ void Session::ProcessDisconnect()
     OnDisconnect();
     GetService()->RemoveSession(_sessionId);
 
-    spdlog::info("Client Disconnected : Remove SessionId : {}", _sessionId);
+    spdlog::info("Client Disconnected : SessionId : {}", _sessionId);
 }
 
 void Session::RegisterRecv()
@@ -183,7 +183,7 @@ void Session::RegisterRecv()
 
         if (errorCode != WSA_IO_PENDING)
         {
-            spdlog::error("Recv Error : {}", errorCode);
+            spdlog::error("Recv Error : {} : SessionId : {}", errorCode, _sessionId);
 
             _recvEvent.SetOwner(nullptr);
         }
@@ -210,7 +210,7 @@ void Session::ProcessRecv(uint32 numOfBytes)
     // Overflow 예외 처리
     if (processedSize > dataSize || _recvBuffer.OnRead(processedSize) == false)
     {
-        spdlog::error("Recv Overflow");
+        spdlog::error("Recv Overflow : SessionId : {}", _sessionId);
 
         Disconnect();
         return;
@@ -292,7 +292,7 @@ void Session::RegisterSend(vector<shared_ptr<SendBuffer>>& sendBuffers)
 
         if (errorCode != WSA_IO_PENDING)
         {
-            spdlog::error("Send Error : {}", errorCode);
+            spdlog::error("Send Error : {} : SessionId : {}", errorCode, _sessionId);
 
             _sendEvent.SetOwner(nullptr);
             _sendEvent.ClearSendBuffers();

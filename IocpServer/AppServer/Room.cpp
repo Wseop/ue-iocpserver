@@ -184,14 +184,17 @@ void Room::Broadcast(shared_ptr<SendBuffer> sendBuffer)
 
 void Room::Cleanup()
 {
-	spdlog::debug("Cleanup Room");
+	spdlog::debug("Room : Cleanup");
 
 	{
 		auto iter = _sessions.begin();
 		while (iter != _sessions.end())
 		{
 			if (iter->second.lock() == nullptr)
+			{
 				iter = _sessions.erase(iter);
+				spdlog::debug("Room : Null Session Removed");
+			}
 			else
 				iter++;
 		}
@@ -202,7 +205,10 @@ void Room::Cleanup()
 		while (iter != _players.end())
 		{
 			if (iter->second == nullptr || iter->second->GetSession() == nullptr)
+			{
 				iter = _players.erase(iter);
+				spdlog::debug("Room : Null Player Removed");
+			}
 			else
 				iter++;
 		}
