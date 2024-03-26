@@ -24,7 +24,7 @@ void JobTimer::Distribute(uint64 currentTick)
 		}
 
 		if (shared_ptr<JobQueue> jobOwner = item->GetJobOwner())
-			jobOwner->Push(item->GetJob(), false);
+			jobOwner->Push(item->GetJob());
 	}
 
 	_bDistributing.store(false);

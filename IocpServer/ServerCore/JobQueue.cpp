@@ -6,24 +6,23 @@ JobQueue::~JobQueue()
 {
 }
 
-void JobQueue::Push(shared_ptr<Job> job, bool pushOnly)
+void JobQueue::Push(shared_ptr<Job> job)
 {
 	if (job == nullptr)
 		return;
 
-	const uint32 prevCount = _jobCount.fetch_add(1);
-	_jobs.Push(job);
+	uint32 prevCount = _jobCount.fetch_add(1);
+	_jobs.push(job);
 
-	// 가장 먼저 Job을 Push한 Thread가 실행을 담당
+	// 가장 처음 접근한 Thread가 실행을 담당
 	if (prevCount == 0)
 	{
-		// 처리중인 JobQueue가 없다면 현재 JobQueue를 담당
-		if (pushOnly == false && tJobQueue == nullptr)
+		if (tJobQueue == nullptr)
 		{
 			tJobQueue = shared_from_this();
 			Execute();
 		}
-		// 바로 처리할 수 없다면 다른 Thread에서 가져갈 수 있도록 Global Queue에 등록
+		// 이미 다른 JobQueue를 잡고 있었다면 다른 Thread가 가져갈 수 있도록 GlobalQueue에 추가
 		else
 		{
 			gJobQueue->Push(shared_from_this());
@@ -33,22 +32,18 @@ void JobQueue::Push(shared_ptr<Job> job, bool pushOnly)
 
 void JobQueue::Execute()
 {
-	// 모든 Job 꺼내서 처리
-	vector<shared_ptr<Job>> jobs;
-	_jobs.PopAll(jobs);
-
-	uint32 jobCount = static_cast<uint32>(jobs.size());
-
-	for (uint32 i = 0; i < jobCount; i++)
+	// 모든 Job 실행
+	uint32 executeCount = 0;
+	shared_ptr<Job> job = nullptr;
+	while (_jobs.try_pop(job))
 	{
-		jobs[i]->Execute();
+		job->Execute();
+		executeCount++;
 	}
 
-	// Job이 남아있으면 다른 Thread에서 처리될 수 있도록 GlobalQueue에 등록
-	if (_jobCount.fetch_sub(jobCount) != jobCount)
-	{
+	// 남아있는 Job이 더 있으면 다른 Thread가 처리할 수 있도록 GlobalQueue에 추가
+	if (_jobCount.fetch_sub(executeCount) != executeCount)
 		gJobQueue->Push(shared_from_this());
-	}
 
 	tJobQueue = nullptr;
 }
