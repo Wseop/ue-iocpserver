@@ -53,9 +53,6 @@
     <ClCompile Include="SocketUtils.cpp">
       <Filter>소스 파일\Network</Filter>
     </ClCompile>
-    <ClCompile Include="LockQueue.cpp">
-      <Filter>소스 파일\Utils</Filter>
-    </ClCompile>
     <ClCompile Include="ThreadManager.cpp">
       <Filter>소스 파일\Thread</Filter>
     </ClCompile>
@@ -120,9 +117,6 @@
     </ClInclude>
     <ClInclude Include="SocketUtils.h">
       <Filter>소스 파일\Network</Filter>
-    </ClInclude>
-    <ClInclude Include="LockQueue.h">
-      <Filter>소스 파일\Utils</Filter>
     </ClInclude>
     <ClInclude Include="ThreadManager.h">
       <Filter>소스 파일\Thread</Filter>

@@ -193,7 +193,6 @@
     <ClInclude Include="JobQueue.h" />
     <ClInclude Include="JobTimer.h" />
     <ClInclude Include="Listener.h" />
-    <ClInclude Include="LockQueue.h" />
     <ClInclude Include="NetAddress.h" />
     <ClInclude Include="PacketHandler.h" />
     <ClInclude Include="pch.h" />
@@ -217,7 +216,6 @@
     <ClCompile Include="JobQueue.cpp" />
     <ClCompile Include="JobTimer.cpp" />
     <ClCompile Include="Listener.cpp" />
-    <ClCompile Include="LockQueue.cpp" />
     <ClCompile Include="NetAddress.cpp" />
     <ClCompile Include="PacketHandler.cpp" />
     <ClCompile Include="pch.cpp">

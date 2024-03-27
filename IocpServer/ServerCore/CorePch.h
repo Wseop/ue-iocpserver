@@ -25,7 +25,6 @@ using namespace std;
 #include <concurrent_priority_queue.h>
 
 #include "Types.h"
-#include "LockQueue.h"
 
 #include "CoreGlobal.h"
 #include "CoreTLS.h"
