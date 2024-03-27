@@ -188,8 +188,8 @@ void Session::RegisterRecv()
 
         if (errorCode != WSA_IO_PENDING)
         {
-            spdlog::error("Recv Error : {} : SessionId : {}", errorCode, _sessionId);
-
+            if (errorCode != WSAENOTCONN)
+                spdlog::error("Recv Error : {} : SessionId : {}", errorCode, _sessionId);
             _recvEvent.SetOwner(nullptr);
         }
     }
