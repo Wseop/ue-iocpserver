@@ -150,8 +150,8 @@ shared_ptr<Player> Room::SpawnPlayer(weak_ptr<Session> session)
 		return nullptr;
 
 	// 스폰 위치 랜덤 지정
-	player->SetX(Utils::GetRandom(-1000.f, 1000.f));
-	player->SetY(Utils::GetRandom(-1000.f, 1000.f));
+	player->SetX(Utils::GetRandom(-3500.f, 3500.f));
+	player->SetY(Utils::GetRandom(-3500.f, 3500.f));
 	player->SetZ(100.f);
 
 	_players[playerId] = player;
