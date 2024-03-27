@@ -142,8 +142,11 @@ void UClientGameInstance::SpawnPlayer(const Protocol::ObjectInfo& PlayerInfo)
 	FVector Location(Pos.x(), Pos.y(), Pos.z());
 
 	ADevPlayer* NewPlayer = Cast<ADevPlayer>(GWorld->SpawnActor(PlayerClass, &Location));
-	NewPlayer->SetPlayerInfo(PlayerInfo);
-	Players.Add(PlayerId, NewPlayer);
+	if (NewPlayer != nullptr)
+	{
+		NewPlayer->SetPlayerInfo(PlayerInfo);
+		Players.Add(PlayerId, NewPlayer);
+	}
 }
 
 void UClientGameInstance::ExitGame()
