@@ -40,16 +40,16 @@ bool Service::AddSession(shared_ptr<Session> session)
     if (session == nullptr)
         return false;
 
-    const uint32 sessionId = sSessionId.fetch_add(1);
     lock_guard<mutex> lock(_mutex);
+    
+    const uint32 sessionId = sSessionId.fetch_add(1);
 
     if (_sessions.find(sessionId) != _sessions.end())
-    {
-        spdlog::debug("SessionId Duplicated");
         return false;
-    }
+
     session->SetSessionId(sessionId);
     _sessions[sessionId] = session;
+
     return true;
 }
 

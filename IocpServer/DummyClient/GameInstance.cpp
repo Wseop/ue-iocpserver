@@ -30,7 +30,7 @@ void GameInstance::HandleEnter(shared_ptr<Session> session, const Protocol::S_En
 	{
 		if (_players.find(session->GetSessionId()) != _players.end())
 		{
-			spdlog::error("[{}] : Player Duplicated", session->GetSessionId());
+			spdlog::error("Session[{}] : Player Duplicated", session->GetSessionId());
 			return;
 		}
 
@@ -38,12 +38,12 @@ void GameInstance::HandleEnter(shared_ptr<Session> session, const Protocol::S_En
 		shared_ptr<Player> player = make_shared<Player>(objectInfo.object_id(), session);
 		player->SetPosInfo(objectInfo.pos_info());
 		_players[session->GetSessionId()] = player;
-		spdlog::info("[{}] : Player Spawn : {}", session->GetSessionId(), player->GetObjectId());
+		spdlog::info("Session[{}] : Player Spawn : {}", session->GetSessionId(), player->GetObjectId());
 	}
 	else
 	{
 		_sessionIds.erase(session->GetSessionId());
-		spdlog::warn("[{}] : Enter Fail", session->GetSessionId());
+		spdlog::warn("Session[{}] : Enter Fail", session->GetSessionId());
 	}
 }
 
@@ -70,10 +70,10 @@ void GameInstance::HandleExit(shared_ptr<Session> session, const Protocol::S_Exi
 			return;
 
 		_players.erase(session->GetSessionId());
-		spdlog::info("[{}] : Player Despawn : {}", session->GetSessionId(), player->GetObjectId());
+		spdlog::info("Session[{}] : Player Despawn : {}", session->GetSessionId(), player->GetObjectId());
 	}
 	else
 	{
-		spdlog::warn("[{}] : Exit Fail", session->GetSessionId());
+		spdlog::warn("Session[{}] : Exit Fail", session->GetSessionId());
 	}
 }

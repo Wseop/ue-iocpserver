@@ -22,5 +22,7 @@ public:
 			return distribution(generator);
 		}
 	}
+
+	static string WStrToStr(const wstring& wstr);
 };
 

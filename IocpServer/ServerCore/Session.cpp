@@ -1,8 +1,9 @@
-#include "pch.h"
+ï»¿#include "pch.h"
 #include "Session.h"
 #include "IocpCore.h"
 #include "Service.h"
 #include "PacketHandler.h"
+#include "Utils.h"
 
 Session::Session() :
     _recvBuffer(BUFFER_SIZE)
@@ -30,7 +31,7 @@ void Session::Dispatch(IocpEvent* iocpEvent, uint32 numOfBytes)
         ProcessSend(numOfBytes);
         break;
     default:
-        spdlog::warn("Invalid EventType");
+        spdlog::warn("Session[{}] : Invalid EventType", _sessionId);
         break;
     }
 }
@@ -61,7 +62,7 @@ void Session::Send(shared_ptr<SendBuffer> sendBuffer)
 
     _sendQueue.push(sendBuffer);
 
-    // Send¸¦ Ã³¸®ÁßÀÎ Thread°¡ ¾øÀ¸¸é ÇöÀç Thread°¡ ´ã´ç
+    // Sendë¥¼ ì²˜ë¦¬ì¤‘ì¸ Threadê°€ ì—†ìœ¼ë©´ í˜„ì¬ Threadê°€ ë‹´ë‹¹
     if (_bSendRegistered.exchange(true) == false)
     {
         vector<shared_ptr<SendBuffer>> sendBuffers;
@@ -76,17 +77,15 @@ void Session::Send(shared_ptr<SendBuffer> sendBuffer)
     }
 }
 
-bool Session::OnAccept(NetAddress netAddress)
+void Session::OnAccept(NetAddress netAddress)
 {
-    // ¼¼¼Ç Connect Ã³¸®
+    // ì„¸ì…˜ Connect ì²˜ë¦¬
     if (GetService()->GetIocpCore().Register(shared_from_this()) == false)
-        return false;
+        return;
 
     _bConnected.store(true);
     SetNetAddress(netAddress);
     ProcessConnect();
-
-    return true;
 }
 
 bool Session::RegisterConnect()
@@ -113,7 +112,7 @@ bool Session::RegisterConnect()
 
         if (errorCode != WSA_IO_PENDING)
         {
-            spdlog::error("Connect Error : {} : SessionId : {}", errorCode, _sessionId);
+            spdlog::error("Session[{}] : Connect Error[{}]", _sessionId, errorCode);
 
             _bConnected.store(false);
             _connectEvent.SetOwner(nullptr);
@@ -136,6 +135,9 @@ void Session::ProcessConnect()
 
     OnConnect();
     RegisterRecv();
+
+    string ip = Utils::WStrToStr(_netAddress.GetIpAddress());
+    spdlog::info("Session[{}] : Connected[{}({})]", _sessionId, ip, _netAddress.GetPort());
 }
 
 bool Session::RegisterDisconnect()
@@ -150,7 +152,7 @@ bool Session::RegisterDisconnect()
 
         if (errorCode != WSA_IO_PENDING)
         {
-            spdlog::error("Disconnect Error : {} : SessionId : {}", errorCode, _sessionId);
+            spdlog::error("Session[{}] : Disconnect Error[{}]", _sessionId, errorCode);
 
             _bConnected.store(true);
             _disconnectEvent.SetOwner(nullptr);
@@ -168,7 +170,7 @@ void Session::ProcessDisconnect()
     OnDisconnect();
     GetService()->RemoveSession(_sessionId);
 
-    spdlog::info("Client Disconnected : SessionId : {}", _sessionId);
+    spdlog::info("Session[{}] : Disconnected", _sessionId);
 }
 
 void Session::RegisterRecv()
@@ -176,7 +178,7 @@ void Session::RegisterRecv()
     _recvEvent.Init();
     _recvEvent.SetOwner(shared_from_this());
 
-    // ¼ö½Å Buffer ÇÒ´ç
+    // ìˆ˜ì‹  Buffer í• ë‹¹
     WSABUF wsaBuf;
     wsaBuf.buf = reinterpret_cast<char*>(_recvBuffer.WritePos());
     wsaBuf.len = _recvBuffer.FreeSize();
@@ -192,7 +194,7 @@ void Session::RegisterRecv()
         if (errorCode != WSA_IO_PENDING)
         {
             if (errorCode != WSAENOTCONN)
-                spdlog::error("Recv Error : {} : SessionId : {}", errorCode, _sessionId);
+                spdlog::error("Session[{}] : Recv Error[{}]", _sessionId, errorCode);
             _recvEvent.SetOwner(nullptr);
         }
     }
@@ -202,32 +204,32 @@ void Session::ProcessRecv(uint32 numOfBytes)
 {
     _recvEvent.SetOwner(nullptr);
 
-    // ¼ö½ÅÇÑ µ¥ÀÌÅÍ°¡ 0ÀÌ°Å³ª Buffer OverflowÀÎ °æ¿ì disconnect
+    // ìˆ˜ì‹ í•œ ë°ì´í„°ê°€ 0ì´ê±°ë‚˜ Buffer Overflowì¸ ê²½ìš° disconnect
     if (numOfBytes == 0 || _recvBuffer.OnWrite(numOfBytes) == false)
     {
         Disconnect();
         return;
     }
 
-    // ¼ö½ÅÇÑ µ¥ÀÌÅÍ¸¦ Packet ´ÜÀ§·Î Ã³¸® ÈÄ Ã³¸®ÇÑ µ¥ÀÌÅÍ Å©±â¸¦ °è»ê
+    // ìˆ˜ì‹ í•œ ë°ì´í„°ë¥¼ Packet ë‹¨ìœ„ë¡œ ì²˜ë¦¬ í›„ ì²˜ë¦¬í•œ ë°ì´í„° í¬ê¸°ë¥¼ ê³„ì‚°
     uint32 processedSize = ProcessPacket(numOfBytes);
 
-    // ¼ö½ÅÇÑ ÀüÃ¼ µ¥ÀÌÅÍ Å©±â
+    // ìˆ˜ì‹ í•œ ì „ì²´ ë°ì´í„° í¬ê¸°
     uint32 dataSize = _recvBuffer.DataSize();
 
-    // Overflow ¿¹¿Ü Ã³¸®
+    // Overflow ì˜ˆì™¸ ì²˜ë¦¬
     if (processedSize > dataSize || _recvBuffer.OnRead(processedSize) == false)
     {
-        spdlog::error("Recv Overflow : SessionId : {}", _sessionId);
+        spdlog::error("Session[{}] : Recv Overflow", _sessionId);
 
         Disconnect();
         return;
     }
 
-    // ¼ö½Å¹öÆÛ Ä¿¼­ Á¤¸®
+    // ìˆ˜ì‹ ë²„í¼ ì»¤ì„œ ì •ë¦¬
     _recvBuffer.Clean();
 
-    // ´Ù½Ã µ¥ÀÌÅÍ ¼ö½Å ½ÃÀÛ
+    // ë‹¤ì‹œ ë°ì´í„° ìˆ˜ì‹  ì‹œì‘
     RegisterRecv();
 }
 
@@ -238,27 +240,27 @@ uint32 Session::ProcessPacket(uint32 numOfBytes)
 
     while (true)
     {
-        // ¸ğµç µ¥ÀÌÅÍ Ã³¸® ½Ã Á¾·á
+        // ëª¨ë“  ë°ì´í„° ì²˜ë¦¬ ì‹œ ì¢…ë£Œ
         if (processedSize >= numOfBytes)
             break;
 
-        // ³²Àº µ¥ÀÌÅÍ°¡ Çì´õº¸´Ù ÀÛÀº °æ¿ì parsing ºÒ°¡, Á¾·á
+        // ë‚¨ì€ ë°ì´í„°ê°€ í—¤ë”ë³´ë‹¤ ì‘ì€ ê²½ìš° parsing ë¶ˆê°€, ì¢…ë£Œ
         const uint32 dataSize = numOfBytes - processedSize;
         if (dataSize < sizeof(PacketHeader))
             break;
 
-        // Çì´õ parsing, packet Å©±â¸¦ ±¸ÇÔ
+        // í—¤ë” parsing, packet í¬ê¸°ë¥¼ êµ¬í•¨
         PacketHeader* header = reinterpret_cast<PacketHeader*>(buffer);
         const uint32 packetSize = header->packetSize;
 
-        // ³²Àº µ¥ÀÌÅÍ°¡ packet Å©±âº¸´Ù ÀÛÀº °æ¿ì parsing ºÒ°¡, Á¾·á
+        // ë‚¨ì€ ë°ì´í„°ê°€ packet í¬ê¸°ë³´ë‹¤ ì‘ì€ ê²½ìš° parsing ë¶ˆê°€, ì¢…ë£Œ
         if (dataSize < packetSize)
             break;
 
-        // packet Ã³¸®
+        // packet ì²˜ë¦¬
         OnRecv(buffer);
 
-        // Ã³¸®ÇÑ packet Å©±â °è»ê, buffer offset ÀÌµ¿
+        // ì²˜ë¦¬í•œ packet í¬ê¸° ê³„ì‚°, buffer offset ì´ë™
         processedSize += packetSize;
         buffer += packetSize;
     }
@@ -277,7 +279,7 @@ void Session::RegisterSend(vector<shared_ptr<SendBuffer>>& sendBuffers)
     _sendEvent.Init();
     _sendEvent.SetOwner(shared_from_this());
 
-    // º¸³¾ µ¥ÀÌÅÍµéÀ» WSABUF¿¡ ÇÒ´ç
+    // ë³´ë‚¼ ë°ì´í„°ë“¤ì„ WSABUFì— í• ë‹¹
     vector<WSABUF> wsaBufs;
     
     for (shared_ptr<SendBuffer>& sendBuffer : sendBuffers)
@@ -287,7 +289,7 @@ void Session::RegisterSend(vector<shared_ptr<SendBuffer>>& sendBuffers)
         wsaBuf.len = sendBuffer->GetBufferSize();
         wsaBufs.push_back(wsaBuf);
 
-        // SendBuffer°¡ Àü¼Û ¿Ï·á Àü¿¡ ¼Ò¸êµÇÁö ¾Êµµ·Ï Event¿¡ Ãß°¡ (use_count++)
+        // SendBufferê°€ ì „ì†¡ ì™„ë£Œ ì „ì— ì†Œë©¸ë˜ì§€ ì•Šë„ë¡ Eventì— ì¶”ê°€ (use_count++)
         _sendEvent.PushSendBuffer(sendBuffer);
     }
 
@@ -300,7 +302,7 @@ void Session::RegisterSend(vector<shared_ptr<SendBuffer>>& sendBuffers)
 
         if (errorCode != WSA_IO_PENDING)
         {
-            spdlog::error("Send Error : {} : SessionId : {}", errorCode, _sessionId);
+            spdlog::error("Session[{}] : Send Error[{}]", _sessionId, errorCode);
 
             _sendEvent.SetOwner(nullptr);
             _sendEvent.ClearSendBuffers();
@@ -317,7 +319,7 @@ void Session::ProcessSend(uint32 numOfBytes)
 
     _sendEvent.ClearSendBuffers();
 
-    // º¸³¾ µ¥ÀÌÅÍ°¡ ³²¾ÆÀÖÀ¸¸é Ãß°¡·Î Àü¼Û
+    // ë³´ë‚¼ ë°ì´í„°ê°€ ë‚¨ì•„ìˆìœ¼ë©´ ì¶”ê°€ë¡œ ì „ì†¡
     vector<shared_ptr<SendBuffer>> sendBuffers;
     while (true)
     {

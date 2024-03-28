@@ -37,7 +37,7 @@ public:
 	bool Disconnect();
 	void Send(shared_ptr<SendBuffer> sendBuffer);
 
-	bool OnAccept(NetAddress netAddress);
+	void OnAccept(NetAddress netAddress);
 
 private:
 	// Connect

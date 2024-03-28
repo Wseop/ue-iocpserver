@@ -64,7 +64,7 @@ void Room::Enter(shared_ptr<Session> session, Protocol::C_Enter payload)
 	// 세션 목록에 추가
 	_sessions[sessionId] = session;
 
-	spdlog::info("Enter : SessionId : {}", sessionId);
+	spdlog::info("Session[{}] : Enter", sessionId);
 }
 
 void Room::Exit(shared_ptr<Session> session, Protocol::C_Exit payload)
@@ -87,7 +87,7 @@ void Room::Exit(shared_ptr<Session> session, Protocol::C_Exit payload)
 	exitPacket.set_result(true);
 	session->Send(ServerPacketHandler::MakeS_Exit(&exitPacket));
 
-	spdlog::info("Exit : SessionId : {}", sessionId);
+	spdlog::info("Session[{}] : Exit", sessionId);
 
 	// 제거할 플레이어 검색
 	Protocol::S_Despawn despawnPacket;
@@ -130,7 +130,7 @@ void Room::MovePlayer(shared_ptr<Session> session, Protocol::C_Move payload)
 	// 플레이어 이동
 	player->SetPosInfo(posInfo);
 
-	spdlog::info("MovePlayer : {} : [{}, {}, {}, {}]", player->GetObjectId(), static_cast<int32>(posInfo.move_state()), posInfo.x(), posInfo.y(), posInfo.z());
+	spdlog::info("Session[{}] : Player[{}] : Move[{}, {}, {}, {}]", session->GetSessionId(), player->GetObjectId(), static_cast<int32>(posInfo.move_state()), posInfo.x(), posInfo.y(), posInfo.z());
 
 	// Move 패킷 Broadcast
 	Protocol::S_Move movePacket;
@@ -156,19 +156,22 @@ shared_ptr<Player> Room::SpawnPlayer(weak_ptr<Session> session)
 
 	_players[playerId] = player;
 
-	spdlog::info("SpawnPlayer : {}", playerId);
+	spdlog::info("Session[{}] : SpawnPlayer[{}]", session.lock()->GetSessionId(), playerId);
 
 	return player;
 }
 
 void Room::DespawnPlayer(uint32 playerId)
 {
-	if (_players.find(playerId) == _players.end())
+	auto findIt = _players.find(playerId);
+	if (findIt == _players.end())
 		return;
 
+	shared_ptr<Session> session = findIt->second->GetSession();
 	_players.erase(playerId);
 
-	spdlog::info("DespawnPlayer : {}", playerId);
+	if (session)
+		spdlog::info("Session[{}] : DespawnPlayer[{}]", session->GetSessionId(), playerId);
 }
 
 void Room::Broadcast(shared_ptr<SendBuffer> sendBuffer)

@@ -19,11 +19,11 @@ bool ClientService::Start()
         shared_ptr<Session> session = CreateSession();
         if (session->Connect() == false)
         {
-            spdlog::error("Failed to connect server");
+            spdlog::error("ClientService : Failed to connect server");
             return false;
         }
     }
-    spdlog::info("{} Sessions Connected to server", _sessionCount);
+    spdlog::info("ClientService : {} Sessions Connected to server", _sessionCount);
 
     return true;
 }

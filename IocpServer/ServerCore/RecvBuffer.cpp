@@ -38,7 +38,7 @@ bool RecvBuffer::OnRead(uint32 numOfBytes)
 {
     if (numOfBytes > DataSize())
     {
-        spdlog::error("Buffer Read Overflow");
+        spdlog::error("RecvBuffer : Buffer Read Overflow");
         return false;
     }
 
@@ -50,7 +50,7 @@ bool RecvBuffer::OnWrite(uint32 numOfBytes)
 {
     if (numOfBytes > FreeSize())
     {
-        spdlog::error("Buffer Write Overflow");
+        spdlog::error("RecvBuffer : Buffer Write Overflow");
         return false;
     }
 

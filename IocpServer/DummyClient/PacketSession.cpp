@@ -10,7 +10,6 @@ PacketSession::~PacketSession()
 
 void PacketSession::OnConnect()
 {
-	spdlog::info("Connected to server : SessionId : {}", GetSessionId());
 }
 
 void PacketSession::OnDisconnect()
