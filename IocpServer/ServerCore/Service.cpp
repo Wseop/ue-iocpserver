@@ -48,6 +48,7 @@ bool Service::AddSession(shared_ptr<Session> session)
         spdlog::debug("SessionId Duplicated");
         return false;
     }
+    session->SetSessionId(sessionId);
     _sessions[sessionId] = session;
     return true;
 }
