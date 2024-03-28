@@ -128,10 +128,13 @@ void Session::ProcessConnect()
 {
     _connectEvent.SetOwner(nullptr);
 
-    GetService()->AddSession(dynamic_pointer_cast<Session>(shared_from_this()));
-    OnConnect();
+    if (GetService()->AddSession(dynamic_pointer_cast<Session>(shared_from_this())) == false)
+    {
+        Disconnect();
+        return;
+    }
 
-    // Recv Ω√¿€
+    OnConnect();
     RegisterRecv();
 }
 
