@@ -37,7 +37,8 @@ void ThreadManager::Join()
 void ThreadManager::InitTLS()
 {
 	static atomic<uint32> sThreadId = 0;
-	tThreadId = sThreadId++;
+
+	tThreadId = sThreadId.fetch_add(1);
 }
 
 void ThreadManager::ExecuteJobQueue()
