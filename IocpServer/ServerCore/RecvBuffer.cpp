@@ -2,9 +2,10 @@
 #include "RecvBuffer.h"
 
 RecvBuffer::RecvBuffer(uint32 bufferSize) :
-    _bufferSize(bufferSize)
+    _bufferSize(bufferSize),
+    _capacity(bufferSize * BUFFER_COUNT)
 {
-    _buffer.resize(bufferSize * BUFFER_COUNT);
+    _buffer.resize(_capacity);
 }
 
 RecvBuffer::~RecvBuffer()
@@ -13,11 +14,13 @@ RecvBuffer::~RecvBuffer()
 
 BYTE* RecvBuffer::ReadPos()
 {
+    assert(_readPos < _capacity);
     return &_buffer[_readPos];
 }
 
 BYTE* RecvBuffer::WritePos()
 {
+    assert(_writePos < _capacity);
     return &_buffer[_writePos];
 }
 
@@ -29,9 +32,8 @@ uint32 RecvBuffer::DataSize()
 
 uint32 RecvBuffer::FreeSize()
 {
-    uint32 capacity = static_cast<uint32>(_buffer.size());
-    assert(_writePos <= capacity);
-    return capacity - _writePos;
+    assert(_writePos < _capacity);
+    return _capacity - _writePos - 1;
 }
 
 bool RecvBuffer::OnRead(uint32 numOfBytes)

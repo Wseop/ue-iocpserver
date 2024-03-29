@@ -29,5 +29,6 @@ private:
 	uint32 _readPos = 0;
 	uint32 _writePos = 0;
 	uint32 _bufferSize = 0;
+	uint32 _capacity = 0;
 };
 
