@@ -6,16 +6,9 @@ class Job;
 class JobTimerItem
 {
 public:
-	JobTimerItem(uint64 executeTick, weak_ptr<JobQueue> jobOwner, shared_ptr<Job> job) :
-		_executeTick(executeTick),
-		_jobOwner(jobOwner),
-		_job(job)
-	{}
+	JobTimerItem(uint64 executeTick, weak_ptr<JobQueue> jobOwner, shared_ptr<Job> job);
 
-	bool operator<(const JobTimerItem& other) const
-	{
-		return _executeTick > other._executeTick;
-	}
+	bool operator<(const JobTimerItem& other) const;
 
 public:
 	uint64 GetExecuteTick() const { return _executeTick; }

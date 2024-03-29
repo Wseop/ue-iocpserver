@@ -12,10 +12,10 @@ public:
 	virtual void Dispatch(IocpEvent* iocpEvent, uint32 numOfBytes) abstract;
 
 public:
-	SOCKET GetSocket() { return _socket; }
-	HANDLE GetHandle() { return reinterpret_cast<HANDLE>(_socket); }
+	SOCKET GetSocket() const { return _socket; }
+	HANDLE GetHandle() const { return reinterpret_cast<HANDLE>(_socket); }
 
-	shared_ptr<Service> GetService() { return _service.lock(); }
+	shared_ptr<Service> GetService() const { return _service.lock(); }
 	void SetService(weak_ptr<Service> service) { _service = service; }
 
 protected:

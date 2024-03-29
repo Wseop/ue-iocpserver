@@ -45,9 +45,7 @@ void ThreadManager::ExecuteJobQueue()
 {
 	// 담당하고 있는 JobQueue가 없다면, GlobalQueue에 있는 JobQueue를 꺼내와서 처리
 	if (tJobQueue == nullptr && gJobQueue->try_pop(tJobQueue))
-	{
 		tJobQueue->Execute();
-	}
 }
 
 void ThreadManager::DistributeReservedJob()

@@ -2,6 +2,18 @@
 #include "JobTimer.h"
 #include "JobQueue.h"
 
+JobTimerItem::JobTimerItem(uint64 executeTick, weak_ptr<JobQueue> jobOwner, shared_ptr<Job> job) :
+	_executeTick(executeTick),
+	_jobOwner(jobOwner),
+	_job(job)
+{
+}
+
+bool JobTimerItem::operator<(const JobTimerItem& other) const
+{
+	return _executeTick > other._executeTick;
+}
+
 void JobTimer::Reserve(uint64 executeTick, weak_ptr<JobQueue> jobOwner, shared_ptr<Job> job)
 {
 	uint64 tick = ::GetTickCount64() + executeTick;

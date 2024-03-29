@@ -22,12 +22,12 @@ public:
 	void Init();
 
 public:
-	EventType GetEventType() { return _eventType; }
+	EventType GetEventType() const { return _eventType; }
 
-	shared_ptr<IocpObject> GetOwner() { return _owner; }
+	shared_ptr<IocpObject> GetOwner() const { return _owner; }
 	void SetOwner(shared_ptr<IocpObject> owner) { _owner = owner; }
 
-	shared_ptr<Session> GetSession() { return _session; }
+	shared_ptr<Session> GetSession() const { return _session; }
 	void SetSession(shared_ptr<Session> session) { _session = session; }
 
 	void PushSendBuffer(shared_ptr<SendBuffer> sendBuffer);
