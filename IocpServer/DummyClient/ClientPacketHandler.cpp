@@ -58,4 +58,6 @@ void ClientPacketHandler::HandleS_Move(shared_ptr<Session> session, BYTE* payloa
 {
 	Protocol::S_Move movePacket;
 	movePacket.ParseFromArray(payload, payloadSize);
+
+	// Nothing TODO.
 }

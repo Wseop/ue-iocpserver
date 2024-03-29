@@ -19,6 +19,8 @@ public:
 	void Exit(shared_ptr<Session> session);
 	void HandleExit(shared_ptr<Session> session, const Protocol::S_Exit exitPacket);
 
+	void Move(shared_ptr<Session> session);
+
 private:
 	set<uint32> _sessionIds;
 	unordered_map<uint32, shared_ptr<Player>> _players;

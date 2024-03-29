@@ -15,7 +15,7 @@ int main()
     spdlog::set_level(spdlog::level::info);
 #endif // _DEBUG
 
-    const uint32 sessionCount = 10;
+    const uint32 sessionCount = 50;
 
     ClientPacketHandler::Init();
     shared_ptr<ClientService> service = make_shared<ClientService>(NetAddress(L"127.0.0.1", 7777), []() { return make_shared<PacketSession>(); }, sessionCount);
@@ -48,11 +48,33 @@ int main()
                         continue;
                     
                     gGameInstance->Push(make_shared<Job>(gGameInstance, &GameInstance::Enter, session));
+                }
 
-                    this_thread::sleep_for(100ms);
+                this_thread::sleep_for(3s);
+
+                // Move - RUN
+                for (uint32 i = 1; i <= sessionCount; i++)
+                {
+                    shared_ptr<Session> session = service->GetSession(i);
+                    if (session == nullptr)
+                        continue;
+
+                    gGameInstance->Push(make_shared<Job>(gGameInstance, &GameInstance::Move, session));
                 }
 
                 this_thread::sleep_for(10s);
+
+                // Move - IDLE
+                for (uint32 i = 1; i <= sessionCount; i++)
+                {
+                    shared_ptr<Session> session = service->GetSession(i);
+                    if (session == nullptr)
+                        continue;
+
+                    gGameInstance->Push(make_shared<Job>(gGameInstance, &GameInstance::Move, session));
+                }
+
+                this_thread::sleep_for(3s);
                 
                 // Exit
                 for (uint32 i = 1; i <= sessionCount; i++)
@@ -62,11 +84,7 @@ int main()
                         continue;
 
                     gGameInstance->Push(make_shared<Job>(gGameInstance, &GameInstance::Exit, session));
-
-                    this_thread::sleep_for(100ms);
                 }
-
-                this_thread::sleep_for(10s);
             }
         });
 
