@@ -32,8 +32,8 @@ uint32 RecvBuffer::DataSize()
 
 uint32 RecvBuffer::FreeSize()
 {
-    assert(_writePos < _capacity);
-    return _capacity - _writePos - 1;
+    assert(_writePos <= _capacity);
+    return _capacity - _writePos;
 }
 
 bool RecvBuffer::OnRead(uint32 numOfBytes)
