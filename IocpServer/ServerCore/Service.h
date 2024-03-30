@@ -32,6 +32,5 @@ private:
 	mutex _mutex;
 	SessionFactory _sessionFactory = nullptr;
 	unordered_map<uint32, shared_ptr<Session>> _sessions;
-	static atomic<uint32> sSessionId;
 };
 

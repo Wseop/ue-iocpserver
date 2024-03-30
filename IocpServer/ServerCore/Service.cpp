@@ -2,8 +2,6 @@
 #include "Service.h"
 #include "Session.h"
 
-atomic<uint32> Service::sSessionId = 1;
-
 Service::Service(NetAddress netAddress, SessionFactory sessionFactory) :
     _netAddress(netAddress),
     _sessionFactory(sessionFactory)
@@ -16,10 +14,10 @@ Service::~Service()
 
 shared_ptr<Session> Service::CreateSession()
 {
-    shared_ptr<Session> session = _sessionFactory();
-    if (session == nullptr)
-        return nullptr;
+    static atomic<uint32> sSessionId = 0;
 
+    shared_ptr<Session> session = _sessionFactory();
+    session->SetSessionId(sSessionId.fetch_add(1));
     session->SetService(shared_from_this());
 
     return session;
@@ -42,13 +40,10 @@ bool Service::AddSession(shared_ptr<Session> session)
 
     lock_guard<mutex> lock(_mutex);
     
-    const uint32 sessionId = sSessionId.fetch_add(1);
-
-    if (_sessions.find(sessionId) != _sessions.end())
+    if (_sessions.find(session->GetSessionId()) != _sessions.end())
         return false;
 
-    session->SetSessionId(sessionId);
-    _sessions[sessionId] = session;
+    _sessions[session->GetSessionId()] = session;
 
     return true;
 }
