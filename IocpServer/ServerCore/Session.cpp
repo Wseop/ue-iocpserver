@@ -60,21 +60,16 @@ void Session::Send(shared_ptr<SendBuffer> sendBuffer)
     if (sendBuffer == nullptr)
         return;
 
-    _sendQueue.push(sendBuffer);
-
-    // Send를 처리중인 Thread가 없으면 현재 Thread가 담당
-    if (_bSendRegistered.exchange(true) == false)
+    bool bSendRegister = false;
     {
-        vector<shared_ptr<SendBuffer>> sendBuffers;
-        while (true)
-        {
-            shared_ptr<SendBuffer> buffer = nullptr;
-            if (_sendQueue.try_pop(buffer) == false)
-                break;
-            sendBuffers.push_back(buffer);
-        }
-        RegisterSend(sendBuffers);
+        lock_guard<mutex> lock(_mutex);
+
+        _sendQueue.push(sendBuffer);
+        if (_bSendRegistered.exchange(true) == false)
+            bSendRegister = true;
     }
+    if (bSendRegister)
+        RegisterSend();
 }
 
 void Session::OnAccept(NetAddress netAddress)
@@ -268,65 +263,63 @@ uint32 Session::ProcessPacket(uint32 numOfBytes)
     return processedSize;
 }
 
-void Session::RegisterSend(vector<shared_ptr<SendBuffer>>& sendBuffers)
+void Session::RegisterSend()
 {
-    if (sendBuffers.size() == 0)
-    {
-        _bSendRegistered.store(false);
-        return;
-    }
-
     _sendEvent.Init();
     _sendEvent.SetOwner(shared_from_this());
 
     // 보낼 데이터들을 WSABUF에 할당
     vector<WSABUF> wsaBufs;
-    
-    for (shared_ptr<SendBuffer>& sendBuffer : sendBuffers)
     {
-        WSABUF wsaBuf;
-        wsaBuf.buf = reinterpret_cast<char*>(sendBuffer->Buffer());
-        wsaBuf.len = sendBuffer->GetBufferSize();
-        wsaBufs.push_back(wsaBuf);
+        lock_guard<mutex> lock(_mutex);
 
-        // SendBuffer가 전송 완료 전에 소멸되지 않도록 Event에 추가 (use_count++)
-        _sendEvent.PushSendBuffer(sendBuffer);
+        while (_sendQueue.empty() == false)
+        {
+            shared_ptr<SendBuffer> sendBuffer = _sendQueue.front();
+            _sendQueue.pop();
+
+            WSABUF wsaBuf;
+            wsaBuf.buf = reinterpret_cast<char*>(sendBuffer->Buffer());
+            wsaBuf.len = sendBuffer->GetBufferSize();
+            wsaBufs.push_back(wsaBuf);
+
+            _sendEvent.PushSendBuffer(sendBuffer);
+        }
     }
-
-    // Send
+    
     DWORD numOfBytes = 0;
-
     if (::WSASend(_socket, wsaBufs.data(), static_cast<DWORD>(wsaBufs.size()), &numOfBytes, 0, &_sendEvent, nullptr) == SOCKET_ERROR)
     {
         int32 errorCode = ::WSAGetLastError();
-
         if (errorCode != WSA_IO_PENDING)
         {
-            spdlog::error("Session[{}] : Send Error[{}]", _sessionId, errorCode);
-
             _sendEvent.SetOwner(nullptr);
             _sendEvent.ClearSendBuffers();
             _bSendRegistered.store(false);
+
+            if (errorCode != WSAENOTCONN)
+                spdlog::error("Session[{}] : Send Error[{}]", _sessionId, errorCode);
         }
     }
 }
 
 void Session::ProcessSend(uint32 numOfBytes)
 {
-    _sendEvent.SetOwner(nullptr);
-
     OnSend(numOfBytes);
 
+    _sendEvent.SetOwner(nullptr);
     _sendEvent.ClearSendBuffers();
 
     // 보낼 데이터가 남아있으면 추가로 전송
-    vector<shared_ptr<SendBuffer>> sendBuffers;
-    while (true)
+    bool bSendRegister = false;
     {
-        shared_ptr<SendBuffer> sendBuffer = nullptr;
-        if (_sendQueue.try_pop(sendBuffer) == false)
-            break;
-        sendBuffers.push_back(sendBuffer);
+        lock_guard<mutex> lock(_mutex);
+
+        if (_sendQueue.empty())
+            _bSendRegistered.store(false);
+        else
+            bSendRegister = true;
     }
-    RegisterSend(sendBuffers);
+    if (bSendRegister)
+        RegisterSend();
 }

@@ -54,7 +54,7 @@ private:
 	uint32 ProcessPacket(uint32 numOfBytes);
 
 	// Send
-	void RegisterSend(vector<shared_ptr<SendBuffer>>& sendBuffers);
+	void RegisterSend();
 	void ProcessSend(uint32 numOfBytes);
 
 private:
@@ -70,7 +70,8 @@ private:
 	IocpEvent _sendEvent{ EventType::Send };
 
 	// Send
+	mutex _mutex;
 	atomic<bool> _bSendRegistered = false;
-	Concurrency::concurrent_queue<shared_ptr<SendBuffer>> _sendQueue;
+	queue<shared_ptr<SendBuffer>> _sendQueue;
 };
 
