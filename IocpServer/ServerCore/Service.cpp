@@ -33,19 +33,22 @@ shared_ptr<Session> Service::GetSession(uint32 sessionId)
     return _sessions[sessionId];
 }
 
-bool Service::AddSession(shared_ptr<Session> session)
+void Service::AddSession(shared_ptr<Session> session)
 {
     if (session == nullptr)
-        return false;
+        return;
 
     lock_guard<mutex> lock(_mutex);
     
-    if (_sessions.find(session->GetSessionId()) != _sessions.end())
-        return false;
-
+    auto findIt = _sessions.find(session->GetSessionId());
+    if (findIt != _sessions.end())
+    {
+        // 技记 ID 吝汗 惯积. 扁粮 技记 Disconnect 贸府
+        shared_ptr<Session> prevSession = findIt->second;
+        if (prevSession)
+            prevSession->Disconnect();
+    }
     _sessions[session->GetSessionId()] = session;
-
-    return true;
 }
 
 void Service::RemoveSession(uint32 sessionId)

@@ -74,13 +74,15 @@ void Session::Send(shared_ptr<SendBuffer> sendBuffer)
 
 void Session::OnAccept(NetAddress netAddress)
 {
-    // 세션 Connect 처리
     if (GetService()->GetIocpCore().Register(shared_from_this()) == false)
         return;
 
     _bConnected.store(true);
     SetNetAddress(netAddress);
-    ProcessConnect();
+    GetService()->AddSession(dynamic_pointer_cast<Session>(shared_from_this()));
+    RegisterRecv();
+
+    spdlog::info("Session[{}] : Connected from[{}({})]", _sessionId, Utils::WStrToStr(_netAddress.GetIpAddress()), _netAddress.GetPort());
 }
 
 bool Session::RegisterConnect()
@@ -95,9 +97,10 @@ bool Session::RegisterConnect()
 
     _connectEvent.Init();
     _connectEvent.SetOwner(shared_from_this());
+    SetNetAddress(GetService()->GetNetAddress());
 
     // Connect
-    SOCKADDR_IN sockAddr = GetService()->GetNetAddress().GetSockAddr();
+    SOCKADDR_IN sockAddr = _netAddress.GetSockAddr();
     int32 addrLen = sizeof(sockAddr);
     DWORD numOfBytes = 0;
 
@@ -122,17 +125,11 @@ void Session::ProcessConnect()
 {
     _connectEvent.SetOwner(nullptr);
 
-    if (GetService()->AddSession(dynamic_pointer_cast<Session>(shared_from_this())) == false)
-    {
-        Disconnect();
-        return;
-    }
-
     OnConnect();
+    GetService()->AddSession(dynamic_pointer_cast<Session>(shared_from_this()));
     RegisterRecv();
 
-    string ip = Utils::WStrToStr(_netAddress.GetIpAddress());
-    spdlog::info("Session[{}] : Connected[{}({})]", _sessionId, ip, _netAddress.GetPort());
+    spdlog::info("Session[{}] : Connected to[{}({})]", _sessionId, Utils::WStrToStr(_netAddress.GetIpAddress()), _netAddress.GetPort());
 }
 
 bool Session::RegisterDisconnect()
@@ -188,9 +185,10 @@ void Session::RegisterRecv()
 
         if (errorCode != WSA_IO_PENDING)
         {
+            _recvEvent.SetOwner(nullptr);
+
             if (errorCode != WSAENOTCONN)
                 spdlog::error("Session[{}] : Recv Error[{}]", _sessionId, errorCode);
-            _recvEvent.SetOwner(nullptr);
         }
     }
 }

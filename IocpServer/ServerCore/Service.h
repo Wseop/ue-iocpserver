@@ -21,7 +21,7 @@ public:
 	// Session
 	shared_ptr<Session> CreateSession();
 	shared_ptr<Session> GetSession(uint32 sessionId);
-	bool AddSession(shared_ptr<Session> session);
+	void AddSession(shared_ptr<Session> session);
 	void RemoveSession(uint32 sessionId);
 
 private:
