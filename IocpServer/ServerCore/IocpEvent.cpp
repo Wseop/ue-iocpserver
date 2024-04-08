@@ -4,6 +4,7 @@
 IocpEvent::IocpEvent(EventType eventType) :
 	_eventType(eventType)
 {
+	Init();
 }
 
 IocpEvent::~IocpEvent()
@@ -21,8 +22,7 @@ void IocpEvent::Init()
 
 void IocpEvent::PushSendBuffer(shared_ptr<SendBuffer> sendBuffer)
 {
-	if (sendBuffer)
-		_sendBuffers.push_back(sendBuffer);
+	_sendBuffers.push_back(sendBuffer);
 }
 
 void IocpEvent::ClearSendBuffers()

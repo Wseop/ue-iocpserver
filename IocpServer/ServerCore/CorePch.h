@@ -19,16 +19,13 @@
 #include <atomic>
 #include <functional>
 #include <format>
-using namespace std;
-
 #include <concurrent_queue.h>
 #include <concurrent_priority_queue.h>
+using namespace std;
 
 #include "Types.h"
-
 #include "CoreGlobal.h"
 #include "CoreTLS.h"
-
 #include "SocketUtils.h"
 #include "NetAddress.h"
 

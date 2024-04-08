@@ -3,7 +3,7 @@
 
 RecvBuffer::RecvBuffer(uint32 bufferSize) :
     _bufferSize(bufferSize),
-    _capacity(bufferSize * BUFFER_COUNT)
+    _capacity(bufferSize* BUFFER_COUNT)
 {
     _buffer.resize(_capacity);
 }
@@ -24,13 +24,13 @@ BYTE* RecvBuffer::WritePos()
     return &_buffer[_writePos];
 }
 
-uint32 RecvBuffer::DataSize()
+uint32 RecvBuffer::DataSize() const
 {
     assert(_readPos <= _writePos);
     return _writePos - _readPos;
 }
 
-uint32 RecvBuffer::FreeSize()
+uint32 RecvBuffer::FreeSize() const
 {
     assert(_writePos <= _capacity);
     return _capacity - _writePos;
@@ -38,9 +38,9 @@ uint32 RecvBuffer::FreeSize()
 
 bool RecvBuffer::OnRead(uint32 numOfBytes)
 {
-    if (numOfBytes > DataSize())
+    if (DataSize() < numOfBytes)
     {
-        spdlog::error("RecvBuffer : Buffer Read Overflow");
+        spdlog::error("RecvBuffer : Read Overflow");
         return false;
     }
 
@@ -50,9 +50,9 @@ bool RecvBuffer::OnRead(uint32 numOfBytes)
 
 bool RecvBuffer::OnWrite(uint32 numOfBytes)
 {
-    if (numOfBytes > FreeSize())
+    if (FreeSize() < numOfBytes)
     {
-        spdlog::error("RecvBuffer : Buffer Write Overflow");
+        spdlog::error("RecvBuffer : Write Overflow");
         return false;
     }
 
@@ -64,13 +64,13 @@ void RecvBuffer::Clean()
 {
     uint32 dataSize = DataSize();
 
-    // 처리할 데이터가 없으면 커서만 초기화
+    // 읽을 데이터가 없으면 0으로 초기화
     if (dataSize == 0)
     {
         _readPos = 0;
         _writePos = 0;
     }
-    // 여유 공간이 적으면 남은 데이터를 맨앞으로 복사하여 공간 확보
+    // 버퍼의 여유공간이 부족하면 데이터를 맨 앞으로 땡겨서 공간 확보
     else if (FreeSize() < _bufferSize)
     {
         ::memcpy(_buffer.data(), ReadPos(), dataSize);

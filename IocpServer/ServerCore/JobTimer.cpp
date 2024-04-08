@@ -1,42 +1,30 @@
 #include "pch.h"
 #include "JobTimer.h"
+#include "Job.h"
 #include "JobQueue.h"
 
-JobTimerItem::JobTimerItem(uint64 executeTick, weak_ptr<JobQueue> jobOwner, shared_ptr<Job> job) :
-	_executeTick(executeTick),
-	_jobOwner(jobOwner),
-	_job(job)
+void JobTimer::ReserveJob(uint64 tickAfter, shared_ptr<JobQueue> jobQueue, shared_ptr<Job>&& job)
 {
+	uint64 executeTick = ::GetTickCount64() + tickAfter;
+	_reservedJobs.push(make_shared<ReservedJob>(executeTick, jobQueue, move(job)));
 }
 
-bool JobTimerItem::operator<(const JobTimerItem& other) const
-{
-	return _executeTick > other._executeTick;
-}
-
-void JobTimer::Reserve(uint64 executeTick, weak_ptr<JobQueue> jobOwner, shared_ptr<Job> job)
-{
-	uint64 tick = ::GetTickCount64() + executeTick;
-	shared_ptr<JobTimerItem> item = make_shared<JobTimerItem>(tick, jobOwner, job);
-	_items.push(item);
-}
-
-void JobTimer::Distribute(uint64 currentTick)
+void JobTimer::DistributeJobs(uint64 currentTick)
 {
 	if (_bDistributing.exchange(true) == true)
 		return;
 
-	shared_ptr<JobTimerItem> item = nullptr;
-	while (_items.try_pop(item))
+	shared_ptr<ReservedJob> reservedJob = nullptr;
+	while (_reservedJobs.try_pop(reservedJob))
 	{
-		if (item->GetExecuteTick() > currentTick)
+		// 아직 실행할 시간이 아니면 다시 push 후 distribute 종료
+		if (reservedJob->executeTick > currentTick)
 		{
-			_items.push(item);
+			_reservedJobs.push(reservedJob);
 			break;
 		}
 
-		if (shared_ptr<JobQueue> jobOwner = item->GetJobOwner())
-			jobOwner->Push(item->GetJob());
+		reservedJob->jobQueue->Push(move(reservedJob->job));
 	}
 
 	_bDistributing.store(false);

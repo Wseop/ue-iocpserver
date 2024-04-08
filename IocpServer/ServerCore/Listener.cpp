@@ -4,9 +4,12 @@
 #include "Service.h"
 #include "IocpCore.h"
 #include "Session.h"
+#include "Utils.h"
+#include "JobQueue.h"
+#include "Job.h"
 
-Listener::Listener(uint32 acceptCount) :
-    _acceptCount(acceptCount)
+Listener::Listener() :
+    _jobQueue(make_shared<JobQueue>())
 {
 }
 
@@ -20,19 +23,19 @@ void Listener::Dispatch(IocpEvent* iocpEvent, uint32 numOfBytes)
     ProcessAccept(iocpEvent);
 }
 
-bool Listener::StartAccept()
+bool Listener::Start(uint32 acceptCount)
 {
-    // Iocp에 등록 및 Socket 초기화
-    if (GetService()->GetIocpCore().Register(shared_from_this()) == false ||
+    if (GetService()->GetIocpCore()->Register(shared_from_this()) == false ||
         SocketUtils::SetLinger(_socket, 0, 0) == false ||
         SocketUtils::SetReuseAddress(_socket, true) == false ||
         SocketUtils::Bind(_socket, GetService()->GetNetAddress().GetSockAddr()) == false ||
         SocketUtils::Listen(_socket) == false)
     {
+        spdlog::error("Listener : Initialize Fail");
         return false;
     }
 
-    for (uint32 i = 0; i < _acceptCount; i++)
+    for (uint32 i = 0; i < acceptCount; i++)
     {
         IocpEvent* acceptEvent = new IocpEvent(EventType::Accept);
         _acceptEvents.push_back(acceptEvent);
@@ -44,70 +47,56 @@ bool Listener::StartAccept()
 
 void Listener::RegisterAccept(IocpEvent* acceptEvent)
 {
-    // 접속할 Client를 위한 세션 생성
-    shared_ptr<Session> session = GetService()->CreateSession();
-
-    if (session == nullptr)
-    {
-        spdlog::error("Listener : Failed to create session");
-        // TODO. Retry?
-        return;
-    }
-
-    // IocpEvent 초기화
     acceptEvent->Init();
     acceptEvent->SetOwner(shared_from_this());
+
+    shared_ptr<Session> session = GetService()->CreateSession();
     acceptEvent->SetSession(session);
 
-    // Accept
     DWORD numOfBytes = 0;
 
     if (SocketUtils::AcceptEx(_socket, session->GetSocket(), session->Buffer(), 0, sizeof(SOCKADDR_IN) + 16, sizeof(SOCKADDR_IN) + 16, &numOfBytes, acceptEvent) == false)
     {
         int32 errorCode = ::WSAGetLastError();
-
         if (errorCode != WSA_IO_PENDING)
         {
-            spdlog::error("Listener : Accept Error[{}]", errorCode);
-
-            // use_count release
             acceptEvent->SetOwner(nullptr);
             acceptEvent->SetSession(nullptr);
-            // TODO. Retry?
+
+            // RegisterAccept 다시 걸어줌. JobQueue에 PushOnly로 등록하여 재귀호출 방지
+            _jobQueue->Push(make_shared<Job>(dynamic_pointer_cast<Listener>(shared_from_this()), &Listener::RegisterAccept, acceptEvent), true);
+            spdlog::error("Listener : Accept Fail");
         }
     }
 }
 
 void Listener::ProcessAccept(IocpEvent* acceptEvent)
 {
-    // Client 접속 완료, Session 세팅
     shared_ptr<Session> session = acceptEvent->GetSession();
-
-    // use_count release
-    acceptEvent->SetOwner(nullptr);
     acceptEvent->SetSession(nullptr);
+    acceptEvent->SetOwner(nullptr);
 
     if (SocketUtils::SetUpdateAcceptSocket(session->GetSocket(), _socket) == false)
     {
-        spdlog::warn("Listener : Failed to set accept socket");
+        spdlog::error("Listener : Socket Update Fail");
         RegisterAccept(acceptEvent);
         return;
     }
 
-    // Client 주소 가져오기
-    SOCKADDR_IN sockAddr;
-    int32 addrLen = sizeof(sockAddr);
+    SOCKADDR_IN clientAddr;
+    ::memset(&clientAddr, 0, sizeof(SOCKADDR_IN));
+    int32 addrLen = sizeof(clientAddr);
 
-    if (::getpeername(session->GetSocket(), reinterpret_cast<sockaddr*>(&sockAddr), &addrLen) == SOCKET_ERROR)
+    if (::getpeername(session->GetSocket(), reinterpret_cast<sockaddr*>(&clientAddr), &addrLen) == SOCKET_ERROR)
     {
-        spdlog::warn("Listener : Failed to get client's address");
+        spdlog::error("Listener : Get Client Address Fail");
         RegisterAccept(acceptEvent);
         return;
     }
 
-    // Session 시작
-    session->OnAccept(NetAddress(sockAddr));
+    NetAddress netAddress(clientAddr);
+    if (session->ProcessAccept(netAddress))
+        spdlog::info("Listener : Client Connected[{}({})] : SessionId[{}]", Utils::WStrToStr(netAddress.GetIpAddress()), netAddress.GetPort(), session->GetSessionId());
 
-    // Event 재사용, 다른 Client 접속 대기
     RegisterAccept(acceptEvent);
 }

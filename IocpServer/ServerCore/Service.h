@@ -1,10 +1,9 @@
 #pragma once
 
-#include "IocpCore.h"
-
+class IocpCore;
 class Session;
 
-using SessionFactory = function<shared_ptr<Session>()>;
+using SessionFactory = function<shared_ptr<Session>(void)>;
 
 class Service : public enable_shared_from_this<Service>
 {
@@ -12,25 +11,22 @@ public:
 	Service(NetAddress netAddress, SessionFactory sessionFactory);
 	virtual ~Service();
 
-	virtual bool Start() abstract;
-
 public:
-	IocpCore& GetIocpCore() { return _iocpCore; }
-	NetAddress GetNetAddress() { return _netAddress; }
+	shared_ptr<IocpCore> GetIocpCore() const { return _iocpCore; }
 
-	// Session
+	NetAddress GetNetAddress() const { return _netAddress; }
+
 	shared_ptr<Session> CreateSession();
-	shared_ptr<Session> GetSession(uint32 sessionId);
 	void AddSession(shared_ptr<Session> session);
-	void RemoveSession(uint32 sessionId);
+	void RemoveSession(shared_ptr<Session> session);
+	shared_ptr<Session> GetSession(uint32 sessionId);
 
 private:
-	IocpCore _iocpCore;
+	shared_ptr<IocpCore> _iocpCore = nullptr;
 	NetAddress _netAddress;
-
-	// Session
-	mutex _mutex;
 	SessionFactory _sessionFactory = nullptr;
-	unordered_map<uint32, shared_ptr<Session>> _sessions;
+
+	mutex _mutex;
+	map<uint32, shared_ptr<Session>> _sessions;
 };
 

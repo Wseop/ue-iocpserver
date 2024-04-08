@@ -21,9 +21,6 @@
     <Filter Include="소스 파일\Utils">
       <UniqueIdentifier>{76694068-d9ff-426b-8bc2-2d779f927131}</UniqueIdentifier>
     </Filter>
-    <Filter Include="소스 파일\Job">
-      <UniqueIdentifier>{31dddde3-f8b2-4adf-9cff-77f3639a953b}</UniqueIdentifier>
-    </Filter>
     <Filter Include="소스 파일\Network\Iocp">
       <UniqueIdentifier>{c5f4ea89-902c-4cb1-9d04-e8afa4193ffd}</UniqueIdentifier>
     </Filter>
@@ -32,6 +29,9 @@
     </Filter>
     <Filter Include="소스 파일\Network\Packet\Protobuf">
       <UniqueIdentifier>{7a232865-6033-4974-878b-49e52e23d9d5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\Network\Buffer">
+      <UniqueIdentifier>{3f2acdd1-e65f-416c-bc16-9f6e114c599e}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -62,23 +62,11 @@
     <ClCompile Include="IocpEvent.cpp">
       <Filter>소스 파일\Network\Iocp</Filter>
     </ClCompile>
-    <ClCompile Include="RecvBuffer.cpp">
-      <Filter>소스 파일\Network\Packet</Filter>
-    </ClCompile>
-    <ClCompile Include="SendBuffer.cpp">
-      <Filter>소스 파일\Network\Packet</Filter>
-    </ClCompile>
     <ClCompile Include="PacketHandler.cpp">
       <Filter>소스 파일\Network\Packet</Filter>
     </ClCompile>
     <ClCompile Include="Service.cpp">
       <Filter>소스 파일\Network</Filter>
-    </ClCompile>
-    <ClCompile Include="Job.cpp">
-      <Filter>소스 파일\Job</Filter>
-    </ClCompile>
-    <ClCompile Include="JobQueue.cpp">
-      <Filter>소스 파일\Job</Filter>
     </ClCompile>
     <ClCompile Include="Utils.cpp">
       <Filter>소스 파일\Utils</Filter>
@@ -92,8 +80,20 @@
     <ClCompile Include="IocpObject.cpp">
       <Filter>소스 파일\Network\Iocp</Filter>
     </ClCompile>
+    <ClCompile Include="Job.cpp">
+      <Filter>소스 파일\Thread</Filter>
+    </ClCompile>
+    <ClCompile Include="JobQueue.cpp">
+      <Filter>소스 파일\Thread</Filter>
+    </ClCompile>
     <ClCompile Include="JobTimer.cpp">
-      <Filter>소스 파일\Job</Filter>
+      <Filter>소스 파일\Thread</Filter>
+    </ClCompile>
+    <ClCompile Include="RecvBuffer.cpp">
+      <Filter>소스 파일\Network\Buffer</Filter>
+    </ClCompile>
+    <ClCompile Include="SendBuffer.cpp">
+      <Filter>소스 파일\Network\Buffer</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -127,23 +127,11 @@
     <ClInclude Include="IocpEvent.h">
       <Filter>소스 파일\Network\Iocp</Filter>
     </ClInclude>
-    <ClInclude Include="RecvBuffer.h">
-      <Filter>소스 파일\Network\Packet</Filter>
-    </ClInclude>
-    <ClInclude Include="SendBuffer.h">
-      <Filter>소스 파일\Network\Packet</Filter>
-    </ClInclude>
     <ClInclude Include="PacketHandler.h">
       <Filter>소스 파일\Network\Packet</Filter>
     </ClInclude>
     <ClInclude Include="Service.h">
       <Filter>소스 파일\Network</Filter>
-    </ClInclude>
-    <ClInclude Include="Job.h">
-      <Filter>소스 파일\Job</Filter>
-    </ClInclude>
-    <ClInclude Include="JobQueue.h">
-      <Filter>소스 파일\Job</Filter>
     </ClInclude>
     <ClInclude Include="Utils.h">
       <Filter>소스 파일\Utils</Filter>
@@ -157,8 +145,20 @@
     <ClInclude Include="IocpObject.h">
       <Filter>소스 파일\Network\Iocp</Filter>
     </ClInclude>
+    <ClInclude Include="Job.h">
+      <Filter>소스 파일\Thread</Filter>
+    </ClInclude>
+    <ClInclude Include="JobQueue.h">
+      <Filter>소스 파일\Thread</Filter>
+    </ClInclude>
     <ClInclude Include="JobTimer.h">
-      <Filter>소스 파일\Job</Filter>
+      <Filter>소스 파일\Thread</Filter>
+    </ClInclude>
+    <ClInclude Include="RecvBuffer.h">
+      <Filter>소스 파일\Network\Buffer</Filter>
+    </ClInclude>
+    <ClInclude Include="SendBuffer.h">
+      <Filter>소스 파일\Network\Buffer</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

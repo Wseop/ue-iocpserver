@@ -13,8 +13,7 @@ public:
 	void Join();
 
 public:
-	static void InitTLS();
-	static void ExecuteJobQueue();
+	static void ExecuteJob();
 	static void DistributeReservedJob();
 
 private:

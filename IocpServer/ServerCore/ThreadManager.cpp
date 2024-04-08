@@ -5,7 +5,6 @@
 
 ThreadManager::ThreadManager()
 {
-	InitTLS();
 }
 
 ThreadManager::~ThreadManager()
@@ -17,10 +16,14 @@ void ThreadManager::Launch(function<void(void)> callback)
 {
 	lock_guard<mutex> lock(_mutex);
 
-	_threads.push_back(thread([callback]()
+	_threads.push_back(thread([this, callback]()
 		{
-			InitTLS();
-			callback();
+			while (true)
+			{
+				callback();
+				ExecuteJob();
+				DistributeReservedJob();
+			}
 		}));
 }
 
@@ -34,21 +37,13 @@ void ThreadManager::Join()
 	_threads.clear();
 }
 
-void ThreadManager::InitTLS()
+void ThreadManager::ExecuteJob()
 {
-	static atomic<uint32> sThreadId = 0;
-
-	tThreadId = sThreadId.fetch_add(1);
-}
-
-void ThreadManager::ExecuteJobQueue()
-{
-	// 담당하고 있는 JobQueue가 없다면, GlobalQueue에 있는 JobQueue를 꺼내와서 처리
 	if (tJobQueue == nullptr && gJobQueue->try_pop(tJobQueue))
 		tJobQueue->Execute();
 }
 
 void ThreadManager::DistributeReservedJob()
 {
-	gJobTimer->Distribute(::GetTickCount64());
+	gJobTimer->DistributeJobs(::GetTickCount64());
 }

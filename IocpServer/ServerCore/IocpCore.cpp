@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "IocpCore.h"
-#include "IocpEvent.h"
 #include "IocpObject.h"
+#include "IocpEvent.h"
 
 IocpCore::IocpCore()
 {
@@ -21,22 +21,22 @@ bool IocpCore::Register(shared_ptr<IocpObject> iocpObject)
 
 void IocpCore::Dispatch(uint32 timeoutMs)
 {
-    DWORD numOfBytes = 0;
     ULONG_PTR dummyKey = 0;
     IocpEvent* iocpEvent = nullptr;
+    DWORD numOfBytes = 0;
 
     if (::GetQueuedCompletionStatus(_iocpHandle, &numOfBytes, &dummyKey, reinterpret_cast<LPOVERLAPPED*>(&iocpEvent), timeoutMs) == false)
     {
         int32 errorCode = ::WSAGetLastError();
-
         switch (errorCode)
         {
         case WAIT_TIMEOUT:
+            return;
         case ERROR_NETNAME_DELETED:
             break;
         default:
             spdlog::error("IocpCore : Dispatch Error[{}]", errorCode);
-            break;
+            return;
         }
     }
 

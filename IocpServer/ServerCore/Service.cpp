@@ -1,11 +1,21 @@
 #include "pch.h"
 #include "Service.h"
+#include "ThreadManager.h"
+#include "IocpCore.h"
 #include "Session.h"
 
 Service::Service(NetAddress netAddress, SessionFactory sessionFactory) :
-    _netAddress(netAddress),
-    _sessionFactory(sessionFactory)
+	_iocpCore(make_shared<IocpCore>()),
+	_netAddress(netAddress),
+	_sessionFactory(sessionFactory)
 {
+	for (uint32 i = 0; i < thread::hardware_concurrency(); i++)
+	{
+		gThreadManager->Launch([this]()
+			{
+				_iocpCore->Dispatch(10);
+			});
+	}
 }
 
 Service::~Service()
@@ -14,46 +24,51 @@ Service::~Service()
 
 shared_ptr<Session> Service::CreateSession()
 {
-    static atomic<uint32> sSessionId = 0;
+	static atomic<uint32> sSessionId = 1;
+	shared_ptr<Session> session = _sessionFactory();
 
-    shared_ptr<Session> session = _sessionFactory();
-    session->SetSessionId(sSessionId.fetch_add(1));
-    session->SetService(shared_from_this());
+	if (session == nullptr)
+		return nullptr;
 
-    return session;
-}
+	session->SetSessionId(sSessionId.fetch_add(1));
+	session->SetService(shared_from_this());
 
-shared_ptr<Session> Service::GetSession(uint32 sessionId)
-{
-    lock_guard<mutex> lock(_mutex);
-
-    if (_sessions.find(sessionId) == _sessions.end())
-        return nullptr;
-
-    return _sessions[sessionId];
+	return session;
 }
 
 void Service::AddSession(shared_ptr<Session> session)
 {
-    if (session == nullptr)
-        return;
+	if (session == nullptr)
+		return;
 
-    lock_guard<mutex> lock(_mutex);
-    
-    auto findIt = _sessions.find(session->GetSessionId());
-    if (findIt != _sessions.end())
-    {
-        // 세션 ID 중복 발생. 기존 세션 Disconnect 처리
-        shared_ptr<Session> prevSession = findIt->second;
-        if (prevSession)
-            prevSession->Disconnect();
-    }
-    _sessions[session->GetSessionId()] = session;
+	const uint32 sessionId = session->GetSessionId();
+
+	lock_guard<mutex> lock(_mutex);
+
+	// 중복이면 기존 세션 제거 후 새 세션을 추가
+	if (_sessions.find(sessionId) != _sessions.end())
+		_sessions.erase(sessionId);
+
+	_sessions[sessionId] = session;
 }
 
-void Service::RemoveSession(uint32 sessionId)
+void Service::RemoveSession(shared_ptr<Session> session)
 {
-    lock_guard<mutex> lock(_mutex);
+	if (session == nullptr)
+		return;
 
-    _sessions.erase(sessionId);
+	lock_guard<mutex> lock(_mutex);
+
+	_sessions.erase(session->GetSessionId());
+}
+
+shared_ptr<Session> Service::GetSession(uint32 sessionId)
+{
+	lock_guard<mutex> lock(_mutex);
+
+	auto findIt = _sessions.find(sessionId);
+	if (findIt == _sessions.end())
+		return nullptr;
+
+	return findIt->second;
 }

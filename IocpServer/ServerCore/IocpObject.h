@@ -9,6 +9,7 @@ public:
 	IocpObject();
 	virtual ~IocpObject();
 
+public:
 	virtual void Dispatch(IocpEvent* iocpEvent, uint32 numOfBytes) abstract;
 
 public:

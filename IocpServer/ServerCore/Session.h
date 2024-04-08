@@ -1,59 +1,55 @@
 #pragma once
 
 #include "IocpObject.h"
-#include "IocpEvent.h"
-#include "RecvBuffer.h"
+
+class IocpEvent;
+class RecvBuffer;
+class SendBuffer;
 
 class Session : public IocpObject
 {
-	const uint32 BUFFER_SIZE = 0x1000;
-
 public:
 	Session();
 	virtual ~Session();
 
+public:
 	virtual void Dispatch(IocpEvent* iocpEvent, uint32 numOfBytes) override;
 
 protected:
 	virtual void OnConnect() abstract;
 	virtual void OnDisconnect() abstract;
-	virtual void OnRecv(BYTE* packet) abstract;
+	virtual void OnRecv(BYTE* buffer) abstract;
 	virtual void OnSend(uint32 numOfBytes) abstract;
 
 public:
-	uint32 GetSessionId() { return _sessionId; }
+	uint32 GetSessionId() const { return _sessionId; }
 	void SetSessionId(uint32 sessionId) { _sessionId = sessionId; }
 
-	bool IsConnected() { return _bConnected; }
+	bool IsConnected() const { return _bConnected; }
 
-	NetAddress GetNetAddress() { return _netAddress; }
-	void SetNetAddress(NetAddress netAddress) { _netAddress = netAddress; }
+	NetAddress GetNetAddress() const { return _netAddress; }
+	void SetNetAddress(const NetAddress& netAddress) { _netAddress = netAddress; }
 
-	BYTE* Buffer() { return _recvBuffer.WritePos(); }
-	uint32 BufferSize() { return _recvBuffer.FreeSize(); }
+	BYTE* Buffer();
 
 public:
 	bool Connect();
-	bool Disconnect();
+	void Disconnect();
 	void Send(shared_ptr<SendBuffer> sendBuffer);
 
-	void OnAccept(NetAddress netAddress);
+	bool ProcessAccept(const NetAddress& netAddress);
 
 private:
-	// Connect
 	bool RegisterConnect();
 	void ProcessConnect();
 
-	// Disconnect
-	bool RegisterDisconnect();
+	void RegisterDisconnect();
 	void ProcessDisconnect();
 
-	// Recv
 	void RegisterRecv();
 	void ProcessRecv(uint32 numOfBytes);
-	uint32 ProcessPacket(uint32 numOfBytes);
+	uint32 ProcessRecvBuffer(uint32 numOfBytes);
 
-	// Send
 	void RegisterSend();
 	void ProcessSend(uint32 numOfBytes);
 
@@ -61,13 +57,15 @@ private:
 	uint32 _sessionId = 0;
 	atomic<bool> _bConnected = false;
 	NetAddress _netAddress;
-	RecvBuffer _recvBuffer;
 
-	// IocpEvent
-	IocpEvent _connectEvent{ EventType::Connect };
-	IocpEvent _disconnectEvent{ EventType::Disconnect };
-	IocpEvent _recvEvent{ EventType::Recv };
-	IocpEvent _sendEvent{ EventType::Send };
+	IocpEvent* _connectEvent = nullptr;
+	IocpEvent* _disconnectEvent = nullptr;
+	IocpEvent* _recvEvent = nullptr;
+	IocpEvent* _sendEvent = nullptr;
+
+	// Recv
+	const uint32 BUFFER_SIZE = 0x1000;
+	shared_ptr<RecvBuffer> _recvBuffer = nullptr;
 
 	// Send
 	mutex _mutex;

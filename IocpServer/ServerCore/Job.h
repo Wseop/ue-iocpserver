@@ -5,10 +5,10 @@ using JobFunc = function<void(void)>;
 class Job
 {
 public:
-	inline Job(JobFunc&& jobFunc) : _jobFunc(std::move(jobFunc)) {}
+	Job(JobFunc&& jobFunc);
 
-	template<typename T, typename Ret, typename... Args>
-	inline Job(shared_ptr<T> owner, Ret(T::*func)(Args...), Args... args)
+	template<typename Ret, typename T, typename... Args>
+	inline Job(shared_ptr<T> owner, Ret(T::* func)(Args...), Args... args)
 	{
 		_jobFunc = [owner, func, args...]()
 			{
@@ -16,10 +16,8 @@ public:
 			};
 	}
 
-	inline void Execute()
-	{
-		_jobFunc();
-	}
+public:
+	void Execute();
 
 private:
 	JobFunc _jobFunc = nullptr;
