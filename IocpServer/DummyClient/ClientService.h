@@ -5,12 +5,7 @@
 class ClientService : public Service
 {
 public:
-	ClientService(NetAddress netAddress, SessionFactory sessionFactory, uint32 sessionCount);
+	ClientService(NetAddress netAddress, SessionFactory sessionFactory);
 	virtual ~ClientService();
-
-	virtual bool Start() override;
-
-private:
-	uint32 _sessionCount = 0;
 };
 

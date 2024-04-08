@@ -12,20 +12,17 @@
     <Filter Include="소스 파일\Main">
       <UniqueIdentifier>{cc60ba87-c244-4f6b-bb98-b9e30daafbc9}</UniqueIdentifier>
     </Filter>
-    <Filter Include="소스 파일\Packet">
-      <UniqueIdentifier>{673c7e3f-8aaf-4b21-b3cb-d0a2f6428973}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="소스 파일\Packet\Protobuf">
-      <UniqueIdentifier>{a9539e95-2e4d-49f0-9f89-6f590b24e584}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="소스 파일\Session">
-      <UniqueIdentifier>{9a05c4dc-b95b-41aa-b5c0-5021bbb359cd}</UniqueIdentifier>
-    </Filter>
     <Filter Include="소스 파일\Game">
       <UniqueIdentifier>{842ae419-5277-4f37-b38d-27b6b0626396}</UniqueIdentifier>
     </Filter>
     <Filter Include="소스 파일\Game\Object">
       <UniqueIdentifier>{d7950a91-8575-4726-8f01-00b41f557078}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\Network">
+      <UniqueIdentifier>{64ad9f10-c7cc-4825-94e8-4604aed238e3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\Network\Protobuf">
+      <UniqueIdentifier>{a9539e95-2e4d-49f0-9f89-6f590b24e584}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -36,19 +33,13 @@
       <Filter>소스 파일\Main</Filter>
     </ClCompile>
     <ClCompile Include="..\ServerCore\Protocol.pb.cc">
-      <Filter>소스 파일\Packet\Protobuf</Filter>
+      <Filter>소스 파일\Network\Protobuf</Filter>
     </ClCompile>
     <ClCompile Include="..\ServerCore\Struct.pb.cc">
-      <Filter>소스 파일\Packet\Protobuf</Filter>
+      <Filter>소스 파일\Network\Protobuf</Filter>
     </ClCompile>
     <ClCompile Include="..\ServerCore\Enum.pb.cc">
-      <Filter>소스 파일\Packet\Protobuf</Filter>
-    </ClCompile>
-    <ClCompile Include="ClientPacketHandler.cpp">
-      <Filter>소스 파일\Packet</Filter>
-    </ClCompile>
-    <ClCompile Include="PacketSession.cpp">
-      <Filter>소스 파일\Session</Filter>
+      <Filter>소스 파일\Network\Protobuf</Filter>
     </ClCompile>
     <ClCompile Include="ClientService.cpp">
       <Filter>소스 파일\Main</Filter>
@@ -62,25 +53,25 @@
     <ClCompile Include="GameInstance.cpp">
       <Filter>소스 파일\Main</Filter>
     </ClCompile>
+    <ClCompile Include="PacketSession.cpp">
+      <Filter>소스 파일\Network</Filter>
+    </ClCompile>
+    <ClCompile Include="ClientPacketHandler.cpp">
+      <Filter>소스 파일\Network</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
       <Filter>소스 파일\Main</Filter>
     </ClInclude>
     <ClInclude Include="..\ServerCore\Protocol.pb.h">
-      <Filter>소스 파일\Packet\Protobuf</Filter>
+      <Filter>소스 파일\Network\Protobuf</Filter>
     </ClInclude>
     <ClInclude Include="..\ServerCore\Struct.pb.h">
-      <Filter>소스 파일\Packet\Protobuf</Filter>
+      <Filter>소스 파일\Network\Protobuf</Filter>
     </ClInclude>
     <ClInclude Include="..\ServerCore\Enum.pb.h">
-      <Filter>소스 파일\Packet\Protobuf</Filter>
-    </ClInclude>
-    <ClInclude Include="ClientPacketHandler.h">
-      <Filter>소스 파일\Packet</Filter>
-    </ClInclude>
-    <ClInclude Include="PacketSession.h">
-      <Filter>소스 파일\Session</Filter>
+      <Filter>소스 파일\Network\Protobuf</Filter>
     </ClInclude>
     <ClInclude Include="ClientService.h">
       <Filter>소스 파일\Main</Filter>
@@ -93,6 +84,12 @@
     </ClInclude>
     <ClInclude Include="GameInstance.h">
       <Filter>소스 파일\Main</Filter>
+    </ClInclude>
+    <ClInclude Include="PacketSession.h">
+      <Filter>소스 파일\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="ClientPacketHandler.h">
+      <Filter>소스 파일\Network</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

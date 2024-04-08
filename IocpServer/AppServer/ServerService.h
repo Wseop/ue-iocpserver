@@ -7,13 +7,13 @@ class Listener;
 class ServerService : public Service
 {
 public:
-	ServerService(NetAddress netAddress, SessionFactory sessionFactory, uint32 acceptCount);
+	ServerService(NetAddress netAddress, SessionFactory sessionFactory);
 	virtual ~ServerService();
 
-	virtual bool Start() override;
+public:
+	bool Start(uint32 acceptCount);
 
 private:
-	uint32 _acceptCount = 0;
 	shared_ptr<Listener> _listener = nullptr;
 };
 

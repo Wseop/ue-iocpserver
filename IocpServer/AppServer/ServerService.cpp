@@ -4,22 +4,28 @@
 #include "JobTimer.h"
 #include "Room.h"
 #include "Job.h"
+#include "ServerPacketHandler.h"
 
-ServerService::ServerService(NetAddress netAddress, SessionFactory sessionFactory, uint32 acceptCount) :
+ServerService::ServerService(NetAddress netAddress, SessionFactory sessionFactory) :
     Service(netAddress, sessionFactory),
-    _acceptCount(acceptCount)
+    _listener(make_shared<Listener>())
 {
+    ServerPacketHandler::Init();
 }
 
 ServerService::~ServerService()
 {
 }
 
-bool ServerService::Start()
+bool ServerService::Start(uint32 acceptCount)
 {
-    gJobTimer->Reserve(gRoom->GetCleanupTick(), dynamic_pointer_cast<JobQueue>(gRoom), make_shared<Job>(gRoom, &Room::Cleanup));
-
-    _listener = make_shared<Listener>(_acceptCount);
     _listener->SetService(shared_from_this());
-    return _listener->StartAccept();
+    if (_listener->Start(acceptCount) == false)
+        return false;
+
+    spdlog::info("ServerService : Start Listeners[{}]", acceptCount);
+
+    gJobTimer->ReserveJob(gRoom->GetCleanupTick(), dynamic_pointer_cast<JobQueue>(gRoom), make_shared<Job>(gRoom, &Room::Cleanup));
+
+    return true;
 }

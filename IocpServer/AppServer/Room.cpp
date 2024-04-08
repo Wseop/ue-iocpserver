@@ -217,5 +217,5 @@ void Room::Cleanup()
 		}
 	}
 
-	gJobTimer->Reserve(CLEANUP_TICK, shared_from_this(), make_shared<Job>(dynamic_pointer_cast<Room>(shared_from_this()), &Room::Cleanup));
+	gJobTimer->ReserveJob(CLEANUP_TICK, shared_from_this(), make_shared<Job>(dynamic_pointer_cast<Room>(shared_from_this()), &Room::Cleanup));
 }
