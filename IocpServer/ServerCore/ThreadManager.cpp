@@ -15,16 +15,8 @@ ThreadManager::~ThreadManager()
 void ThreadManager::Launch(function<void(void)> callback)
 {
 	lock_guard<mutex> lock(_mutex);
-
-	_threads.push_back(thread([this, callback]()
-		{
-			while (true)
-			{
-				callback();
-				ExecuteJob();
-				DistributeReservedJob();
-			}
-		}));
+	
+	_threads.push_back(thread(callback));
 }
 
 void ThreadManager::Join()

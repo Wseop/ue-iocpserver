@@ -13,7 +13,12 @@ Service::Service(NetAddress netAddress, SessionFactory sessionFactory) :
 	{
 		gThreadManager->Launch([this]()
 			{
-				_iocpCore->Dispatch(10);
+				while (true)
+				{
+					_iocpCore->Dispatch(10);
+					gThreadManager->ExecuteJob();
+					gThreadManager->DistributeReservedJob();
+				}
 			});
 	}
 }
