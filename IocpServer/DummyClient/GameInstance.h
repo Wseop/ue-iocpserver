@@ -13,17 +13,27 @@ public:
 	~GameInstance();
 
 public:
-	void Enter(shared_ptr<Session> session);
-	void HandleEnter(shared_ptr<Session> session, const Protocol::S_Enter enterPacket);
+	void EnterGameRoom(shared_ptr<Session> session);
+	void HandleEnterGameRoom(Protocol::S_Enter payload);
 
-	void Exit(shared_ptr<Session> session);
-	void HandleExit(shared_ptr<Session> session, const Protocol::S_Exit exitPacket);
+	void ExitGameRoom(shared_ptr<Session> session);
+	void HandleExitGameRoom(Protocol::S_Exit payload);
 
-	void Move(shared_ptr<Session> session);
+	void SpawnMyPlayer(shared_ptr<Session> session);
+	void HandleSpawnPlayer(Protocol::S_Spawn payload);
+
+	void HandleDespawnPlayer(Protocol::S_Despawn payload);
+
+	void MoveMyPlayersToOther(shared_ptr<Session> session);
+	void HandleMovePlayer(Protocol::S_Move payload);
 
 private:
-	set<uint32> _sessionIds;
-	unordered_map<uint32, shared_ptr<Player>> _players;
+	shared_ptr<Player> SpawnPlayer(const Protocol::ObjectInfo& playerInfo);
+	void DespawnPlayer(uint32 playerId);
+
+private:
+	map<uint32, shared_ptr<Player>> _myPlayers;
+	map<uint32, shared_ptr<Player>> _otherPlayers;
 };
 
 extern shared_ptr<GameInstance> gGameInstance;

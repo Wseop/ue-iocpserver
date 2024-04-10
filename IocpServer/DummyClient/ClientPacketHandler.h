@@ -22,6 +22,7 @@ public:
 	static inline shared_ptr<SendBuffer> MakePing(Protocol::Ping* payload) { return MakeSendBuffer(PacketType::Ping, payload); }
 	static inline shared_ptr<SendBuffer> MakeC_Enter(Protocol::C_Enter* payload) { return MakeSendBuffer(PacketType::C_Enter, payload); }
 	static inline shared_ptr<SendBuffer> MakeC_Exit(Protocol::C_Exit* payload) { return MakeSendBuffer(PacketType::C_Exit, payload); }
+	static inline shared_ptr<SendBuffer> MakeC_Spawn(Protocol::C_Spawn* payload) { return MakeSendBuffer(PacketType::C_Spawn, payload); }
 	static inline shared_ptr<SendBuffer> MakeC_Move(Protocol::C_Move* payload) { return MakeSendBuffer(PacketType::C_Move, payload); }
 };
 

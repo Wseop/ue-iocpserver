@@ -1,9 +1,8 @@
 #include "pch.h"
 #include "GameInstance.h"
-#include "PacketSession.h"
 #include "ClientPacketHandler.h"
+#include "PacketSession.h"
 #include "Player.h"
-#include "Utils.h"
 
 shared_ptr<GameInstance> gGameInstance = make_shared<GameInstance>();
 
@@ -15,98 +14,152 @@ GameInstance::~GameInstance()
 {
 }
 
-void GameInstance::Enter(shared_ptr<Session> session)
+void GameInstance::EnterGameRoom(shared_ptr<Session> session)
 {
-	if (_sessionIds.find(session->GetSessionId()) != _sessionIds.end())
-		return;
-	_sessionIds.insert(session->GetSessionId());
-
 	Protocol::C_Enter payload;
 	session->Send(ClientPacketHandler::MakeC_Enter(&payload));
 }
 
-void GameInstance::HandleEnter(shared_ptr<Session> session, const Protocol::S_Enter enterPacket)
+void GameInstance::HandleEnterGameRoom(Protocol::S_Enter payload)
 {
-	if (enterPacket.result())
+	if (payload.result())
 	{
-		if (_players.find(session->GetSessionId()) != _players.end())
+		uint32 playerCount = 0;
+		for (const Protocol::ObjectInfo& playerInfo : payload.other_object_infos())
 		{
-			spdlog::error("Session[{}] : Player Duplicated", session->GetSessionId());
-			return;
+			shared_ptr<Player> player = SpawnPlayer(playerInfo);
+			if (player == nullptr)
+				continue;
+			_otherPlayers[player->GetObjectId()] = player;
+			playerCount++;
 		}
 
-		const Protocol::ObjectInfo& objectInfo = enterPacket.my_object_info();
-		shared_ptr<Player> player = make_shared<Player>(objectInfo.object_id(), session);
-		player->SetPosInfo(objectInfo.pos_info());
-		_players[session->GetSessionId()] = player;
-		spdlog::info("Session[{}] : Player Spawn : {}", session->GetSessionId(), player->GetObjectId());
+		spdlog::info("GameInstance : EnterGameRoom Success. [{}] Players Exist.", playerCount);
 	}
 	else
 	{
-		_sessionIds.erase(session->GetSessionId());
-		spdlog::warn("Session[{}] : Enter Fail", session->GetSessionId());
+		spdlog::error("GameInstance : EnterGameRoom Fail.");
 	}
 }
 
-void GameInstance::Exit(shared_ptr<Session> session)
+void GameInstance::ExitGameRoom(shared_ptr<Session> session)
 {
-	if (_sessionIds.find(session->GetSessionId()) == _sessionIds.end())
-		return;
-	_sessionIds.erase(session->GetSessionId());
-
 	Protocol::C_Exit payload;
 	session->Send(ClientPacketHandler::MakeC_Exit(&payload));
 }
 
-void GameInstance::HandleExit(shared_ptr<Session> session, const Protocol::S_Exit exitPacket)
+void GameInstance::HandleExitGameRoom(Protocol::S_Exit payload)
 {
-	if (exitPacket.result())
+	if (payload.result())
 	{
-		auto findIt = _players.find(session->GetSessionId());
-		if (findIt == _players.end())
-			return;
-		
-		shared_ptr<Player> player = findIt->second;
-		if (player == nullptr)
-			return;
+		// 플레이어 정보 삭제
+		_myPlayers.clear();
+		_otherPlayers.clear();
 
-		_players.erase(session->GetSessionId());
-		spdlog::info("Session[{}] : Player Despawn : {}", session->GetSessionId(), player->GetObjectId());
+		spdlog::info("GameInstance : ExitGameRoom Success.");
 	}
 	else
 	{
-		spdlog::warn("Session[{}] : Exit Fail", session->GetSessionId());
+		spdlog::error("GameInstance : ExitGameRoom Fail.");
 	}
 }
 
-void GameInstance::Move(shared_ptr<Session> session)
+void GameInstance::SpawnMyPlayer(shared_ptr<Session> session)
 {
-	if (_sessionIds.find(session->GetSessionId()) == _sessionIds.end())
-		return;
-	
-	auto findIt = _players.find(session->GetSessionId());
-	if (findIt == _players.end())
+	Protocol::C_Spawn payload;
+	session->Send(ClientPacketHandler::MakeC_Spawn(&payload));
+}
+
+void GameInstance::HandleDespawnPlayer(Protocol::S_Despawn payload)
+{
+	for (const uint32 playerId : payload.object_ids())
+		DespawnPlayer(playerId);
+}
+
+void GameInstance::MoveMyPlayersToOther(shared_ptr<Session> session)
+{
+	auto otherIt = _otherPlayers.begin();
+	if (otherIt == _otherPlayers.end())
 		return;
 
-	shared_ptr<Player> player = findIt->second;
+	shared_ptr<Player> other = otherIt->second;
+	if (other == nullptr)
+		return;
+
+	Protocol::PosInfo targetPos = *other->GetPosInfo();
+
+	for (auto playerIt = _myPlayers.begin(); playerIt != _myPlayers.end(); playerIt++)
+	{
+		shared_ptr<Player> player = playerIt->second;
+		if (player == nullptr)
+			continue;
+
+		targetPos.set_object_id(player->GetObjectId());
+		player->SetPosInfo(targetPos);
+
+		Protocol::C_Move payload;
+		payload.mutable_pos_info()->CopyFrom(targetPos);
+		session->Send(ClientPacketHandler::MakeC_Move(&payload));
+	}
+}
+
+void GameInstance::HandleMovePlayer(Protocol::S_Move payload)
+{
+	const Protocol::PosInfo& posInfo = payload.pos_info();
+	auto playerIt = _otherPlayers.find(posInfo.object_id());
+	if (playerIt == _otherPlayers.end())
+		return;
+
+	shared_ptr<Player> player = playerIt->second;
 	if (player == nullptr)
 		return;
 
-	Protocol::PosInfo* posInfo = player->GetPosInfo();
-	if (posInfo->move_state() == Protocol::MOVE_STATE_IDLE)
+	player->SetPosInfo(posInfo);
+}
+
+void GameInstance::HandleSpawnPlayer(Protocol::S_Spawn payload)
+{
+	shared_ptr<Player> player = SpawnPlayer(payload.object_info());
+	if (player == nullptr)
+		return;
+
+	const uint32 playerId = player->GetObjectId();
+
+	if (payload.is_mine())
 	{
-		posInfo->set_move_state(Protocol::MOVE_STATE_RUN);
-		posInfo->set_x(Utils::GetRandom(-3500.f, 3500.f));
-		posInfo->set_y(Utils::GetRandom(-3500.f, 3500.f));
+		_myPlayers[playerId] = player;
+		spdlog::info("GameInstance : Spawn My Player. ID[{}].", playerId);
 	}
-	else if (posInfo->move_state() == Protocol::MOVE_STATE_RUN)
+	else
 	{
-		posInfo->set_move_state(Protocol::MOVE_STATE_IDLE);
+		_otherPlayers[playerId] = player;
+		spdlog::info("GameInstance : Spawn Other Player. ID[{}].", playerId);
+	}
+}
+
+shared_ptr<Player> GameInstance::SpawnPlayer(const Protocol::ObjectInfo& playerInfo)
+{
+	const uint32 playerId = playerInfo.object_id();
+
+	if (_myPlayers.find(playerId) != _myPlayers.end() || _otherPlayers.find(playerId) != _otherPlayers.end())
+	{
+		spdlog::error("GameInstance : Player ID Duplicated.");
+		return nullptr;
 	}
 
-	Protocol::C_Move payload;
-	payload.mutable_pos_info()->CopyFrom(*posInfo);
-	session->Send(ClientPacketHandler::MakeC_Move(&payload));
+	shared_ptr<Player> player = make_shared<Player>(playerId);
+	player->SetPosInfo(playerInfo.pos_info());
+	return player;
+}
 
-	spdlog::info("Session[{}] : Player[{}] : Move[{}]", session->GetSessionId(), player->GetObjectId(), static_cast<int32>(posInfo->move_state()));
+void GameInstance::DespawnPlayer(uint32 playerId)
+{
+	size_t eraseCount = 0;
+
+	eraseCount = _myPlayers.erase(playerId);
+	if (eraseCount == 0)
+		eraseCount = _otherPlayers.erase(playerId);
+
+	if (eraseCount != 0)
+		spdlog::info("GameInstance : Despawn Player. ID[{}].", playerId);
 }

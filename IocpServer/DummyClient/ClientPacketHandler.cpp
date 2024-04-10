@@ -28,36 +28,33 @@ void ClientPacketHandler::HandleS_Enter(shared_ptr<Session> session, BYTE* paylo
 {
 	Protocol::S_Enter enterPacket;
 	enterPacket.ParseFromArray(payload, payloadSize);
-
-	gGameInstance->Push(make_shared<Job>(gGameInstance, &GameInstance::HandleEnter, session, enterPacket));
+	gGameInstance->Push(make_shared<Job>(gGameInstance, &GameInstance::HandleEnterGameRoom, enterPacket));
 }
 
 void ClientPacketHandler::HandleS_Exit(shared_ptr<Session> session, BYTE* payload, uint32 payloadSize)
 {
 	Protocol::S_Exit exitPacket;
 	exitPacket.ParseFromArray(payload, payloadSize);
-
-	gGameInstance->Push(make_shared<Job>(gGameInstance, &GameInstance::HandleExit, session, exitPacket));
+	gGameInstance->Push(make_shared<Job>(gGameInstance, &GameInstance::HandleExitGameRoom, exitPacket));
 }
 
 void ClientPacketHandler::HandleS_Spawn(shared_ptr<Session> session, BYTE* payload, uint32 payloadSize)
 {
 	Protocol::S_Spawn spawnPacket;
 	spawnPacket.ParseFromArray(payload, payloadSize);
+	gGameInstance->Push(make_shared<Job>(gGameInstance, &GameInstance::HandleSpawnPlayer, spawnPacket));
 }
 
 void ClientPacketHandler::HandleS_Despawn(shared_ptr<Session> session, BYTE* payload, uint32 payloadSize)
 {
 	Protocol::S_Despawn despawnPacket;
 	despawnPacket.ParseFromArray(payload, payloadSize);
-
-	// Nothing TODO.
+	gGameInstance->Push(make_shared<Job>(gGameInstance, &GameInstance::HandleDespawnPlayer, despawnPacket));
 }
 
 void ClientPacketHandler::HandleS_Move(shared_ptr<Session> session, BYTE* payload, uint32 payloadSize)
 {
 	Protocol::S_Move movePacket;
 	movePacket.ParseFromArray(payload, payloadSize);
-
-	// Nothing TODO.
+	gGameInstance->Push(make_shared<Job>(gGameInstance, &GameInstance::HandleMovePlayer, movePacket));
 }

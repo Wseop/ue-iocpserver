@@ -8,6 +8,7 @@ Object::Object(uint32 objectId, Protocol::ObjectType objectType) :
 	_objectInfo->set_object_id(objectId);
 	_objectInfo->set_object_type(objectType);
 	_posInfo = _objectInfo->mutable_pos_info();
+	_posInfo->set_object_id(objectId);
 	_posInfo->set_move_state(Protocol::MOVE_STATE_IDLE);
 }
 
