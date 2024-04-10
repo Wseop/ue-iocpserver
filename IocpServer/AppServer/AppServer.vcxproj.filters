@@ -24,6 +24,9 @@
     <Filter Include="소스 파일\Network\Protobuf">
       <UniqueIdentifier>{6ecbfbcd-d674-4426-9e2d-4d4d4738a3c3}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\Game\Room">
+      <UniqueIdentifier>{b0caa20a-1bd1-4526-b42e-47acef337e44}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -40,9 +43,6 @@
     </ClCompile>
     <ClCompile Include="..\ServerCore\Struct.pb.cc">
       <Filter>소스 파일\Network\Protobuf</Filter>
-    </ClCompile>
-    <ClCompile Include="Room.cpp">
-      <Filter>소스 파일\Game</Filter>
     </ClCompile>
     <ClCompile Include="..\ServerCore\Enum.pb.cc">
       <Filter>소스 파일\Network\Protobuf</Filter>
@@ -62,6 +62,9 @@
     <ClCompile Include="ServerPacketHandler.cpp">
       <Filter>소스 파일\Network</Filter>
     </ClCompile>
+    <ClCompile Include="Room.cpp">
+      <Filter>소스 파일\Game\Room</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -75,9 +78,6 @@
     </ClInclude>
     <ClInclude Include="..\ServerCore\Struct.pb.h">
       <Filter>소스 파일\Network\Protobuf</Filter>
-    </ClInclude>
-    <ClInclude Include="Room.h">
-      <Filter>소스 파일\Game</Filter>
     </ClInclude>
     <ClInclude Include="..\ServerCore\Enum.pb.h">
       <Filter>소스 파일\Network\Protobuf</Filter>
@@ -96,6 +96,9 @@
     </ClInclude>
     <ClInclude Include="ServerPacketHandler.h">
       <Filter>소스 파일\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="Room.h">
+      <Filter>소스 파일\Game\Room</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

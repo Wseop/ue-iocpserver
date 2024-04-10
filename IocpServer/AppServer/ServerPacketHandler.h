@@ -15,6 +15,7 @@ private:
 	static void HandlePing(shared_ptr<Session> session, BYTE* payload, uint32 payloadSize);
 	static void HandleC_Enter(shared_ptr<Session> session, BYTE* payload, uint32 payloadSize);
 	static void HandleC_Exit(shared_ptr<Session> session, BYTE* payload, uint32 payloadSize);
+	static void HandleC_Spawn(shared_ptr<Session> session, BYTE* payload, uint32 payloadSize);
 	static void HandleC_Move(shared_ptr<Session> session, BYTE* payload, uint32 payloadSize);
 
 	// Packet Makers

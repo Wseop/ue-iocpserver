@@ -14,6 +14,7 @@ void ServerPacketHandler::Init()
     gPacketHandler[static_cast<uint16>(PacketType::Ping)] = HandlePing;
     gPacketHandler[static_cast<uint16>(PacketType::C_Enter)] = HandleC_Enter;
     gPacketHandler[static_cast<uint16>(PacketType::C_Exit)] = HandleC_Exit;
+    gPacketHandler[static_cast<uint16>(PacketType::C_Spawn)] = HandleC_Spawn;
     gPacketHandler[static_cast<uint16>(PacketType::C_Move)] = HandleC_Move;
 }
 
@@ -43,6 +44,13 @@ void ServerPacketHandler::HandleC_Exit(shared_ptr<Session> session, BYTE* payloa
     Protocol::C_Exit message; 
     message.ParseFromArray(payload, payloadSize);
     gRoom->Push(make_shared<Job>(gRoom, &Room::Exit, session, message));
+}
+
+void ServerPacketHandler::HandleC_Spawn(shared_ptr<Session> session, BYTE* payload, uint32 payloadSize)
+{
+    Protocol::C_Spawn message;
+    message.ParseFromArray(payload, payloadSize);
+    gRoom->Push(make_shared<Job>(gRoom, &Room::SpawnPlayer, session));
 }
 
 void ServerPacketHandler::HandleC_Move(shared_ptr<Session> session, BYTE* payload, uint32 payloadSize)

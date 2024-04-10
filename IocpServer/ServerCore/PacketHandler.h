@@ -10,6 +10,7 @@ enum class PacketType : uint16
 	S_Enter,
 	C_Exit,
 	S_Exit,
+	C_Spawn,
 	S_Spawn,
 	S_Despawn,
 	C_Move,

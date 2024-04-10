@@ -89,8 +89,8 @@ void FClientPacketHandler::HandleS_Spawn(TSharedPtr<FPacketSession> PacketSessio
 	UClientGameInstance* GameInstance = Cast<UClientGameInstance>(GWorld->GetGameInstance());
 	if (GameInstance == nullptr)
 		return;
-	for (const Protocol::ObjectInfo& Info : SpawnPacket.object_infos())
-		GameInstance->SpawnPlayer(Info);
+
+	GameInstance->SpawnPlayer(SpawnPacket);
 }
 
 void FClientPacketHandler::HandleS_Despawn(TSharedPtr<FPacketSession> PacketSession, BYTE* Payload, uint32 PayloadSize)

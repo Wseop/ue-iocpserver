@@ -40,7 +40,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void EnterGame();
 	void HandleEnterGame(const Protocol::S_Enter& Payload);
+	void SpawnPlayer(const Protocol::S_Spawn& Payload);
 	void SpawnPlayer(const Protocol::ObjectInfo& PlayerInfo);
+	void SpawnMyPlayer(const Protocol::ObjectInfo& PlayerInfo);
 
 	UFUNCTION(BlueprintCallable)
 	void ExitGame();

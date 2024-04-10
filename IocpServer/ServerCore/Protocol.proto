@@ -16,8 +16,7 @@ message S_Enter
 {
 	bool result = 1;
 	uint32 session_id = 2;
-	ObjectInfo my_object_info = 3;
-	repeated ObjectInfo other_object_infos = 4;
+	repeated ObjectInfo other_object_infos = 3;
 }
 
 message C_Exit
@@ -30,9 +29,14 @@ message S_Exit
 	uint32 session_id = 2;
 }
 
+message C_Spawn
+{
+}
+
 message S_Spawn
 {
-	repeated ObjectInfo object_infos = 1;
+	ObjectInfo object_info = 1;
+	bool is_mine = 2;
 }
 
 message S_Despawn

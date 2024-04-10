@@ -109,19 +109,13 @@ void UClientGameInstance::HandleEnterGame(const Protocol::S_Enter& Payload)
 {
 	if (Payload.result())
 	{
-		// Set MyPlayer
-		const Protocol::ObjectInfo& PlayerInfo = Payload.my_object_info();
-		MyPlayer = Cast<AMyPlayer>(UGameplayStatics::GetPlayerController(this, 0)->GetPawn());
-		if (MyPlayer == nullptr)
-			return;
-		MyPlayer->SetPlayerInfo(PlayerInfo);
-		
-		const Protocol::PosInfo& PosInfo = PlayerInfo.pos_info();
-		MyPlayer->SetActorLocation(FVector(PosInfo.x(), PosInfo.y(), PosInfo.z()));
-
-		// Spawn Other Players
+		// 방에 존재하는 플레이어들 스폰
 		for (const Protocol::ObjectInfo& Info : Payload.other_object_infos())
 			SpawnPlayer(Info);
+
+		// MyPlayer 스폰 요청
+		Protocol::C_Spawn spawnPayload;
+		PacketSession->PushSendBuffer(FClientPacketHandler::MakeC_Spawn(&spawnPayload));
 
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Enter Success")));
 	}
@@ -132,9 +126,18 @@ void UClientGameInstance::HandleEnterGame(const Protocol::S_Enter& Payload)
 	}
 }
 
+void UClientGameInstance::SpawnPlayer(const Protocol::S_Spawn& Payload)
+{
+	if (Payload.is_mine())
+		SpawnMyPlayer(Payload.object_info());
+	else
+		SpawnPlayer(Payload.object_info());
+}
+
 void UClientGameInstance::SpawnPlayer(const Protocol::ObjectInfo& PlayerInfo)
 {
 	const uint32 PlayerId = PlayerInfo.object_id();
+
 	if (Players.Find(PlayerId) != nullptr)
 		return;
 
@@ -147,6 +150,19 @@ void UClientGameInstance::SpawnPlayer(const Protocol::ObjectInfo& PlayerInfo)
 		NewPlayer->SetPlayerInfo(PlayerInfo);
 		Players.Add(PlayerId, NewPlayer);
 	}
+}
+
+void UClientGameInstance::SpawnMyPlayer(const Protocol::ObjectInfo& PlayerInfo)
+{
+	MyPlayer = Cast<AMyPlayer>(UGameplayStatics::GetPlayerController(this, 0)->GetPawn());
+	
+	if (MyPlayer == nullptr)
+		return;
+
+	MyPlayer->SetPlayerInfo(PlayerInfo);
+
+	const Protocol::PosInfo& PosInfo = PlayerInfo.pos_info();
+	MyPlayer->SetActorLocation(FVector(PosInfo.x(), PosInfo.y(), PosInfo.z()));
 }
 
 void UClientGameInstance::ExitGame()

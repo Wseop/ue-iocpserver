@@ -14,6 +14,7 @@ enum class EPacketType : uint16
 	S_Enter,
 	C_Exit,
 	S_Exit,
+	C_Spawn,
 	S_Spawn,
 	S_Despawn,
 	C_Move,
@@ -80,5 +81,6 @@ public:
 	static inline TSharedPtr<FSendBuffer> MakePing(Protocol::Ping* Payload) { return MakeSendBuffer(EPacketType::Ping, Payload); }
 	static inline TSharedPtr<FSendBuffer> MakeC_Enter(Protocol::C_Enter* Payload) { return MakeSendBuffer(EPacketType::C_Enter, Payload); }
 	static inline TSharedPtr<FSendBuffer> MakeC_Exit(Protocol::C_Exit* Payload) { return MakeSendBuffer(EPacketType::C_Exit, Payload); }
+	static inline TSharedPtr<FSendBuffer> MakeC_Spawn(Protocol::C_Spawn* Payload) { return MakeSendBuffer(EPacketType::C_Spawn, Payload); }
 	static inline TSharedPtr<FSendBuffer> MakeC_Move(Protocol::C_Move* Payload) { return MakeSendBuffer(EPacketType::C_Move, Payload); }
 };
