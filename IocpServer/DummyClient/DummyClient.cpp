@@ -14,18 +14,14 @@ int main()
 #endif // _DEBUG
 
     shared_ptr<ClientService> service = make_shared<ClientService>(NetAddress(L"127.0.0.1", 7777), []() { return make_shared<PacketSession>(); });
+    shared_ptr<Session> session = service->CreateSession();
+
+    // 서버 접속
+    assert(session->Connect());
+    this_thread::sleep_for(100ms);
 
     while (true)
     {
-        shared_ptr<Session> session = service->CreateSession();
-        this_thread::sleep_for(100ms);
-
-        // 서버 접속
-        {
-            assert(session->Connect());
-            this_thread::sleep_for(10ms);
-        }
-
         // 방에 입장
         {
             gGameInstance->Push(make_shared<Job>(gGameInstance, &GameInstance::EnterGameRoom, session));
@@ -34,7 +30,7 @@ int main()
 
         // 플레이어 스폰
         {
-            for (uint32 i = 0; i < 10; i++)
+            for (uint32 i = 0; i < 30; i++)
                 gGameInstance->Push(make_shared<Job>(gGameInstance, &GameInstance::SpawnMyPlayer, session));
             this_thread::sleep_for(3s);
         }
@@ -45,7 +41,7 @@ int main()
             // 다른 세션의 플레이어를 찾아서 해당 위치로 이동
             {
                 gGameInstance->Push(make_shared<Job>(gGameInstance, &GameInstance::MoveMyPlayersToOther, session));
-                this_thread::sleep_for(500ms);
+                this_thread::sleep_for(300ms);
             }
             
             uint64 end = ::GetTickCount64();
@@ -56,9 +52,7 @@ int main()
         // 방에서 퇴장
         gGameInstance->Push(make_shared<Job>(gGameInstance, &GameInstance::ExitGameRoom, session));
         this_thread::sleep_for(10ms);
-
-        // 접속 종료
-        session->Disconnect();
-        this_thread::sleep_for(1s);
     }
+
+    session->Disconnect();
 }
