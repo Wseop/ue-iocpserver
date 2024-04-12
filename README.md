@@ -35,7 +35,10 @@ for (uint32 i = 0; i < thread::hardware_concurrency(); i++)
 ## UE_Client
 - 플레이어 접속, 이동 동기화 등을 시각적으로 확인하기 위해 구현한 클라이언트 앱
 # 실행 예시
-- TODO
+## UE_Client 3개 접속
+[35c1595f-990a-4c11-bed3-899d343dbc05.webm](https://github.com/Wseop/ue-iocpserver/assets/18005580/e6494696-f03c-422f-84a8-43b1773214b5)
+## UE_Client 2개와 DummyClient를 사용한 이동 동기화 테스트
+[2cdbecc6-66ca-4cee-8c98-0e10656da40d.webm](https://github.com/Wseop/ue-iocpserver/assets/18005580/aa8781ac-a8f9-439b-9f90-19bcb68bfc00)
 # Reference
 - [[게임 프로그래머 입문 올인원] C++ & 자료구조/알고리즘 & STL & 게임 수학 & Windows API & 게임 서버](https://www.inflearn.com/course/%EA%B2%8C%EC%9E%84-%ED%94%84%EB%A1%9C%EA%B7%B8%EB%9E%98%EB%A8%B8-%EC%9E%85%EB%AC%B8-%EC%98%AC%EC%9D%B8%EC%9B%90-rookiss)
 - [[C++과 언리얼로 만드는 MMORPG 게임 개발 시리즈] Part4: 게임 서버](https://www.inflearn.com/course/%EC%96%B8%EB%A6%AC%EC%96%BC-3d-mmorpg-4)
