@@ -101,6 +101,8 @@ void GameInstance::MoveMyPlayersToOther(shared_ptr<Session> session)
 		payload.mutable_pos_info()->CopyFrom(targetPos);
 		session->Send(ClientPacketHandler::MakeC_Move(&payload));
 	}
+
+	spdlog::info("GameInstance : Move Players to [{}, {}, {}]", targetPos.x(), targetPos.y(), targetPos.z());
 }
 
 void GameInstance::HandleMovePlayer(Protocol::S_Move payload)
@@ -128,7 +130,7 @@ void GameInstance::HandleSpawnPlayer(Protocol::S_Spawn payload)
 	if (payload.is_mine())
 	{
 		_myPlayers[playerId] = player;
-		spdlog::info("GameInstance : Spawn My Player. ID[{}].", playerId);
+		//spdlog::info("GameInstance : Spawn My Player. ID[{}].", playerId);
 	}
 	else
 	{

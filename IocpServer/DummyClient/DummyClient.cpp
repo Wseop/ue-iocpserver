@@ -30,8 +30,10 @@ int main()
 
         // 플레이어 스폰
         {
-            for (uint32 i = 0; i < 30; i++)
+            uint32 spawnCount = 50;
+            for (uint32 i = 0; i < spawnCount; i++)
                 gGameInstance->Push(make_shared<Job>(gGameInstance, &GameInstance::SpawnMyPlayer, session));
+            spdlog::info("Spawn {} Players", spawnCount);
             this_thread::sleep_for(3s);
         }
 
@@ -41,17 +43,17 @@ int main()
             // 다른 세션의 플레이어를 찾아서 해당 위치로 이동
             {
                 gGameInstance->Push(make_shared<Job>(gGameInstance, &GameInstance::MoveMyPlayersToOther, session));
-                this_thread::sleep_for(300ms);
+                this_thread::sleep_for(500ms);
             }
             
             uint64 end = ::GetTickCount64();
-            if (end - start > 1000 * 10)
+            if (end - start > 1000 * 15)
                 break;
         }
 
         // 방에서 퇴장
         gGameInstance->Push(make_shared<Job>(gGameInstance, &GameInstance::ExitGameRoom, session));
-        this_thread::sleep_for(10ms);
+        this_thread::sleep_for(3s);
     }
 
     session->Disconnect();

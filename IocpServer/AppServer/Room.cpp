@@ -151,7 +151,7 @@ void Room::MovePlayer(shared_ptr<Session> session, Protocol::C_Move payload)
 	// 플레이어 이동
 	player->SetPosInfo(posInfo);
 
-	spdlog::info("Room : Move Player[{}] to [{}, {}, {}, {}]", player->GetObjectId(), static_cast<int32>(posInfo.move_state()), posInfo.x(), posInfo.y(), posInfo.z());
+	spdlog::info("Room : Move Player[{}] to [{}, {}, {}]", player->GetObjectId(), posInfo.x(), posInfo.y(), posInfo.z());
 
 	// Move 패킷 Broadcast
 	Protocol::S_Move movePacket;
