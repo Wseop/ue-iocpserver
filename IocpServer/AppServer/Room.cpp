@@ -103,8 +103,8 @@ void Room::SpawnPlayer(shared_ptr<Session> session)
 
 	// 플레이어 스폰
 	shared_ptr<Player> player = ObjectManager::CreatePlayer(session);
-	player->SetX(Utils::GetRandom(-3500.f, 3500.f));
-	player->SetY(Utils::GetRandom(-3500.f, 3500.f));
+	player->SetX(Utils::GetRandom(-500.f, 500.f));
+	player->SetY(Utils::GetRandom(-500.f, 500.f));
 	player->SetZ(100.f);
 	_players[player->GetObjectId()] = player;
 
