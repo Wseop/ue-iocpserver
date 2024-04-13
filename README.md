@@ -10,6 +10,21 @@ IOCP를 활용하여 구현해 본 게임서버입니다.<br>
 ### ServerCore
 - 서버 라이브러리
 - `IOCP 모델`과 `JobQueue`를 기반으로 Packet과 Job(Task)들을 MultiThread로 처리
+```c++
+// Service.cpp
+for (uint32 i = 0; i < thread::hardware_concurrency(); i++)
+{
+    gThreadManager->Launch([this]()
+	{
+	    while (true)
+	    {
+		_iocpCore->Dispatch(10);
+		gThreadManager->ExecuteJob();
+		gThreadManager->DistributeReservedJob();
+	    }
+	});
+}
+```
 
 <Details>
 <Summary>1. IOCP 모델</Summary>
@@ -84,26 +99,6 @@ void Session::Dispatch(IocpEvent* iocpEvent, uint32 numOfBytes)
 
 - Push는 동시에 가능
 - Pop 및 Job 실행은 `하나의 Thread`가 전담
-</Details>
-
-<Details>
-<Summary>3. Thread 함수</Summary>
-
-```c++
-// Service.cpp
-for (uint32 i = 0; i < thread::hardware_concurrency(); i++)
-{
-    gThreadManager->Launch([this]()
-	{
-	    while (true)
-	    {
-		_iocpCore->Dispatch(10);
-		gThreadManager->ExecuteJob();
-		gThreadManager->DistributeReservedJob();
-	    }
-	});
-}
-```
 </Details>
 
 <hr />
