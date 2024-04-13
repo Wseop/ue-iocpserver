@@ -9,7 +9,7 @@ IOCP를 활용하여 구현해 본 게임서버입니다.<br>
 ## IocpServer
 ### ServerCore
 - 서버 라이브러리
-- IOCP 모델과 JobQueue를 기반으로 Packet과 Job(Task)들을 MultiThread로 처리
+- `IOCP 모델`과 `JobQueue`를 기반으로 Packet과 Job(Task)들을 MultiThread로 처리
 
 <Details>
 <Summary>1. IOCP 모델</Summary>
