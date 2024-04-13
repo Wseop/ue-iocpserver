@@ -11,20 +11,112 @@ IOCP를 활용하여 구현해 본 게임서버입니다.<br>
 - 서버 라이브러리
 - IOCP와 JobQueue를 기반으로 MultiThread 환경에서 작업들을 처리
 ```c++
+// Service.cpp
 for (uint32 i = 0; i < thread::hardware_concurrency(); i++)
 {
-	gThreadManager->Launch([this]()
-		{
-			while (true)
-			{
-				_iocpCore->Dispatch(10);  // IOCP 큐에 들어온 작업 처리
-				gThreadManager->ExecuteJob();  // JobQueue에 들어있는 작업들 처리
-				gThreadManager->DistributeReservedJob();  // 예약된 작업들 처리
-			}
-		});
+    gThreadManager->Launch([this]()
+	{
+	    while (true)
+	    {
+	        _iocpCore->Dispatch(10);  // 1. IOCP 큐에 들어온 작업 처리
+		gThreadManager->ExecuteJob();  // 2. JobQueue에 들어있는 작업들 처리
+		gThreadManager->DistributeReservedJob();  // 3. 예약된 작업들 처리
+            }
+	});
 }
 ```
-- 서버와 클라이언트간 패킷 송수신은 Protobuf로 직렬화
+1. IOCP 큐에 들어온 작업 처리
+```c++
+// IocpCore.cpp
+void IocpCore::Dispatch(uint32 timeoutMs)
+{
+    ULONG_PTR dummyKey = 0;
+    IocpEvent* iocpEvent = nullptr;
+    DWORD numOfBytes = 0;
+
+    if (::GetQueuedCompletionStatus(_iocpHandle, &numOfBytes, &dummyKey, reinterpret_cast<LPOVERLAPPED*>(&iocpEvent), timeoutMs) == false)
+    {
+        int32 errorCode = ::WSAGetLastError();
+        switch (errorCode)
+        {
+        case WAIT_TIMEOUT:
+            return;
+        case ERROR_NETNAME_DELETED:
+            break;
+        default:
+            spdlog::error("IocpCore : Dispatch Error[{}]", errorCode);
+            return;
+        }
+    }
+
+    if (iocpEvent)
+        iocpEvent->GetOwner()->Dispatch(iocpEvent, numOfBytes);
+}
+
+// Listener.cpp - Accept Event 처리
+void Listener::Dispatch(IocpEvent* iocpEvent, uint32 numOfBytes)
+{
+    assert(iocpEvent->GetEventType() == EventType::Accept);
+    ProcessAccept(iocpEvent);
+}
+
+// Session.cpp - Connect, Disconnect, Recv, Send Event 처리
+void Session::Dispatch(IocpEvent* iocpEvent, uint32 numOfBytes)
+{
+    switch (iocpEvent->GetEventType())
+    {
+    case EventType::Connect:
+	ProcessConnect();
+	break;
+    case EventType::Disconnect:
+	ProcessDisconnect();
+	break;
+    case EventType::Recv:
+	ProcessRecv(numOfBytes);
+	break;
+    case EventType::Send:
+	ProcessSend(numOfBytes);
+	break;
+    default:
+	spdlog::error("Session[{}] : Invalid EventType[{}]", _sessionId, static_cast<uint8>(iocpEvent->GetEventType()));
+	break;
+    }
+}
+```
+2. JobQueue에 들어있는 작업들 처리
+```c++
+// CoreGlobal.cpp
+shared_ptr<Concurrency::concurrent_queue<shared_ptr<JobQueue>>> gJobQueue = nullptr;
+
+// CoreTLS.cpp
+thread_local shared_ptr<JobQueue> tJobQueue = nullptr;
+
+// ThreadManager.cpp
+void ThreadManager::ExecuteJob()
+{
+    if (tJobQueue == nullptr && gJobQueue->try_pop(tJobQueue))
+        tJobQueue->Execute();
+}
+
+// JobQueue.cpp
+void JobQueue::Execute()
+{
+    // 모든 Job 실행
+    uint32 executeCount = 0;
+    shared_ptr<Job> job = nullptr;
+    while (_jobs.try_pop(job))
+    {
+	job->Execute();
+	executeCount++;
+    }
+
+    // 남아있는 Job이 더 있으면 다른 Thread가 처리할 수 있도록 GlobalQueue에 추가
+    if (_jobCount.fetch_sub(executeCount) != executeCount)
+	gJobQueue->push(shared_from_this());
+
+    tJobQueue = nullptr;
+}
+```
 ### AppServer
 - 서버 앱
 - Listen 수행
