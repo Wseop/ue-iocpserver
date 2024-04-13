@@ -9,23 +9,13 @@ IOCP를 활용하여 구현해 본 게임서버입니다.<br>
 ## IocpServer
 ### ServerCore
 - 서버 라이브러리
-- IOCP와 JobQueue를 기반으로 MultiThread 환경에서 작업들을 처리
-```c++
-// Service.cpp
-for (uint32 i = 0; i < thread::hardware_concurrency(); i++)
-{
-    gThreadManager->Launch([this]()
-	{
-	    while (true)
-	    {
-	        _iocpCore->Dispatch(10);  // 1. IOCP 큐에 들어온 작업 처리
-		gThreadManager->ExecuteJob();  // 2. JobQueue에 들어있는 작업들 처리
-		gThreadManager->DistributeReservedJob();  // 3. 예약된 작업들 처리
-            }
-	});
-}
-```
-1. IOCP 큐에 들어온 작업 처리
+- IOCP 모델과 JobQueue를 기반으로 Packet과 Job(Task)들을 MultiThread로 처리
+
+<Details>
+<Summary>1. IOCP 모델</Summary>
+
+<img src="https://github.com/Wseop/ue-iocpserver/assets/18005580/394b0d4d-c4f2-4840-80a5-4973807b0c1e" width="420" height="300" />
+
 ```c++
 // IocpCore.cpp
 void IocpCore::Dispatch(uint32 timeoutMs)
@@ -52,15 +42,17 @@ void IocpCore::Dispatch(uint32 timeoutMs)
     if (iocpEvent)
         iocpEvent->GetOwner()->Dispatch(iocpEvent, numOfBytes);
 }
-
-// Listener.cpp - Accept Event 처리
+```
+```c++
+// Listener.cpp
 void Listener::Dispatch(IocpEvent* iocpEvent, uint32 numOfBytes)
 {
     assert(iocpEvent->GetEventType() == EventType::Accept);
     ProcessAccept(iocpEvent);
 }
-
-// Session.cpp - Connect, Disconnect, Recv, Send Event 처리
+```
+```c++
+// Session.cpp
 void Session::Dispatch(IocpEvent* iocpEvent, uint32 numOfBytes)
 {
     switch (iocpEvent->GetEventType())
@@ -83,40 +75,20 @@ void Session::Dispatch(IocpEvent* iocpEvent, uint32 numOfBytes)
     }
 }
 ```
-2. JobQueue에 들어있는 작업들 처리
-```c++
-// CoreGlobal.cpp
-shared_ptr<Concurrency::concurrent_queue<shared_ptr<JobQueue>>> gJobQueue = nullptr;
+</Details>
 
-// CoreTLS.cpp
-thread_local shared_ptr<JobQueue> tJobQueue = nullptr;
+<Details>
+<Summary>2. JobQueue</Summary>
 
-// ThreadManager.cpp
-void ThreadManager::ExecuteJob()
-{
-    if (tJobQueue == nullptr && gJobQueue->try_pop(tJobQueue))
-        tJobQueue->Execute();
-}
 
-// JobQueue.cpp
-void JobQueue::Execute()
-{
-    // 모든 Job 실행
-    uint32 executeCount = 0;
-    shared_ptr<Job> job = nullptr;
-    while (_jobs.try_pop(job))
-    {
-	job->Execute();
-	executeCount++;
-    }
+</Details>
 
-    // 남아있는 Job이 더 있으면 다른 Thread가 처리할 수 있도록 GlobalQueue에 추가
-    if (_jobCount.fetch_sub(executeCount) != executeCount)
-	gJobQueue->push(shared_from_this());
+<Details>
+<Summary>3. MultiThread 환경에서 처리</Summary>
 
-    tJobQueue = nullptr;
-}
-```
+
+</Details>
+
 ### AppServer
 - 서버 앱
 - Listen 수행
