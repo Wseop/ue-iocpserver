@@ -106,10 +106,15 @@ for (uint32 i = 0; i < thread::hardware_concurrency(); i++)
 ```
 </Details>
 
+<hr />
+
 ### AppServer
 - 서버 앱
 - Listen 수행
 - 게임방 관리, 플레이어 생성 및 이동, Broadcast 등의 기능 수행
+
+<hr />
+
 ### DummyClient
 - 서버 테스트 목적으로 구현한 클라이언트 앱
 - 다수의 플레이어를 생성하여 접속, 이동 테스트를 수행
