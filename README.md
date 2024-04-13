@@ -80,13 +80,30 @@ void Session::Dispatch(IocpEvent* iocpEvent, uint32 numOfBytes)
 <Details>
 <Summary>2. JobQueue</Summary>
 
+<img src="https://github.com/Wseop/ue-iocpserver/assets/18005580/f063c7af-9118-40c1-9a2c-da658c5d3d1f" width="500" height="300" />
 
+- Push는 동시에 가능
+- Pop 및 Job 실행은 `하나의 Thread`가 전담
 </Details>
 
 <Details>
-<Summary>3. MultiThread 환경에서 처리</Summary>
+<Summary>3. Thread 함수</Summary>
 
-
+```c++
+// Service.cpp
+for (uint32 i = 0; i < thread::hardware_concurrency(); i++)
+{
+    gThreadManager->Launch([this]()
+	{
+	    while (true)
+	    {
+		_iocpCore->Dispatch(10);
+		gThreadManager->ExecuteJob();
+		gThreadManager->DistributeReservedJob();
+	    }
+	});
+}
+```
 </Details>
 
 ### AppServer
