@@ -1,6 +1,5 @@
 #pragma once
 
-class IocpCore;
 class Session;
 
 using SessionFactory = function<shared_ptr<Session>(void)>;
@@ -12,8 +11,6 @@ public:
 	virtual ~Service();
 
 public:
-	shared_ptr<IocpCore> GetIocpCore() const { return _iocpCore; }
-
 	NetAddress GetNetAddress() const { return _netAddress; }
 
 	shared_ptr<Session> CreateSession();
@@ -22,7 +19,6 @@ public:
 	shared_ptr<Session> GetSession(uint32 sessionId);
 
 private:
-	shared_ptr<IocpCore> _iocpCore = nullptr;
 	NetAddress _netAddress;
 	SessionFactory _sessionFactory = nullptr;
 

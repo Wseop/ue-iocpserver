@@ -89,7 +89,7 @@ void Session::Send(shared_ptr<SendBuffer> sendBuffer)
 
 bool Session::ProcessAccept(const NetAddress& netAddress)
 {
-	if (GetService()->GetIocpCore()->Register(shared_from_this()) == false)
+	if (gIocpCore->registerObject(shared_from_this()) == false)
 		return false;
 
 	_bConnected.store(true);
@@ -102,7 +102,7 @@ bool Session::ProcessAccept(const NetAddress& netAddress)
 
 bool Session::RegisterConnect()
 {
-	if (GetService()->GetIocpCore()->Register(shared_from_this()) == false ||
+	if (gIocpCore->registerObject(shared_from_this()) == false ||
 		SocketUtils::setReuseAddress(_socket, true) == false ||
 		SocketUtils::bindAnyAddress(_socket, 0) == false)
 	{

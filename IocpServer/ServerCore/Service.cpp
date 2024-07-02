@@ -5,7 +5,6 @@
 #include "Session.h"
 
 Service::Service(NetAddress netAddress, SessionFactory sessionFactory) :
-	_iocpCore(make_shared<IocpCore>()),
 	_netAddress(netAddress),
 	_sessionFactory(sessionFactory)
 {
@@ -15,7 +14,7 @@ Service::Service(NetAddress netAddress, SessionFactory sessionFactory) :
 			{
 				while (true)
 				{
-					_iocpCore->Dispatch(10);
+					gIocpCore->dispatchEvent(10);
 					ThreadManager::instance()->executeJobQueue();
 					ThreadManager::instance()->distributeReservedJob();
 				}

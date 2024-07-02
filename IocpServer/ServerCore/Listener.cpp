@@ -25,7 +25,7 @@ void Listener::Dispatch(IocpEvent* iocpEvent, uint32 numOfBytes)
 
 bool Listener::Start(uint32 acceptCount)
 {
-    if (GetService()->GetIocpCore()->Register(shared_from_this()) == false ||
+    if (gIocpCore->registerObject(shared_from_this()) == false ||
         SocketUtils::setLinger(_socket, 0, 0) == false ||
         SocketUtils::setReuseAddress(_socket, true) == false ||
         SocketUtils::bind(_socket, GetService()->GetNetAddress().getSockAddr()) == false ||
