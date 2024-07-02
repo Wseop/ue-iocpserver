@@ -10,14 +10,14 @@ public:
 	virtual ~IocpObject();
 
 public:
-	virtual void Dispatch(IocpEvent* iocpEvent, uint32 numOfBytes) abstract;
+	virtual void processEvent(IocpEvent* iocpEvent, uint32 numOfBytes) abstract;
 
 public:
-	SOCKET GetSocket() const { return _socket; }
-	HANDLE GetHandle() const { return reinterpret_cast<HANDLE>(_socket); }
+	SOCKET getSocket() const { return _socket; }
+	HANDLE getHandle() const { return reinterpret_cast<HANDLE>(_socket); }
 
-	shared_ptr<Service> GetService() const { return _service.lock(); }
-	void SetService(weak_ptr<Service> service) { _service = service; }
+	shared_ptr<Service> getService() const { return _service.lock(); }
+	void setService(weak_ptr<Service> service) { _service = service; }
 
 protected:
 	SOCKET _socket = INVALID_SOCKET;

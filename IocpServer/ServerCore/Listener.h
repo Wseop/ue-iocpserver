@@ -11,14 +11,14 @@ public:
 	virtual ~Listener();
 
 public:
-	virtual void Dispatch(IocpEvent* iocpEvent, uint32 numOfBytes) override;
+	virtual void processEvent(IocpEvent* iocpEvent, uint32 numOfBytes) override;
 
 public:
-	bool Start(uint32 acceptCount);
+	bool start(uint32 acceptCount);
 
 private:
-	void RegisterAccept(IocpEvent* acceptEvent);
-	void ProcessAccept(IocpEvent* acceptEvent);
+	void registerAccept(IocpEvent* acceptEvent);
+	void processAccept(IocpEvent* acceptEvent);
 
 private:
 	vector<IocpEvent*> _acceptEvents;

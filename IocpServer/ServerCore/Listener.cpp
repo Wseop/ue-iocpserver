@@ -17,18 +17,18 @@ Listener::~Listener()
 {
 }
 
-void Listener::Dispatch(IocpEvent* iocpEvent, uint32 numOfBytes)
+void Listener::processEvent(IocpEvent* iocpEvent, uint32 numOfBytes)
 {
     assert(iocpEvent->GetEventType() == EventType::Accept);
-    ProcessAccept(iocpEvent);
+    processAccept(iocpEvent);
 }
 
-bool Listener::Start(uint32 acceptCount)
+bool Listener::start(uint32 acceptCount)
 {
     if (gIocpCore->registerObject(shared_from_this()) == false ||
         SocketUtils::setLinger(_socket, 0, 0) == false ||
         SocketUtils::setReuseAddress(_socket, true) == false ||
-        SocketUtils::bind(_socket, GetService()->GetNetAddress().getSockAddr()) == false ||
+        SocketUtils::bind(_socket, getService()->GetNetAddress().getSockAddr()) == false ||
         SocketUtils::listen(_socket) == false)
     {
         spdlog::error("Listener : Initialize Fail");
@@ -39,23 +39,23 @@ bool Listener::Start(uint32 acceptCount)
     {
         IocpEvent* acceptEvent = new IocpEvent(EventType::Accept);
         _acceptEvents.push_back(acceptEvent);
-        RegisterAccept(acceptEvent);
+        registerAccept(acceptEvent);
     }
 
     return true;
 }
 
-void Listener::RegisterAccept(IocpEvent* acceptEvent)
+void Listener::registerAccept(IocpEvent* acceptEvent)
 {
     acceptEvent->Init();
     acceptEvent->SetOwner(shared_from_this());
 
-    shared_ptr<Session> session = GetService()->CreateSession();
+    shared_ptr<Session> session = getService()->CreateSession();
     acceptEvent->SetSession(session);
 
     DWORD numOfBytes = 0;
 
-    if (SocketUtils::AcceptEx(_socket, session->GetSocket(), session->Buffer(), 0, sizeof(SOCKADDR_IN) + 16, sizeof(SOCKADDR_IN) + 16, &numOfBytes, acceptEvent) == false)
+    if (SocketUtils::AcceptEx(_socket, session->getSocket(), session->buffer(), 0, sizeof(SOCKADDR_IN) + 16, sizeof(SOCKADDR_IN) + 16, &numOfBytes, acceptEvent) == false)
     {
         int32 errorCode = ::WSAGetLastError();
         if (errorCode != WSA_IO_PENDING)
@@ -64,22 +64,22 @@ void Listener::RegisterAccept(IocpEvent* acceptEvent)
             acceptEvent->SetSession(nullptr);
 
             // RegisterAccept 다시 걸어줌. JobQueue에 PushOnly로 등록하여 재귀호출 방지
-            _jobQueue->Push(make_shared<Job>(dynamic_pointer_cast<Listener>(shared_from_this()), &Listener::RegisterAccept, acceptEvent), true);
+            _jobQueue->Push(make_shared<Job>(dynamic_pointer_cast<Listener>(shared_from_this()), &Listener::registerAccept, acceptEvent), true);
             spdlog::error("Listener : Accept Fail");
         }
     }
 }
 
-void Listener::ProcessAccept(IocpEvent* acceptEvent)
+void Listener::processAccept(IocpEvent* acceptEvent)
 {
     shared_ptr<Session> session = acceptEvent->GetSession();
     acceptEvent->SetSession(nullptr);
     acceptEvent->SetOwner(nullptr);
 
-    if (SocketUtils::setUpdateAcceptSocket(session->GetSocket(), _socket) == false)
+    if (SocketUtils::setUpdateAcceptSocket(session->getSocket(), _socket) == false)
     {
         spdlog::error("Listener : Socket Update Fail");
-        RegisterAccept(acceptEvent);
+        registerAccept(acceptEvent);
         return;
     }
 
@@ -87,16 +87,16 @@ void Listener::ProcessAccept(IocpEvent* acceptEvent)
     ::memset(&clientAddr, 0, sizeof(SOCKADDR_IN));
     int32 addrLen = sizeof(clientAddr);
 
-    if (::getpeername(session->GetSocket(), reinterpret_cast<sockaddr*>(&clientAddr), &addrLen) == SOCKET_ERROR)
+    if (::getpeername(session->getSocket(), reinterpret_cast<sockaddr*>(&clientAddr), &addrLen) == SOCKET_ERROR)
     {
         spdlog::error("Listener : Get Client Address Fail");
-        RegisterAccept(acceptEvent);
+        registerAccept(acceptEvent);
         return;
     }
 
     NetAddress netAddress(clientAddr);
-    if (session->ProcessAccept(netAddress))
-        spdlog::info("Listener : Client Connected[{}({})] : SessionId[{}]", netAddress.getIpAddress(), netAddress.getPort(), session->GetSessionId());
+    if (session->processAccept(netAddress))
+        spdlog::info("Listener : Client Connected[{}({})] : SessionId[{}]", netAddress.getIpAddress(), netAddress.getPort(), session->getSessionId());
 
-    RegisterAccept(acceptEvent);
+    registerAccept(acceptEvent);
 }

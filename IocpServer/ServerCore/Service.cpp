@@ -34,8 +34,8 @@ shared_ptr<Session> Service::CreateSession()
 	if (session == nullptr)
 		return nullptr;
 
-	session->SetSessionId(sSessionId.fetch_add(1));
-	session->SetService(shared_from_this());
+	session->setSessionId(sSessionId.fetch_add(1));
+	session->setService(shared_from_this());
 
 	return session;
 }
@@ -45,7 +45,7 @@ void Service::AddSession(shared_ptr<Session> session)
 	if (session == nullptr)
 		return;
 
-	const uint32 sessionId = session->GetSessionId();
+	const uint32 sessionId = session->getSessionId();
 
 	lock_guard<mutex> lock(_mutex);
 
@@ -63,7 +63,7 @@ void Service::RemoveSession(shared_ptr<Session> session)
 
 	lock_guard<mutex> lock(_mutex);
 
-	_sessions.erase(session->GetSessionId());
+	_sessions.erase(session->getSessionId());
 }
 
 shared_ptr<Session> Service::GetSession(uint32 sessionId)

@@ -16,7 +16,7 @@ IocpCore::~IocpCore()
 
 bool IocpCore::registerObject(shared_ptr<IocpObject> iocpObject)
 {
-    return ::CreateIoCompletionPort(iocpObject->GetHandle(), _iocpHandle, 0, 0);
+    return ::CreateIoCompletionPort(iocpObject->getHandle(), _iocpHandle, 0, 0);
 }
 
 void IocpCore::dispatchEvent(uint32 timeoutMs)
@@ -41,5 +41,5 @@ void IocpCore::dispatchEvent(uint32 timeoutMs)
     }
 
     if (iocpEvent)
-        iocpEvent->GetOwner()->Dispatch(iocpEvent, numOfBytes);
+        iocpEvent->GetOwner()->processEvent(iocpEvent, numOfBytes);
 }

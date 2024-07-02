@@ -20,21 +20,21 @@ Session::~Session()
 	delete _sendEvent;
 }
 
-void Session::Dispatch(IocpEvent* iocpEvent, uint32 numOfBytes)
+void Session::processEvent(IocpEvent* iocpEvent, uint32 numOfBytes)
 {
 	switch (iocpEvent->GetEventType())
 	{
 	case EventType::Connect:
-		ProcessConnect();
+		processConnect();
 		break;
 	case EventType::Disconnect:
-		ProcessDisconnect();
+		processDisconnect();
 		break;
 	case EventType::Recv:
-		ProcessRecv(numOfBytes);
+		processRecv(numOfBytes);
 		break;
 	case EventType::Send:
-		ProcessSend(numOfBytes);
+		processSend(numOfBytes);
 		break;
 	default:
 		spdlog::error("Session[{}] : Invalid EventType[{}]", _sessionId, static_cast<uint8>(iocpEvent->GetEventType()));
@@ -42,17 +42,17 @@ void Session::Dispatch(IocpEvent* iocpEvent, uint32 numOfBytes)
 	}
 }
 
-BYTE* Session::Buffer()
+BYTE* Session::buffer()
 {
 	return _recvBuffer->WritePos();
 }
 
-bool Session::Connect()
+bool Session::connect()
 {
 	if (_bConnected.exchange(true) == true)
 		return false;
 
-	if (RegisterConnect() == false)
+	if (registerConnect() == false)
 	{
 		_bConnected.store(false);
 		return false;
@@ -61,17 +61,17 @@ bool Session::Connect()
 	return true;
 }
 
-void Session::Disconnect()
+void Session::disconnect()
 {
 	if (_bConnected.exchange(false) == false)
 		return;
 
-	RegisterDisconnect();
+	registerDisconnect();
 }
 
-void Session::Send(shared_ptr<SendBuffer> sendBuffer)
+void Session::send(shared_ptr<SendBuffer> sendBuffer)
 {
-	if (IsConnected() == false)
+	if (isConnected() == false)
 		return;
 
 	if (sendBuffer == nullptr)
@@ -84,23 +84,23 @@ void Session::Send(shared_ptr<SendBuffer> sendBuffer)
 	}
 
 	if (_bSendRegistered.exchange(true) == false)
-		RegisterSend();
+		registerSend();
 }
 
-bool Session::ProcessAccept(const NetAddress& netAddress)
+bool Session::processAccept(const NetAddress& netAddress)
 {
 	if (gIocpCore->registerObject(shared_from_this()) == false)
 		return false;
 
 	_bConnected.store(true);
-	SetNetAddress(netAddress);
-	GetService()->AddSession(dynamic_pointer_cast<Session>(shared_from_this()));
-	RegisterRecv();
+	setNetAddress(netAddress);
+	getService()->AddSession(dynamic_pointer_cast<Session>(shared_from_this()));
+	registerRecv();
 
 	return true;
 }
 
-bool Session::RegisterConnect()
+bool Session::registerConnect()
 {
 	if (gIocpCore->registerObject(shared_from_this()) == false ||
 		SocketUtils::setReuseAddress(_socket, true) == false ||
@@ -113,7 +113,7 @@ bool Session::RegisterConnect()
 	_connectEvent = new IocpEvent(EventType::Connect);
 	_connectEvent->SetOwner(shared_from_this());
 
-	SetNetAddress(GetService()->GetNetAddress());
+	setNetAddress(getService()->GetNetAddress());
 	SOCKADDR_IN sockAddr = _netAddress.getSockAddr();
 	int32 addrLen = sizeof(sockAddr);
 	DWORD numOfBytes = 0;
@@ -133,18 +133,18 @@ bool Session::RegisterConnect()
 	return true;
 }
 
-void Session::ProcessConnect()
+void Session::processConnect()
 {
 	delete _connectEvent;
 
-	GetService()->AddSession(dynamic_pointer_cast<Session>(shared_from_this()));
-	RegisterRecv();
-	OnConnect();
+	getService()->AddSession(dynamic_pointer_cast<Session>(shared_from_this()));
+	registerRecv();
+	onConnect();
 
 	spdlog::info("Session[{}] : Connect Success", _sessionId);
 }
 
-void Session::RegisterDisconnect()
+void Session::registerDisconnect()
 {
 	_disconnectEvent = new IocpEvent(EventType::Disconnect);
 	_disconnectEvent->SetOwner(shared_from_this());
@@ -161,17 +161,17 @@ void Session::RegisterDisconnect()
 	}
 }
 
-void Session::ProcessDisconnect()
+void Session::processDisconnect()
 {
 	delete _disconnectEvent;
 
-	GetService()->RemoveSession(dynamic_pointer_cast<Session>(shared_from_this()));
-	OnDisconnect();
+	getService()->RemoveSession(dynamic_pointer_cast<Session>(shared_from_this()));
+	onDisconnect();
 
 	spdlog::info("Session[{}] : Disconnect Success", _sessionId);
 }
 
-void Session::RegisterRecv()
+void Session::registerRecv()
 {
 	_recvEvent->Init();
 	_recvEvent->SetOwner(shared_from_this());
@@ -195,29 +195,29 @@ void Session::RegisterRecv()
 	}
 }
 
-void Session::ProcessRecv(uint32 numOfBytes)
+void Session::processRecv(uint32 numOfBytes)
 {
 	_recvEvent->SetOwner(nullptr);
 
 	if (numOfBytes == 0 || _recvBuffer->OnWrite(numOfBytes) == false)
 	{
-		Disconnect();
+		disconnect();
 		return;
 	}
 
-	uint32 processedSize = ProcessRecvBuffer(numOfBytes);
+	uint32 processedSize = processRecvBuffer(numOfBytes);
 	uint32 dataSize = _recvBuffer->DataSize();
 	if (processedSize > dataSize || _recvBuffer->OnRead(numOfBytes) == false)
 	{
-		Disconnect();
+		disconnect();
 		return;
 	}
 
 	_recvBuffer->Clean();
-	RegisterRecv();
+	registerRecv();
 }
 
-uint32 Session::ProcessRecvBuffer(uint32 numOfBytes)
+uint32 Session::processRecvBuffer(uint32 numOfBytes)
 {
 	BYTE* buffer = _recvBuffer->ReadPos();
 	uint32 processedSize = 0;
@@ -237,7 +237,7 @@ uint32 Session::ProcessRecvBuffer(uint32 numOfBytes)
 			break;
 
 		// Packet 처리
-		OnRecv(buffer);
+		onRecv(buffer);
 
 		buffer += header->packetSize;
 		processedSize += header->packetSize;
@@ -246,7 +246,7 @@ uint32 Session::ProcessRecvBuffer(uint32 numOfBytes)
 	return processedSize;
 }
 
-void Session::RegisterSend()
+void Session::registerSend()
 {
 	_sendEvent->Init();
 	_sendEvent->SetOwner(shared_from_this());
@@ -285,9 +285,9 @@ void Session::RegisterSend()
 	}
 }
 
-void Session::ProcessSend(uint32 numOfBytes)
+void Session::processSend(uint32 numOfBytes)
 {
-	OnSend(numOfBytes);
+	onSend(numOfBytes);
 
 	_sendEvent->SetOwner(nullptr);
 	_sendEvent->ClearSendBuffers();
@@ -302,5 +302,5 @@ void Session::ProcessSend(uint32 numOfBytes)
 			bSendRegister = true;
 	}
 	if (bSendRegister)
-		RegisterSend();
+		registerSend();
 }
