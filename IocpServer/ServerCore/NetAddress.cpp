@@ -1,7 +1,11 @@
 #include "pch.h"
 #include "NetAddress.h"
 
-NetAddress::NetAddress(SOCKADDR_IN sockAddr) : 
+NetAddress::NetAddress()
+{
+}
+
+NetAddress::NetAddress(SOCKADDR_IN sockAddr) :
 	_sockAddr(sockAddr)
 {
 }

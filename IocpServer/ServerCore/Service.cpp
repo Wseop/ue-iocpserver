@@ -11,13 +11,13 @@ Service::Service(NetAddress netAddress, SessionFactory sessionFactory) :
 {
 	for (uint32 i = 0; i < thread::hardware_concurrency(); i++)
 	{
-		gThreadManager->Launch([this]()
+		ThreadManager::instance()->launch([this]()
 			{
 				while (true)
 				{
 					_iocpCore->Dispatch(10);
-					gThreadManager->ExecuteJob();
-					gThreadManager->DistributeReservedJob();
+					ThreadManager::instance()->executeJobQueue();
+					ThreadManager::instance()->distributeReservedJob();
 				}
 			});
 	}

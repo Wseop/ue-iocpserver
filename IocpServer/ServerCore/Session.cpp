@@ -103,8 +103,8 @@ bool Session::ProcessAccept(const NetAddress& netAddress)
 bool Session::RegisterConnect()
 {
 	if (GetService()->GetIocpCore()->Register(shared_from_this()) == false ||
-		SocketUtils::SetReuseAddress(_socket, true) == false ||
-		SocketUtils::BindAnyAddress(_socket, 0) == false)
+		SocketUtils::setReuseAddress(_socket, true) == false ||
+		SocketUtils::bindAnyAddress(_socket, 0) == false)
 	{
 		spdlog::error("Session[{}] : Connect initialize Fail", _sessionId);
 		return false;
@@ -114,7 +114,7 @@ bool Session::RegisterConnect()
 	_connectEvent->SetOwner(shared_from_this());
 
 	SetNetAddress(GetService()->GetNetAddress());
-	SOCKADDR_IN sockAddr = _netAddress.GetSockAddr();
+	SOCKADDR_IN sockAddr = _netAddress.getSockAddr();
 	int32 addrLen = sizeof(sockAddr);
 	DWORD numOfBytes = 0;
 

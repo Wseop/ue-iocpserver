@@ -26,10 +26,10 @@ void Listener::Dispatch(IocpEvent* iocpEvent, uint32 numOfBytes)
 bool Listener::Start(uint32 acceptCount)
 {
     if (GetService()->GetIocpCore()->Register(shared_from_this()) == false ||
-        SocketUtils::SetLinger(_socket, 0, 0) == false ||
-        SocketUtils::SetReuseAddress(_socket, true) == false ||
-        SocketUtils::Bind(_socket, GetService()->GetNetAddress().GetSockAddr()) == false ||
-        SocketUtils::Listen(_socket) == false)
+        SocketUtils::setLinger(_socket, 0, 0) == false ||
+        SocketUtils::setReuseAddress(_socket, true) == false ||
+        SocketUtils::bind(_socket, GetService()->GetNetAddress().getSockAddr()) == false ||
+        SocketUtils::listen(_socket) == false)
     {
         spdlog::error("Listener : Initialize Fail");
         return false;
@@ -76,7 +76,7 @@ void Listener::ProcessAccept(IocpEvent* acceptEvent)
     acceptEvent->SetSession(nullptr);
     acceptEvent->SetOwner(nullptr);
 
-    if (SocketUtils::SetUpdateAcceptSocket(session->GetSocket(), _socket) == false)
+    if (SocketUtils::setUpdateAcceptSocket(session->GetSocket(), _socket) == false)
     {
         spdlog::error("Listener : Socket Update Fail");
         RegisterAccept(acceptEvent);
@@ -96,7 +96,7 @@ void Listener::ProcessAccept(IocpEvent* acceptEvent)
 
     NetAddress netAddress(clientAddr);
     if (session->ProcessAccept(netAddress))
-        spdlog::info("Listener : Client Connected[{}({})] : SessionId[{}]", Utils::WStrToStr(netAddress.GetIpAddress()), netAddress.GetPort(), session->GetSessionId());
+        spdlog::info("Listener : Client Connected[{}({})] : SessionId[{}]", netAddress.getIpAddress(), netAddress.getPort(), session->GetSessionId());
 
     RegisterAccept(acceptEvent);
 }

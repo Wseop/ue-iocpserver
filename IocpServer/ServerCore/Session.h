@@ -56,7 +56,7 @@ private:
 private:
 	uint32 _sessionId = 0;
 	atomic<bool> _bConnected = false;
-	NetAddress _netAddress;
+	NetAddress _netAddress = {};
 
 	IocpEvent* _connectEvent = nullptr;
 	IocpEvent* _disconnectEvent = nullptr;

@@ -3,6 +3,7 @@
 class NetAddress
 {
 public:
+	NetAddress();
 	NetAddress(SOCKADDR_IN sockAddr);
 	NetAddress(string ip, uint16 port);
 
