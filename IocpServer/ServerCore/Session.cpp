@@ -22,7 +22,7 @@ Session::~Session()
 
 void Session::processEvent(IocpEvent* iocpEvent, uint32 numOfBytes)
 {
-	switch (iocpEvent->GetEventType())
+	switch (iocpEvent->getEventType())
 	{
 	case EventType::Connect:
 		processConnect();
@@ -37,7 +37,7 @@ void Session::processEvent(IocpEvent* iocpEvent, uint32 numOfBytes)
 		processSend(numOfBytes);
 		break;
 	default:
-		spdlog::error("Session[{}] : Invalid EventType[{}]", _sessionId, static_cast<uint8>(iocpEvent->GetEventType()));
+		spdlog::error("Session[{}] : Invalid EventType[{}]", _sessionId, static_cast<uint8>(iocpEvent->getEventType()));
 		break;
 	}
 }
@@ -111,7 +111,7 @@ bool Session::registerConnect()
 	}
 
 	_connectEvent = new IocpEvent(EventType::Connect);
-	_connectEvent->SetOwner(shared_from_this());
+	_connectEvent->setOwner(shared_from_this());
 
 	setNetAddress(getService()->GetNetAddress());
 	SOCKADDR_IN sockAddr = _netAddress.getSockAddr();
@@ -147,7 +147,7 @@ void Session::processConnect()
 void Session::registerDisconnect()
 {
 	_disconnectEvent = new IocpEvent(EventType::Disconnect);
-	_disconnectEvent->SetOwner(shared_from_this());
+	_disconnectEvent->setOwner(shared_from_this());
 
 	if (SocketUtils::DisconnectEx(_socket, _disconnectEvent, TF_REUSE_SOCKET, 0) == false)
 	{
@@ -173,8 +173,8 @@ void Session::processDisconnect()
 
 void Session::registerRecv()
 {
-	_recvEvent->Init();
-	_recvEvent->SetOwner(shared_from_this());
+	_recvEvent->init();
+	_recvEvent->setOwner(shared_from_this());
 
 	WSABUF wsaBuf;
 	wsaBuf.buf = reinterpret_cast<char*>(_recvBuffer->WritePos());
@@ -188,7 +188,7 @@ void Session::registerRecv()
 		int32 errorCode = ::WSAGetLastError();
 		if (errorCode != WSA_IO_PENDING)
 		{
-			_recvEvent->SetOwner(nullptr);
+			_recvEvent->setOwner(nullptr);
 
 			spdlog::error("Session[{}] : Recv Error[{}]", _sessionId, errorCode);
 		}
@@ -197,7 +197,7 @@ void Session::registerRecv()
 
 void Session::processRecv(uint32 numOfBytes)
 {
-	_recvEvent->SetOwner(nullptr);
+	_recvEvent->setOwner(nullptr);
 
 	if (numOfBytes == 0 || _recvBuffer->OnWrite(numOfBytes) == false)
 	{
@@ -248,8 +248,8 @@ uint32 Session::processRecvBuffer(uint32 numOfBytes)
 
 void Session::registerSend()
 {
-	_sendEvent->Init();
-	_sendEvent->SetOwner(shared_from_this());
+	_sendEvent->init();
+	_sendEvent->setOwner(shared_from_this());
 
 	vector<WSABUF> wsaBufs;
 	{
@@ -265,7 +265,7 @@ void Session::registerSend()
 			wsaBuf.len = sendBuffer->GetBufferSize();
 			wsaBufs.push_back(wsaBuf);
 
-			_sendEvent->PushSendBuffer(sendBuffer);
+			_sendEvent->addSendBuffer(sendBuffer);
 		}
 	}
 
@@ -276,8 +276,8 @@ void Session::registerSend()
 		int32 errorCode = ::WSAGetLastError();
 		if (errorCode != WSA_IO_PENDING)
 		{
-			_sendEvent->SetOwner(nullptr);
-			_sendEvent->ClearSendBuffers();
+			_sendEvent->setOwner(nullptr);
+			_sendEvent->clearSendBuffers();
 			_bSendRegistered.store(false);
 
 			spdlog::error("Session[{}] : Send Error[{}]", _sessionId, errorCode);
@@ -289,8 +289,8 @@ void Session::processSend(uint32 numOfBytes)
 {
 	onSend(numOfBytes);
 
-	_sendEvent->SetOwner(nullptr);
-	_sendEvent->ClearSendBuffers();
+	_sendEvent->setOwner(nullptr);
+	_sendEvent->clearSendBuffers();
 
 	bool bSendRegister = false;
 	{

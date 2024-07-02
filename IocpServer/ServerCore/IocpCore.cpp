@@ -41,5 +41,5 @@ void IocpCore::dispatchEvent(uint32 timeoutMs)
     }
 
     if (iocpEvent)
-        iocpEvent->GetOwner()->processEvent(iocpEvent, numOfBytes);
+        iocpEvent->getOwner()->processEvent(iocpEvent, numOfBytes);
 }

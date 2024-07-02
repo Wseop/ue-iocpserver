@@ -19,7 +19,7 @@ Listener::~Listener()
 
 void Listener::processEvent(IocpEvent* iocpEvent, uint32 numOfBytes)
 {
-    assert(iocpEvent->GetEventType() == EventType::Accept);
+    assert(iocpEvent->getEventType() == EventType::Accept);
     processAccept(iocpEvent);
 }
 
@@ -47,11 +47,11 @@ bool Listener::start(uint32 acceptCount)
 
 void Listener::registerAccept(IocpEvent* acceptEvent)
 {
-    acceptEvent->Init();
-    acceptEvent->SetOwner(shared_from_this());
+    acceptEvent->init();
+    acceptEvent->setOwner(shared_from_this());
 
     shared_ptr<Session> session = getService()->CreateSession();
-    acceptEvent->SetSession(session);
+    acceptEvent->setSession(session);
 
     DWORD numOfBytes = 0;
 
@@ -60,8 +60,8 @@ void Listener::registerAccept(IocpEvent* acceptEvent)
         int32 errorCode = ::WSAGetLastError();
         if (errorCode != WSA_IO_PENDING)
         {
-            acceptEvent->SetOwner(nullptr);
-            acceptEvent->SetSession(nullptr);
+            acceptEvent->setOwner(nullptr);
+            acceptEvent->setSession(nullptr);
 
             // RegisterAccept 다시 걸어줌. JobQueue에 PushOnly로 등록하여 재귀호출 방지
             _jobQueue->Push(make_shared<Job>(dynamic_pointer_cast<Listener>(shared_from_this()), &Listener::registerAccept, acceptEvent), true);
@@ -72,9 +72,9 @@ void Listener::registerAccept(IocpEvent* acceptEvent)
 
 void Listener::processAccept(IocpEvent* acceptEvent)
 {
-    shared_ptr<Session> session = acceptEvent->GetSession();
-    acceptEvent->SetSession(nullptr);
-    acceptEvent->SetOwner(nullptr);
+    shared_ptr<Session> session = acceptEvent->getSession();
+    acceptEvent->setSession(nullptr);
+    acceptEvent->setOwner(nullptr);
 
     if (SocketUtils::setUpdateAcceptSocket(session->getSocket(), _socket) == false)
     {
