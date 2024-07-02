@@ -6,7 +6,7 @@ class Utils
 {
 public:
 	template<typename T>
-	static inline T GetRandom(T min, T max)
+	static inline T getRandom(T min, T max)
 	{
 		random_device randomDevice;
 		mt19937 generator(randomDevice());
@@ -22,7 +22,5 @@ public:
 			return distribution(generator);
 		}
 	}
-
-	static string WStrToStr(const wstring& wstr);
 };
 
