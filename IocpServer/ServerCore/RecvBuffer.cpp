@@ -1,9 +1,9 @@
 #include "pch.h"
 #include "RecvBuffer.h"
 
-RecvBuffer::RecvBuffer(uint32 bufferSize) :
-    _bufferSize(bufferSize),
-    _capacity(bufferSize* BUFFER_COUNT)
+RecvBuffer::RecvBuffer(uint32 bufferUnitSize) :
+    _bufferUnitSize(bufferUnitSize),
+    _capacity(bufferUnitSize* BUFFER_COUNT)
 {
     _buffer.resize(_capacity);
 }
@@ -12,69 +12,69 @@ RecvBuffer::~RecvBuffer()
 {
 }
 
-BYTE* RecvBuffer::ReadPos()
+BYTE* RecvBuffer::data()
 {
-    assert(_readPos < _capacity);
-    return &_buffer[_readPos];
+    assert(_readCursor < _capacity);
+    return &_buffer[_readCursor];
 }
 
-BYTE* RecvBuffer::WritePos()
+BYTE* RecvBuffer::buffer()
 {
-    assert(_writePos < _capacity);
-    return &_buffer[_writePos];
+    assert(_writeCursor < _capacity);
+    return &_buffer[_writeCursor];
 }
 
-uint32 RecvBuffer::DataSize() const
+uint32 RecvBuffer::dataSize() const
 {
-    assert(_readPos <= _writePos);
-    return _writePos - _readPos;
+    assert(_readCursor <= _writeCursor);
+    return _writeCursor - _readCursor;
 }
 
-uint32 RecvBuffer::FreeSize() const
+uint32 RecvBuffer::bufferSize() const
 {
-    assert(_writePos <= _capacity);
-    return _capacity - _writePos;
+    assert(_writeCursor <= _capacity);
+    return _capacity - _writeCursor;
 }
 
-bool RecvBuffer::OnRead(uint32 numOfBytes)
+bool RecvBuffer::onRead(uint32 numOfBytes)
 {
-    if (DataSize() < numOfBytes)
+    if (dataSize() < numOfBytes)
     {
-        spdlog::error("RecvBuffer : Read Overflow");
+        spdlog::error("[RecvBuffer] Read Overflow");
         return false;
     }
 
-    _readPos += numOfBytes;
+    _readCursor += numOfBytes;
     return true;
 }
 
-bool RecvBuffer::OnWrite(uint32 numOfBytes)
+bool RecvBuffer::onWrite(uint32 numOfBytes)
 {
-    if (FreeSize() < numOfBytes)
+    if (bufferSize() < numOfBytes)
     {
-        spdlog::error("RecvBuffer : Write Overflow");
+        spdlog::error("[RecvBuffer] Write Overflow");
         return false;
     }
 
-    _writePos += numOfBytes;
+    _writeCursor += numOfBytes;
     return true;
 }
 
-void RecvBuffer::Clean()
+void RecvBuffer::cleanCursor()
 {
-    uint32 dataSize = DataSize();
+    uint32 _dataSize = dataSize();
 
     // 읽을 데이터가 없으면 0으로 초기화
-    if (dataSize == 0)
+    if (_dataSize == 0)
     {
-        _readPos = 0;
-        _writePos = 0;
+        _readCursor = 0;
+        _writeCursor = 0;
     }
     // 버퍼의 여유공간이 부족하면 데이터를 맨 앞으로 땡겨서 공간 확보
-    else if (FreeSize() < _bufferSize)
+    else if (bufferSize() < _bufferUnitSize)
     {
-        ::memcpy(_buffer.data(), ReadPos(), dataSize);
-        _readPos = 0;
-        _writePos = dataSize;
+        ::memcpy(_buffer.data(), data(), _dataSize);
+        _readCursor = 0;
+        _writeCursor = _dataSize;
     }
 }

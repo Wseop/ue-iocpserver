@@ -44,7 +44,7 @@ void Session::processEvent(IocpEvent* iocpEvent, uint32 numOfBytes)
 
 BYTE* Session::buffer()
 {
-	return _recvBuffer->WritePos();
+	return _recvBuffer->buffer();
 }
 
 bool Session::connect()
@@ -177,8 +177,8 @@ void Session::registerRecv()
 	_recvEvent->setOwner(shared_from_this());
 
 	WSABUF wsaBuf;
-	wsaBuf.buf = reinterpret_cast<char*>(_recvBuffer->WritePos());
-	wsaBuf.len = _recvBuffer->FreeSize();
+	wsaBuf.buf = reinterpret_cast<char*>(_recvBuffer->buffer());
+	wsaBuf.len = _recvBuffer->bufferSize();
 
 	DWORD numOfBytes = 0;
 	DWORD flags = 0;
@@ -199,27 +199,27 @@ void Session::processRecv(uint32 numOfBytes)
 {
 	_recvEvent->setOwner(nullptr);
 
-	if (numOfBytes == 0 || _recvBuffer->OnWrite(numOfBytes) == false)
+	if (numOfBytes == 0 || _recvBuffer->onWrite(numOfBytes) == false)
 	{
 		disconnect();
 		return;
 	}
 
 	uint32 processedSize = processRecvBuffer(numOfBytes);
-	uint32 dataSize = _recvBuffer->DataSize();
-	if (processedSize > dataSize || _recvBuffer->OnRead(numOfBytes) == false)
+	uint32 dataSize = _recvBuffer->dataSize();
+	if (processedSize > dataSize || _recvBuffer->onRead(numOfBytes) == false)
 	{
 		disconnect();
 		return;
 	}
 
-	_recvBuffer->Clean();
+	_recvBuffer->cleanCursor();
 	registerRecv();
 }
 
 uint32 Session::processRecvBuffer(uint32 numOfBytes)
 {
-	BYTE* buffer = _recvBuffer->ReadPos();
+	BYTE* buffer = _recvBuffer->data();
 	uint32 processedSize = 0;
 
 	while (true)
@@ -261,8 +261,8 @@ void Session::registerSend()
 			_sendQueue.pop();
 
 			WSABUF wsaBuf;
-			wsaBuf.buf = reinterpret_cast<char*>(sendBuffer->Buffer());
-			wsaBuf.len = sendBuffer->GetBufferSize();
+			wsaBuf.buf = reinterpret_cast<char*>(sendBuffer->buffer());
+			wsaBuf.len = sendBuffer->bufferSize();
 			wsaBufs.push_back(wsaBuf);
 
 			_sendEvent->addSendBuffer(sendBuffer);
