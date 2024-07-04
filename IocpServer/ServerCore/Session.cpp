@@ -5,7 +5,7 @@
 #include "IocpCore.h"
 #include "SendBuffer.h"
 #include "RecvBuffer.h"
-#include "PacketHandler.h"
+#include "PacketManager.h"
 
 Session::Session() :
 	_recvEvent(new IocpEvent(EventType::Recv)),
@@ -205,8 +205,9 @@ void Session::processRecv(uint32 numOfBytes)
 		return;
 	}
 
-	uint32 processedSize = processRecvBuffer(numOfBytes);
+	uint32 processedSize = onRecv(_recvBuffer->data(), numOfBytes);
 	uint32 dataSize = _recvBuffer->dataSize();
+
 	if (processedSize > dataSize || _recvBuffer->onRead(numOfBytes) == false)
 	{
 		disconnect();
@@ -214,36 +215,8 @@ void Session::processRecv(uint32 numOfBytes)
 	}
 
 	_recvBuffer->cleanCursor();
+
 	registerRecv();
-}
-
-uint32 Session::processRecvBuffer(uint32 numOfBytes)
-{
-	BYTE* buffer = _recvBuffer->data();
-	uint32 processedSize = 0;
-
-	while (true)
-	{
-		if (numOfBytes <= processedSize)
-			break;
-
-		// 받은 데이터 크기 체크
-		uint32 remainBytes = numOfBytes - processedSize;
-		if (remainBytes < sizeof(PacketHeader))
-			break;
-
-		PacketHeader* header = reinterpret_cast<PacketHeader*>(buffer);
-		if (remainBytes < header->packetSize)
-			break;
-
-		// Packet 처리
-		onRecv(buffer);
-
-		buffer += header->packetSize;
-		processedSize += header->packetSize;
-	}
-
-	return processedSize;
 }
 
 void Session::registerSend()
@@ -304,3 +277,40 @@ void Session::processSend(uint32 numOfBytes)
 	if (bSendRegister)
 		registerSend();
 }
+
+PacketSession::PacketSession()
+{}
+
+PacketSession::~PacketSession()
+{}
+
+void PacketSession::onConnect()
+{}
+
+void PacketSession::onDisconnect()
+{}
+
+uint32 PacketSession::onRecv(BYTE* data, uint32 numOfBytes)
+{
+	uint32 processedSize = 0;
+	uint32 dataSize = numOfBytes;
+
+	while (true)
+	{
+		if (processedSize >= numOfBytes)
+			break;
+
+		uint32 packetSize = PacketManager::instance()->handlePacket(dynamic_pointer_cast<PacketSession>(shared_from_this()), data, dataSize);
+		if (packetSize == 0)
+			break;
+
+		processedSize += packetSize;
+		data += packetSize;
+		dataSize -= packetSize;
+	}
+
+	return processedSize;
+}
+
+void PacketSession::onSend(uint32 numOfBytes)
+{}

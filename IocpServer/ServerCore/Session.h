@@ -18,7 +18,7 @@ public:
 protected:
 	virtual void onConnect() abstract;
 	virtual void onDisconnect() abstract;
-	virtual void onRecv(BYTE* buffer) abstract;
+	virtual uint32 onRecv(BYTE* data, uint32 numOfBytes) abstract;
 	virtual void onSend(uint32 numOfBytes) abstract;
 
 public:
@@ -48,7 +48,6 @@ private:
 
 	void registerRecv();
 	void processRecv(uint32 numOfBytes);
-	uint32 processRecvBuffer(uint32 numOfBytes);
 
 	void registerSend();
 	void processSend(uint32 numOfBytes);
@@ -73,3 +72,15 @@ private:
 	queue<shared_ptr<SendBuffer>> _sendQueue;
 };
 
+class PacketSession : public Session
+{
+public:
+	PacketSession();
+	virtual ~PacketSession();
+
+protected:
+	virtual void onConnect() override;
+	virtual void onDisconnect() override;
+	virtual uint32 onRecv(BYTE* data, uint32 numOfBytes) override final;
+	virtual void onSend(uint32 numOfBytes) override;
+};
