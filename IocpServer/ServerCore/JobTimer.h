@@ -30,6 +30,6 @@ public:
 
 private:
 	atomic<bool> _bDistributing = false;
-	Concurrency::concurrent_priority_queue<shared_ptr<ReservedJob>> _reservedJobs;
+	priority_queue<shared_ptr<ReservedJob>> _reservedJobs;
 };
 

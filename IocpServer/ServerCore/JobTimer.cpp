@@ -14,9 +14,11 @@ void JobTimer::distributeJobs(uint64 currentTick)
 	if (_bDistributing.exchange(true) == true)
 		return;
 
-	shared_ptr<ReservedJob> reservedJob = nullptr;
-	while (_reservedJobs.try_pop(reservedJob))
+	while (_reservedJobs.empty() == false)
 	{
+		shared_ptr<ReservedJob> reservedJob = _reservedJobs.top();
+		_reservedJobs.pop();
+
 		// 아직 실행할 시간이 아니면 다시 push 후 distribute 종료
 		if (reservedJob->executeTick > currentTick)
 		{
@@ -24,6 +26,7 @@ void JobTimer::distributeJobs(uint64 currentTick)
 			break;
 		}
 
+		// 실행할 Job을 해당하는 JobQueue에 등록
 		reservedJob->jobQueue->push(move(reservedJob->job));
 	}
 
