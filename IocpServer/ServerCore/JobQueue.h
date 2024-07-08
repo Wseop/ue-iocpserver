@@ -8,8 +8,8 @@ public:
 	virtual ~JobQueue();
 
 public:
-	void Push(shared_ptr<Job>&& job, bool bPushOnly = false);
-	void Execute();
+	void push(shared_ptr<Job>&& job, bool bPushOnly = false);
+	void execute();
 
 private:
 	atomic<uint32> _jobCount = 0;

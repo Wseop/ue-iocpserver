@@ -47,11 +47,11 @@ void ThreadManager::executeJobQueue()
 {
 	if (tJobQueue == nullptr && gJobQueue->try_pop(tJobQueue))
 	{
-		tJobQueue->Execute();
+		tJobQueue->execute();
 	}
 }
 
 void ThreadManager::distributeReservedJob()
 {
-	gJobTimer->DistributeJobs(::GetTickCount64());
+	gJobTimer->distributeJobs(::GetTickCount64());
 }

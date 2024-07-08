@@ -7,8 +7,8 @@ class Job
 public:
 	Job(JobFunc&& jobFunc);
 
-	template<typename Ret, typename T, typename... Args>
-	inline Job(shared_ptr<T> owner, Ret(T::* func)(Args...), Args... args)
+	template<typename T, typename... Args>
+	inline Job(shared_ptr<T> owner, void(T::* func)(Args...), Args... args)
 	{
 		_jobFunc = [owner, func, args...]()
 			{
@@ -17,7 +17,7 @@ public:
 	}
 
 public:
-	void Execute();
+	void execute();
 
 private:
 	JobFunc _jobFunc = nullptr;

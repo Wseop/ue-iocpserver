@@ -6,7 +6,7 @@ JobQueue::~JobQueue()
 {
 }
 
-void JobQueue::Push(shared_ptr<Job>&& job, bool bPushOnly)
+void JobQueue::push(shared_ptr<Job>&& job, bool bPushOnly)
 {
 	if (job == nullptr)
 		return;
@@ -20,7 +20,7 @@ void JobQueue::Push(shared_ptr<Job>&& job, bool bPushOnly)
 		if (tJobQueue == nullptr && bPushOnly == false)
 		{
 			tJobQueue = shared_from_this();
-			Execute();
+			execute();
 		}
 		// 이미 처리중인 JobQueue가 있거나, PushOnly로 설정된 경우. 다른 Thread에서 처리할 수 있도록 global queue에 추가
 		else
@@ -30,14 +30,14 @@ void JobQueue::Push(shared_ptr<Job>&& job, bool bPushOnly)
 	}
 }
 
-void JobQueue::Execute()
+void JobQueue::execute()
 {
 	// 모든 Job 실행
 	uint32 executeCount = 0;
 	shared_ptr<Job> job = nullptr;
 	while (_jobs.try_pop(job))
 	{
-		job->Execute();
+		job->execute();
 		executeCount++;
 	}
 

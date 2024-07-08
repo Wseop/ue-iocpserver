@@ -3,13 +3,13 @@
 #include "Job.h"
 #include "JobQueue.h"
 
-void JobTimer::ReserveJob(uint64 tickAfter, shared_ptr<JobQueue> jobQueue, shared_ptr<Job>&& job)
+void JobTimer::reserveJob(uint64 tickAfter, shared_ptr<JobQueue> jobQueue, shared_ptr<Job>&& job)
 {
 	uint64 executeTick = ::GetTickCount64() + tickAfter;
 	_reservedJobs.push(make_shared<ReservedJob>(executeTick, jobQueue, move(job)));
 }
 
-void JobTimer::DistributeJobs(uint64 currentTick)
+void JobTimer::distributeJobs(uint64 currentTick)
 {
 	if (_bDistributing.exchange(true) == true)
 		return;
@@ -24,7 +24,7 @@ void JobTimer::DistributeJobs(uint64 currentTick)
 			break;
 		}
 
-		reservedJob->jobQueue->Push(move(reservedJob->job));
+		reservedJob->jobQueue->push(move(reservedJob->job));
 	}
 
 	_bDistributing.store(false);

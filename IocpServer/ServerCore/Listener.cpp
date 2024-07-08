@@ -64,7 +64,7 @@ void Listener::registerAccept(IocpEvent* acceptEvent)
             acceptEvent->setSession(nullptr);
 
             // RegisterAccept 다시 걸어줌. JobQueue에 PushOnly로 등록하여 재귀호출 방지
-            _jobQueue->Push(make_shared<Job>(dynamic_pointer_cast<Listener>(shared_from_this()), &Listener::registerAccept, acceptEvent), true);
+            _jobQueue->push(make_shared<Job>(dynamic_pointer_cast<Listener>(shared_from_this()), &Listener::registerAccept, acceptEvent), true);
             spdlog::error("Listener : Accept Fail");
         }
     }
