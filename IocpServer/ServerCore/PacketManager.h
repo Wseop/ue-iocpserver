@@ -45,7 +45,7 @@ public:
 		uint32 packetSize = _headerSize + payloadSize;
 
 		// SendBuffer 할당
-		shared_ptr<SendBuffer> sendBuffer = make_shared<SendBuffer>();
+		shared_ptr<SendBuffer> sendBuffer = make_shared<SendBuffer>(packetSize);
 
 		// Header 추가
 		PacketHeader* header = reinterpret_cast<PacketHeader*>(sendBuffer->buffer());
