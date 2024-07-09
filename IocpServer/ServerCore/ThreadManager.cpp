@@ -48,6 +48,7 @@ void ThreadManager::executeJobQueue()
 	if (tJobQueue == nullptr && gJobQueue->try_pop(tJobQueue))
 	{
 		tJobQueue->execute();
+		tJobQueue = nullptr;
 	}
 }
 
