@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "GameInstance.h"
 #include "ClientPacketHandler.h"
-#include "PacketSession.h"
+#include "Session.h"
 #include "Player.h"
 
 shared_ptr<GameInstance> gGameInstance = make_shared<GameInstance>();
@@ -14,20 +14,20 @@ GameInstance::~GameInstance()
 {
 }
 
-void GameInstance::EnterGameRoom(shared_ptr<Session> session)
+void GameInstance::enterGameRoom(shared_ptr<PacketSession> session)
 {
 	Protocol::C_Enter payload;
-	session->Send(ClientPacketHandler::MakeC_Enter(&payload));
+	session->send(ClientPacketHandler::makeC_Enter(&payload));
 }
 
-void GameInstance::HandleEnterGameRoom(Protocol::S_Enter payload)
+void GameInstance::handleEnterGameRoom(Protocol::S_Enter payload)
 {
 	if (payload.result())
 	{
 		uint32 playerCount = 0;
 		for (const Protocol::ObjectInfo& playerInfo : payload.other_object_infos())
 		{
-			shared_ptr<Player> player = SpawnPlayer(playerInfo);
+			shared_ptr<Player> player = spawnPlayer(playerInfo);
 			if (player == nullptr)
 				continue;
 			_otherPlayers[player->GetObjectId()] = player;
@@ -42,13 +42,13 @@ void GameInstance::HandleEnterGameRoom(Protocol::S_Enter payload)
 	}
 }
 
-void GameInstance::ExitGameRoom(shared_ptr<Session> session)
+void GameInstance::exitGameRoom(shared_ptr<PacketSession> session)
 {
 	Protocol::C_Exit payload;
-	session->Send(ClientPacketHandler::MakeC_Exit(&payload));
+	session->send(ClientPacketHandler::makeC_Exit(&payload));
 }
 
-void GameInstance::HandleExitGameRoom(Protocol::S_Exit payload)
+void GameInstance::handleExitGameRoom(Protocol::S_Exit payload)
 {
 	if (payload.result())
 	{
@@ -64,19 +64,19 @@ void GameInstance::HandleExitGameRoom(Protocol::S_Exit payload)
 	}
 }
 
-void GameInstance::SpawnMyPlayer(shared_ptr<Session> session)
+void GameInstance::spawnMyPlayer(shared_ptr<PacketSession> session)
 {
 	Protocol::C_Spawn payload;
-	session->Send(ClientPacketHandler::MakeC_Spawn(&payload));
+	session->send(ClientPacketHandler::makeC_Spawn(&payload));
 }
 
-void GameInstance::HandleDespawnPlayer(Protocol::S_Despawn payload)
+void GameInstance::handleDespawnPlayer(Protocol::S_Despawn payload)
 {
 	for (const uint32 playerId : payload.object_ids())
-		DespawnPlayer(playerId);
+		despawnPlayer(playerId);
 }
 
-void GameInstance::MoveMyPlayersToOther(shared_ptr<Session> session)
+void GameInstance::moveMyPlayersToOther(shared_ptr<PacketSession> session)
 {
 	auto otherIt = _otherPlayers.begin();
 	if (otherIt == _otherPlayers.end())
@@ -99,13 +99,13 @@ void GameInstance::MoveMyPlayersToOther(shared_ptr<Session> session)
 
 		Protocol::C_Move payload;
 		payload.mutable_pos_info()->CopyFrom(targetPos);
-		session->Send(ClientPacketHandler::MakeC_Move(&payload));
+		session->send(ClientPacketHandler::makeC_Move(&payload));
 	}
 
 	spdlog::info("GameInstance : Move Players to [{}, {}, {}]", targetPos.x(), targetPos.y(), targetPos.z());
 }
 
-void GameInstance::HandleMovePlayer(Protocol::S_Move payload)
+void GameInstance::handleMovePlayer(Protocol::S_Move payload)
 {
 	const Protocol::PosInfo& posInfo = payload.pos_info();
 	auto playerIt = _otherPlayers.find(posInfo.object_id());
@@ -119,9 +119,9 @@ void GameInstance::HandleMovePlayer(Protocol::S_Move payload)
 	player->SetPosInfo(posInfo);
 }
 
-void GameInstance::HandleSpawnPlayer(Protocol::S_Spawn payload)
+void GameInstance::handleSpawnPlayer(Protocol::S_Spawn payload)
 {
-	shared_ptr<Player> player = SpawnPlayer(payload.object_info());
+	shared_ptr<Player> player = spawnPlayer(payload.object_info());
 	if (player == nullptr)
 		return;
 
@@ -139,7 +139,7 @@ void GameInstance::HandleSpawnPlayer(Protocol::S_Spawn payload)
 	}
 }
 
-shared_ptr<Player> GameInstance::SpawnPlayer(const Protocol::ObjectInfo& playerInfo)
+shared_ptr<Player> GameInstance::spawnPlayer(const Protocol::ObjectInfo& playerInfo)
 {
 	const uint32 playerId = playerInfo.object_id();
 
@@ -154,7 +154,7 @@ shared_ptr<Player> GameInstance::SpawnPlayer(const Protocol::ObjectInfo& playerI
 	return player;
 }
 
-void GameInstance::DespawnPlayer(uint32 playerId)
+void GameInstance::despawnPlayer(uint32 playerId)
 {
 	size_t eraseCount = 0;
 

@@ -8,11 +8,12 @@ public:
 	virtual ~JobQueue();
 
 public:
-	void Push(shared_ptr<Job>&& job, bool bPushOnly = false);
-	void Execute();
+	void push(shared_ptr<Job>&& job);
+	void execute();
 
 private:
-	atomic<uint32> _jobCount = 0;
-	Concurrency::concurrent_queue<shared_ptr<Job>> _jobs;
+	mutex _mutex;
+	bool _bExecuting = false;
+	queue<shared_ptr<Job>> _jobs;
 };
 

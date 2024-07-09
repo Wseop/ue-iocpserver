@@ -13,50 +13,49 @@ public:
 	virtual ~Session();
 
 public:
-	virtual void Dispatch(IocpEvent* iocpEvent, uint32 numOfBytes) override;
+	virtual void processEvent(IocpEvent* iocpEvent, uint32 numOfBytes) override;
 
 protected:
-	virtual void OnConnect() abstract;
-	virtual void OnDisconnect() abstract;
-	virtual void OnRecv(BYTE* buffer) abstract;
-	virtual void OnSend(uint32 numOfBytes) abstract;
+	virtual void onConnect() abstract;
+	virtual void onDisconnect() abstract;
+	virtual uint32 onRecv(BYTE* data, uint32 numOfBytes) abstract;
+	virtual void onSend(uint32 numOfBytes) abstract;
 
 public:
-	uint32 GetSessionId() const { return _sessionId; }
-	void SetSessionId(uint32 sessionId) { _sessionId = sessionId; }
+	uint32 getSessionId() const { return _sessionId; }
+	void setSessionId(uint32 sessionId) { _sessionId = sessionId; }
 
-	bool IsConnected() const { return _bConnected; }
+	bool isConnected() const { return _bConnected; }
 
-	NetAddress GetNetAddress() const { return _netAddress; }
-	void SetNetAddress(const NetAddress& netAddress) { _netAddress = netAddress; }
+	NetAddress getNetAddress() const { return _netAddress; }
+	void setNetAddress(const NetAddress& netAddress) { _netAddress = netAddress; }
 
-	BYTE* Buffer();
+	BYTE* buffer();
 
 public:
-	bool Connect();
-	void Disconnect();
-	void Send(shared_ptr<SendBuffer> sendBuffer);
+	bool connect();
+	void disconnect();
+	void send(shared_ptr<SendBuffer> sendBuffer);
 
-	bool ProcessAccept(const NetAddress& netAddress);
+	bool processAccept(const NetAddress& netAddress);
 
 private:
-	bool RegisterConnect();
-	void ProcessConnect();
+	bool registerConnect();
+	void processConnect();
 
-	void RegisterDisconnect();
-	void ProcessDisconnect();
+	void registerDisconnect();
+	void processDisconnect();
 
-	void RegisterRecv();
-	void ProcessRecv(uint32 numOfBytes);
-	uint32 ProcessRecvBuffer(uint32 numOfBytes);
+	void registerRecv();
+	void processRecv(uint32 numOfBytes);
 
-	void RegisterSend();
-	void ProcessSend(uint32 numOfBytes);
+	void registerSend();
+	void processSend(uint32 numOfBytes);
 
 private:
 	uint32 _sessionId = 0;
 	atomic<bool> _bConnected = false;
-	NetAddress _netAddress;
+	NetAddress _netAddress = {};
 
 	IocpEvent* _connectEvent = nullptr;
 	IocpEvent* _disconnectEvent = nullptr;
@@ -73,3 +72,15 @@ private:
 	queue<shared_ptr<SendBuffer>> _sendQueue;
 };
 
+class PacketSession : public Session
+{
+public:
+	PacketSession();
+	virtual ~PacketSession();
+
+protected:
+	virtual void onConnect() override;
+	virtual void onDisconnect() override;
+	virtual uint32 onRecv(BYTE* data, uint32 numOfBytes) override final;
+	virtual void onSend(uint32 numOfBytes) override;
+};

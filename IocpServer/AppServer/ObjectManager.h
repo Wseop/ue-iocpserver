@@ -2,12 +2,12 @@
 
 class Player;
 class Room;
-class Session;
+class PacketSession;
 
 class ObjectManager
 {
 public:
-	static shared_ptr<Player> CreatePlayer(shared_ptr<Session> session);
+	static shared_ptr<Player> CreatePlayer(shared_ptr<PacketSession> session);
 
 private:
 	static atomic<uint32> _sObjectId;

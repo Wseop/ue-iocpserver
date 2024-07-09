@@ -3,39 +3,56 @@
 #include "JobQueue.h"
 #include "JobTimer.h"
 
+ThreadManager* ThreadManager::_instance = nullptr;
+
 ThreadManager::ThreadManager()
 {
 }
 
 ThreadManager::~ThreadManager()
 {
-	Join();
+	join();
 }
 
-void ThreadManager::Launch(function<void(void)> callback)
+ThreadManager* ThreadManager::instance()
+{
+	if (_instance == nullptr)
+	{
+		_instance = new ThreadManager();
+	}
+
+	return _instance;
+}
+
+void ThreadManager::launch(function<void(void)> callback)
 {
 	lock_guard<mutex> lock(_mutex);
 	
 	_threads.push_back(thread(callback));
 }
 
-void ThreadManager::Join()
+void ThreadManager::join()
 {
 	for (thread& t : _threads)
 	{
 		if (t.joinable())
+		{
 			t.join();
+		}
 	}
 	_threads.clear();
 }
 
-void ThreadManager::ExecuteJob()
+void ThreadManager::executeJobQueue()
 {
 	if (tJobQueue == nullptr && gJobQueue->try_pop(tJobQueue))
-		tJobQueue->Execute();
+	{
+		tJobQueue->execute();
+		tJobQueue = nullptr;
+	}
 }
 
-void ThreadManager::DistributeReservedJob()
+void ThreadManager::distributeReservedJob()
 {
-	gJobTimer->DistributeJobs(::GetTickCount64());
+	gJobTimer->distributeJobs(::GetTickCount64());
 }

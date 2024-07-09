@@ -4,17 +4,20 @@
 
 class ThreadManager
 {
-public:
+private:
+	static ThreadManager* _instance;
+
 	ThreadManager();
 	~ThreadManager();
 
 public:
-	void Launch(function<void(void)> callback);
-	void Join();
+	static ThreadManager* instance();
 
-public:
-	static void ExecuteJob();
-	static void DistributeReservedJob();
+	void launch(function<void(void)> callback);
+	void join();
+
+	void executeJobQueue();
+	void distributeReservedJob();
 
 private:
 	mutex _mutex;

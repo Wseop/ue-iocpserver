@@ -62,10 +62,7 @@
     <ClCompile Include="IocpEvent.cpp">
       <Filter>소스 파일\Network\Iocp</Filter>
     </ClCompile>
-    <ClCompile Include="PacketHandler.cpp">
-      <Filter>소스 파일\Network\Packet</Filter>
-    </ClCompile>
-    <ClCompile Include="Service.cpp">
+    <ClCompile Include="NetworkService.cpp">
       <Filter>소스 파일\Network</Filter>
     </ClCompile>
     <ClCompile Include="Utils.cpp">
@@ -94,6 +91,9 @@
     </ClCompile>
     <ClCompile Include="SendBuffer.cpp">
       <Filter>소스 파일\Network\Buffer</Filter>
+    </ClCompile>
+    <ClCompile Include="PacketManager.cpp">
+      <Filter>소스 파일\Network\Packet</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -127,10 +127,7 @@
     <ClInclude Include="IocpEvent.h">
       <Filter>소스 파일\Network\Iocp</Filter>
     </ClInclude>
-    <ClInclude Include="PacketHandler.h">
-      <Filter>소스 파일\Network\Packet</Filter>
-    </ClInclude>
-    <ClInclude Include="Service.h">
+    <ClInclude Include="NetworkService.h">
       <Filter>소스 파일\Network</Filter>
     </ClInclude>
     <ClInclude Include="Utils.h">
@@ -159,6 +156,9 @@
     </ClInclude>
     <ClInclude Include="SendBuffer.h">
       <Filter>소스 파일\Network\Buffer</Filter>
+    </ClInclude>
+    <ClInclude Include="PacketManager.h">
+      <Filter>소스 파일\Network\Packet</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

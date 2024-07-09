@@ -5,7 +5,7 @@ Job::Job(JobFunc&& jobFunc) : _jobFunc(move(jobFunc))
 {
 }
 
-void Job::Execute()
+void Job::execute()
 {
 	if (_jobFunc != nullptr)
 		_jobFunc();

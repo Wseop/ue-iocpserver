@@ -4,7 +4,7 @@
 #include "JobQueue.h"
 
 class Player;
-class Session;
+class PacketSession;
 class SendBuffer;
 
 class Room : public JobQueue
@@ -14,28 +14,28 @@ public:
 	virtual ~Room();
 
 public:
-	uint64 GetCleanupTick() const { return CLEANUP_TICK; }
+	uint64 getCleanupTick() const { return CLEANUP_TICK; }
 
 public:
-	void Enter(shared_ptr<Session> session, Protocol::C_Enter payload);
-	void Exit(shared_ptr<Session> session, Protocol::C_Exit payload);
+	void enter(shared_ptr<PacketSession> session, Protocol::C_Enter payload);
+	void exit(shared_ptr<PacketSession> session, Protocol::C_Exit payload);
 	
-	void SpawnPlayer(shared_ptr<Session> session);
-	void DespawnPlayer(uint32 playerId);
+	void spawnPlayer(shared_ptr<PacketSession> session);
+	void despawnPlayer(uint32 playerId);
 	
-	void MovePlayer(shared_ptr<Session> session, Protocol::C_Move payload);
+	void movePlayer(shared_ptr<PacketSession> session, Protocol::C_Move payload);
 
 private:
-	void Broadcast(shared_ptr<SendBuffer> sendBuffer);
-	void Broadcast(shared_ptr<SendBuffer> sendBuffer, uint32 exceptId);
+	void broadcast(shared_ptr<SendBuffer> sendBuffer);
+	void broadcast(shared_ptr<SendBuffer> sendBuffer, uint32 exceptId);
 
 public:
-	void Cleanup();
+	void cleanup();
 
 private:
 	const uint64 CLEANUP_TICK = 1000 * 60 * 10;
 
-	map<uint32, weak_ptr<Session>> _sessions;
+	map<uint32, weak_ptr<PacketSession>> _sessions;
 	map<uint32, shared_ptr<Player>> _players;
 };
 

@@ -25,11 +25,11 @@ struct ReservedJob
 class JobTimer
 {
 public:
-	void ReserveJob(uint64 tickAfter, shared_ptr<JobQueue> jobQueue, shared_ptr<Job>&& job);
-	void DistributeJobs(uint64 currentTick);
+	void reserveJob(uint64 tickAfter, shared_ptr<JobQueue> jobQueue, shared_ptr<Job>&& job);
+	void distributeJobs(uint64 currentTick);
 
 private:
 	atomic<bool> _bDistributing = false;
-	Concurrency::concurrent_priority_queue<shared_ptr<ReservedJob>> _reservedJobs;
+	priority_queue<shared_ptr<ReservedJob>> _reservedJobs;
 };
 

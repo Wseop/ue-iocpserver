@@ -9,8 +9,8 @@ public:
 	~IocpCore();
 
 public:
-	bool Register(shared_ptr<IocpObject> iocpObject);
-	void Dispatch(uint32 timeoutMs = INFINITE);
+	bool registerObject(shared_ptr<IocpObject> iocpObject);
+	void dispatchEvent(uint32 timeoutMs = INFINITE);
 
 private:
 	HANDLE _iocpHandle = INVALID_HANDLE_VALUE;

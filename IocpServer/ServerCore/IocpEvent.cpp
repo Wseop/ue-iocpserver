@@ -4,14 +4,14 @@
 IocpEvent::IocpEvent(EventType eventType) :
 	_eventType(eventType)
 {
-	Init();
+	init();
 }
 
 IocpEvent::~IocpEvent()
 {
 }
 
-void IocpEvent::Init()
+void IocpEvent::init()
 {
 	hEvent = 0;
 	Offset = 0;
@@ -20,12 +20,12 @@ void IocpEvent::Init()
 	InternalHigh = 0;
 }
 
-void IocpEvent::PushSendBuffer(shared_ptr<SendBuffer> sendBuffer)
+void IocpEvent::addSendBuffer(shared_ptr<SendBuffer> sendBuffer)
 {
 	_sendBuffers.push_back(sendBuffer);
 }
 
-void IocpEvent::ClearSendBuffers()
+void IocpEvent::clearSendBuffers()
 {
 	_sendBuffers.clear();
 }

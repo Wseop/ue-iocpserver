@@ -7,8 +7,8 @@ public:
 	~SendBuffer();
 
 public:
-	BYTE* Buffer();
-	uint32 GetBufferSize() const { return _bufferSize; }
+	BYTE* buffer();
+	uint32 bufferSize() const { return _bufferSize; }
 
 private:
 	vector<BYTE> _buffer;

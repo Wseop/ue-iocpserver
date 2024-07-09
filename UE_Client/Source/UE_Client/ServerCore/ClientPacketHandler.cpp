@@ -26,7 +26,7 @@ void FClientPacketHandler::Init()
 void FClientPacketHandler::HandlePacket(TSharedPtr<FPacketSession> PacketSession, BYTE* Packet)
 {
 	// Çì´õ parsing
-	EPacketType PacketType = EPacketType::None;
+	EPacketType PacketType;
 	uint32 PayloadSize = 0;
 	BYTE* Payload = HandleHeader(Packet, OUT PacketType, OUT PayloadSize);
 

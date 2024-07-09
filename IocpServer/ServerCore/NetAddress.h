@@ -3,18 +3,18 @@
 class NetAddress
 {
 public:
-	NetAddress() = default;
+	NetAddress();
 	NetAddress(SOCKADDR_IN sockAddr);
-	NetAddress(wstring ip, uint16 port);
+	NetAddress(string ip, uint16 port);
 
-	SOCKADDR_IN&	GetSockAddr() { return _sockAddr; }
-	wstring			GetIpAddress();
-	uint16			GetPort() { return ::ntohs(_sockAddr.sin_port); }
+	SOCKADDR_IN&	getSockAddr() { return _sockAddr; }
+	string			getIpAddress();
+	uint16			getPort() { return ::ntohs(_sockAddr.sin_port); }
 
 public:
-	static IN_ADDR	Ip2Address(const WCHAR* ip);
+	static IN_ADDR ip2Address(const char* ip);
 
 private:
-	SOCKADDR_IN		_sockAddr = {};
+	SOCKADDR_IN _sockAddr;
 };
 

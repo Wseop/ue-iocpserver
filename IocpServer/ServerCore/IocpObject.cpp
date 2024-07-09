@@ -3,10 +3,10 @@
 
 IocpObject::IocpObject()
 {
-	_socket = SocketUtils::CreateSocket();
+	_socket = SocketUtils::createSocket();
 }
 
 IocpObject::~IocpObject()
 {
-	SocketUtils::Close(_socket);
+	SocketUtils::closeSocket(_socket);
 }

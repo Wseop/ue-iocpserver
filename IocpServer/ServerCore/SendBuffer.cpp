@@ -11,7 +11,7 @@ SendBuffer::~SendBuffer()
 {
 }
 
-BYTE* SendBuffer::Buffer()
+BYTE* SendBuffer::buffer()
 {
     return _buffer.data();
 }

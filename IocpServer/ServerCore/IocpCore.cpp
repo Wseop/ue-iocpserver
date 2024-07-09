@@ -14,12 +14,12 @@ IocpCore::~IocpCore()
     assert(::CloseHandle(_iocpHandle));
 }
 
-bool IocpCore::Register(shared_ptr<IocpObject> iocpObject)
+bool IocpCore::registerObject(shared_ptr<IocpObject> iocpObject)
 {
-    return ::CreateIoCompletionPort(iocpObject->GetHandle(), _iocpHandle, 0, 0);
+    return ::CreateIoCompletionPort(iocpObject->getHandle(), _iocpHandle, 0, 0);
 }
 
-void IocpCore::Dispatch(uint32 timeoutMs)
+void IocpCore::dispatchEvent(uint32 timeoutMs)
 {
     ULONG_PTR dummyKey = 0;
     IocpEvent* iocpEvent = nullptr;
@@ -41,5 +41,5 @@ void IocpCore::Dispatch(uint32 timeoutMs)
     }
 
     if (iocpEvent)
-        iocpEvent->GetOwner()->Dispatch(iocpEvent, numOfBytes);
+        iocpEvent->getOwner()->processEvent(iocpEvent, numOfBytes);
 }
