@@ -8,7 +8,6 @@
 
 enum class EPacketType : uint16
 {
-	None,
 	Ping,
 	C_Enter,
 	S_Enter,
@@ -23,7 +22,7 @@ enum class EPacketType : uint16
 
 struct FPacketHeader
 {
-	EPacketType PacketType = EPacketType::None;
+	EPacketType PacketType;
 	uint32 PacketSize = 0;
 };
 
