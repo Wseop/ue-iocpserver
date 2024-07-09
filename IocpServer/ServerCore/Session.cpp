@@ -1,7 +1,7 @@
 ﻿#include "pch.h"
 #include "Session.h"
 #include "IocpEvent.h"
-#include "Service.h"
+#include "NetworkService.h"
 #include "IocpCore.h"
 #include "SendBuffer.h"
 #include "RecvBuffer.h"

@@ -1,16 +1,19 @@
 #include "pch.h"
-#include "Service.h"
+#include "NetworkService.h"
 #include "ThreadManager.h"
 #include "IocpCore.h"
 #include "Session.h"
+#include "Listener.h"
 
-Service::Service(NetAddress netAddress, SessionFactory sessionFactory) :
+NetworkService::NetworkService(NetAddress netAddress, SessionFactory sessionFactory) :
 	_netAddress(netAddress),
-	_sessionFactory(sessionFactory)
+	_sessionFactory(sessionFactory),
+	_listener(nullptr)
 {
+	// Run Worker
 	for (uint32 i = 0; i < thread::hardware_concurrency(); i++)
 	{
-		ThreadManager::instance()->launch([this]()
+		ThreadManager::instance()->launch([]()
 			{
 				while (true)
 				{
@@ -22,11 +25,20 @@ Service::Service(NetAddress netAddress, SessionFactory sessionFactory) :
 	}
 }
 
-Service::~Service()
+NetworkService::~NetworkService()
 {
 }
 
-shared_ptr<Session> Service::CreateSession()
+bool NetworkService::listen(uint32 acceptCount)
+{
+	if (_listener != nullptr)
+		return true;
+
+	_listener = make_shared<Listener>();
+	return _listener->start(acceptCount);
+}
+
+shared_ptr<Session> NetworkService::CreateSession()
 {
 	static atomic<uint32> sSessionId = 1;
 	shared_ptr<Session> session = _sessionFactory();
@@ -40,7 +52,7 @@ shared_ptr<Session> Service::CreateSession()
 	return session;
 }
 
-void Service::AddSession(shared_ptr<Session> session)
+void NetworkService::AddSession(shared_ptr<Session> session)
 {
 	if (session == nullptr)
 		return;
@@ -56,7 +68,7 @@ void Service::AddSession(shared_ptr<Session> session)
 	_sessions[sessionId] = session;
 }
 
-void Service::RemoveSession(shared_ptr<Session> session)
+void NetworkService::RemoveSession(shared_ptr<Session> session)
 {
 	if (session == nullptr)
 		return;
@@ -66,7 +78,7 @@ void Service::RemoveSession(shared_ptr<Session> session)
 	_sessions.erase(session->getSessionId());
 }
 
-shared_ptr<Session> Service::GetSession(uint32 sessionId)
+shared_ptr<Session> NetworkService::GetSession(uint32 sessionId)
 {
 	lock_guard<mutex> lock(_mutex);
 

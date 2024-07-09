@@ -62,7 +62,7 @@
     <ClCompile Include="IocpEvent.cpp">
       <Filter>소스 파일\Network\Iocp</Filter>
     </ClCompile>
-    <ClCompile Include="Service.cpp">
+    <ClCompile Include="NetworkService.cpp">
       <Filter>소스 파일\Network</Filter>
     </ClCompile>
     <ClCompile Include="Utils.cpp">
@@ -127,7 +127,7 @@
     <ClInclude Include="IocpEvent.h">
       <Filter>소스 파일\Network\Iocp</Filter>
     </ClInclude>
-    <ClInclude Include="Service.h">
+    <ClInclude Include="NetworkService.h">
       <Filter>소스 파일\Network</Filter>
     </ClInclude>
     <ClInclude Include="Utils.h">
