@@ -28,7 +28,7 @@ bool Listener::start(uint32 acceptCount)
     if (gIocpCore->registerObject(shared_from_this()) == false ||
         SocketUtils::setLinger(_socket, 0, 0) == false ||
         SocketUtils::setReuseAddress(_socket, true) == false ||
-        SocketUtils::bind(_socket, getService()->GetNetAddress().getSockAddr()) == false ||
+        SocketUtils::bind(_socket, getService()->getNetAddress().getSockAddr()) == false ||
         SocketUtils::listen(_socket) == false)
     {
         spdlog::error("[Listener] Initialize Fail");
@@ -52,7 +52,7 @@ void Listener::registerAccept(IocpEvent* acceptEvent)
     acceptEvent->init();
     acceptEvent->setOwner(shared_from_this());
 
-    shared_ptr<Session> session = getService()->CreateSession();
+    shared_ptr<Session> session = getService()->createSession();
     acceptEvent->setSession(session);
 
     DWORD numOfBytes = 0;

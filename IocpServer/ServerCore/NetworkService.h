@@ -11,14 +11,14 @@ public:
 	virtual ~NetworkService();
 
 public:
-	inline NetAddress GetNetAddress() const { return _netAddress; }
+	inline NetAddress getNetAddress() const { return _netAddress; }
 
 	bool listen(uint32 acceptCount);
 
-	shared_ptr<Session> CreateSession();
-	void AddSession(shared_ptr<Session> session);
-	void RemoveSession(shared_ptr<Session> session);
-	shared_ptr<Session> GetSession(uint32 sessionId);
+	shared_ptr<Session> createSession();
+	void addSession(shared_ptr<Session> session);
+	void removeSession(shared_ptr<Session> session);
+	shared_ptr<Session> getSession(uint32 sessionId);
 
 private:
 	NetAddress _netAddress;

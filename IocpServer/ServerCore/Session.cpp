@@ -94,7 +94,7 @@ bool Session::processAccept(const NetAddress& netAddress)
 
 	_bConnected.store(true);
 	setNetAddress(netAddress);
-	getService()->AddSession(dynamic_pointer_cast<Session>(shared_from_this()));
+	getService()->addSession(dynamic_pointer_cast<Session>(shared_from_this()));
 	registerRecv();
 
 	return true;
@@ -113,7 +113,7 @@ bool Session::registerConnect()
 	_connectEvent = new IocpEvent(EventType::Connect);
 	_connectEvent->setOwner(shared_from_this());
 
-	setNetAddress(getService()->GetNetAddress());
+	setNetAddress(getService()->getNetAddress());
 	SOCKADDR_IN sockAddr = _netAddress.getSockAddr();
 	int32 addrLen = sizeof(sockAddr);
 	DWORD numOfBytes = 0;
@@ -137,7 +137,7 @@ void Session::processConnect()
 {
 	delete _connectEvent;
 
-	getService()->AddSession(dynamic_pointer_cast<Session>(shared_from_this()));
+	getService()->addSession(dynamic_pointer_cast<Session>(shared_from_this()));
 	registerRecv();
 	onConnect();
 
@@ -165,7 +165,7 @@ void Session::processDisconnect()
 {
 	delete _disconnectEvent;
 
-	getService()->RemoveSession(dynamic_pointer_cast<Session>(shared_from_this()));
+	getService()->removeSession(dynamic_pointer_cast<Session>(shared_from_this()));
 	onDisconnect();
 
 	spdlog::info("Session[{}] : Disconnect Success", _sessionId);

@@ -17,7 +17,7 @@ int main()
     ClientPacketHandler::init();
 
     shared_ptr<NetworkService> service = make_shared<NetworkService>(NetAddress("127.0.0.1", 7777), []() { return make_shared<PacketSession>(); });
-    shared_ptr<PacketSession> session = dynamic_pointer_cast<PacketSession>(service->CreateSession());
+    shared_ptr<PacketSession> session = dynamic_pointer_cast<PacketSession>(service->createSession());
 
     // 서버 접속
     assert(session->connect());

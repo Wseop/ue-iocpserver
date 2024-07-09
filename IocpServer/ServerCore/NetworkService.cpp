@@ -39,7 +39,7 @@ bool NetworkService::listen(uint32 acceptCount)
 	return _listener->start(acceptCount);
 }
 
-shared_ptr<Session> NetworkService::CreateSession()
+shared_ptr<Session> NetworkService::createSession()
 {
 	static atomic<uint32> sSessionId = 1;
 	shared_ptr<Session> session = _sessionFactory();
@@ -53,7 +53,7 @@ shared_ptr<Session> NetworkService::CreateSession()
 	return session;
 }
 
-void NetworkService::AddSession(shared_ptr<Session> session)
+void NetworkService::addSession(shared_ptr<Session> session)
 {
 	if (session == nullptr)
 		return;
@@ -69,7 +69,7 @@ void NetworkService::AddSession(shared_ptr<Session> session)
 	_sessions[sessionId] = session;
 }
 
-void NetworkService::RemoveSession(shared_ptr<Session> session)
+void NetworkService::removeSession(shared_ptr<Session> session)
 {
 	if (session == nullptr)
 		return;
@@ -79,7 +79,7 @@ void NetworkService::RemoveSession(shared_ptr<Session> session)
 	_sessions.erase(session->getSessionId());
 }
 
-shared_ptr<Session> NetworkService::GetSession(uint32 sessionId)
+shared_ptr<Session> NetworkService::getSession(uint32 sessionId)
 {
 	lock_guard<mutex> lock(_mutex);
 
