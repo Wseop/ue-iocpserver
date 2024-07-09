@@ -35,9 +35,6 @@
     <ClCompile Include="AppServer.cpp">
       <Filter>소스 파일\Main</Filter>
     </ClCompile>
-    <ClCompile Include="ServerService.cpp">
-      <Filter>소스 파일\Main</Filter>
-    </ClCompile>
     <ClCompile Include="..\ServerCore\Protocol.pb.cc">
       <Filter>소스 파일\Network\Protobuf</Filter>
     </ClCompile>
@@ -56,9 +53,6 @@
     <ClCompile Include="Player.cpp">
       <Filter>소스 파일\Game\Object</Filter>
     </ClCompile>
-    <ClCompile Include="PacketSession.cpp">
-      <Filter>소스 파일\Network</Filter>
-    </ClCompile>
     <ClCompile Include="ServerPacketHandler.cpp">
       <Filter>소스 파일\Network</Filter>
     </ClCompile>
@@ -68,9 +62,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
-      <Filter>소스 파일\Main</Filter>
-    </ClInclude>
-    <ClInclude Include="ServerService.h">
       <Filter>소스 파일\Main</Filter>
     </ClInclude>
     <ClInclude Include="..\ServerCore\Protocol.pb.h">
@@ -90,9 +81,6 @@
     </ClInclude>
     <ClInclude Include="ObjectManager.h">
       <Filter>소스 파일\Game\Object</Filter>
-    </ClInclude>
-    <ClInclude Include="PacketSession.h">
-      <Filter>소스 파일\Network</Filter>
     </ClInclude>
     <ClInclude Include="ServerPacketHandler.h">
       <Filter>소스 파일\Network</Filter>

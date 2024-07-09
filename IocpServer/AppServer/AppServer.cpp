@@ -1,6 +1,10 @@
 ﻿#include "pch.h"
-#include "ServerService.h"
-#include "PacketSession.h"
+#include "NetworkService.h"
+#include "Session.h"
+#include "ServerPacketHandler.h"
+#include "JobTimer.h"
+#include "Room.h"
+#include "Job.h"
 
 int main()
 {
@@ -10,8 +14,12 @@ int main()
     spdlog::set_level(spdlog::level::info);
 #endif // _DEBUG
 
-    shared_ptr<ServerService> service = make_shared<ServerService>(NetAddress(L"127.0.0.1", 7777), []() { return make_shared<PacketSession>(); });
-    assert(service->Start(10));
+    ServerPacketHandler::init();
+
+    shared_ptr<NetworkService> service = make_shared<NetworkService>(NetAddress("127.0.0.1", 7777), []() { return make_shared<PacketSession>(); });
+    assert(service->listen(10));
+
+    gJobTimer->reserveJob(gRoom->getCleanupTick(), dynamic_pointer_cast<JobQueue>(gRoom), make_shared<Job>(gRoom, &Room::cleanup));
 
     while (true)
     {}
