@@ -31,7 +31,7 @@ bool Listener::start(uint32 acceptCount)
         SocketUtils::bind(_socket, getService()->GetNetAddress().getSockAddr()) == false ||
         SocketUtils::listen(_socket) == false)
     {
-        spdlog::error("Listener : Initialize Fail");
+        spdlog::error("[Listener] Initialize Fail");
         return false;
     }
 
@@ -41,6 +41,8 @@ bool Listener::start(uint32 acceptCount)
         _acceptEvents.push_back(acceptEvent);
         registerAccept(acceptEvent);
     }
+
+    spdlog::info("[Listener] Start");
 
     return true;
 }
@@ -65,7 +67,7 @@ void Listener::registerAccept(IocpEvent* acceptEvent)
 
             // RegisterAccept 다시 걸어줌. JobQueue에 PushOnly로 등록하여 재귀호출 방지
             _jobQueue->push(make_shared<Job>(dynamic_pointer_cast<Listener>(shared_from_this()), &Listener::registerAccept, acceptEvent));
-            spdlog::error("Listener : Accept Fail");
+            spdlog::error("[Listener] Accept Fail");
         }
     }
 }
@@ -78,7 +80,7 @@ void Listener::processAccept(IocpEvent* acceptEvent)
 
     if (SocketUtils::setUpdateAcceptSocket(session->getSocket(), _socket) == false)
     {
-        spdlog::error("Listener : Socket Update Fail");
+        spdlog::error("[Listener] Socket Update Fail");
         registerAccept(acceptEvent);
         return;
     }
@@ -89,14 +91,14 @@ void Listener::processAccept(IocpEvent* acceptEvent)
 
     if (::getpeername(session->getSocket(), reinterpret_cast<sockaddr*>(&clientAddr), &addrLen) == SOCKET_ERROR)
     {
-        spdlog::error("Listener : Get Client Address Fail");
+        spdlog::error("[Listener] Get Client Address Fail");
         registerAccept(acceptEvent);
         return;
     }
 
     NetAddress netAddress(clientAddr);
     if (session->processAccept(netAddress))
-        spdlog::info("Listener : Client Connected[{}({})] : SessionId[{}]", netAddress.getIpAddress(), netAddress.getPort(), session->getSessionId());
+        spdlog::info("[Listener] Client Connected[{}({})] : SessionId[{}]", netAddress.getIpAddress(), netAddress.getPort(), session->getSessionId());
 
     registerAccept(acceptEvent);
 }
