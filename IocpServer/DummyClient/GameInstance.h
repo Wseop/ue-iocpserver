@@ -4,7 +4,7 @@
 #include "Protocol.pb.h"
 
 class Player;
-class Session;
+class PacketSession;
 
 class GameInstance : public JobQueue
 {
@@ -13,23 +13,23 @@ public:
 	~GameInstance();
 
 public:
-	void EnterGameRoom(shared_ptr<Session> session);
-	void HandleEnterGameRoom(Protocol::S_Enter payload);
+	void enterGameRoom(shared_ptr<PacketSession> session);
+	void handleEnterGameRoom(Protocol::S_Enter payload);
 
-	void ExitGameRoom(shared_ptr<Session> session);
-	void HandleExitGameRoom(Protocol::S_Exit payload);
+	void exitGameRoom(shared_ptr<PacketSession> session);
+	void handleExitGameRoom(Protocol::S_Exit payload);
 
-	void SpawnMyPlayer(shared_ptr<Session> session);
-	void HandleSpawnPlayer(Protocol::S_Spawn payload);
+	void spawnMyPlayer(shared_ptr<PacketSession> session);
+	void handleSpawnPlayer(Protocol::S_Spawn payload);
 
-	void HandleDespawnPlayer(Protocol::S_Despawn payload);
+	void handleDespawnPlayer(Protocol::S_Despawn payload);
 
-	void MoveMyPlayersToOther(shared_ptr<Session> session);
-	void HandleMovePlayer(Protocol::S_Move payload);
+	void moveMyPlayersToOther(shared_ptr<PacketSession> session);
+	void handleMovePlayer(Protocol::S_Move payload);
 
 private:
-	shared_ptr<Player> SpawnPlayer(const Protocol::ObjectInfo& playerInfo);
-	void DespawnPlayer(uint32 playerId);
+	shared_ptr<Player> spawnPlayer(const Protocol::ObjectInfo& playerInfo);
+	void despawnPlayer(uint32 playerId);
 
 private:
 	map<uint32, shared_ptr<Player>> _myPlayers;

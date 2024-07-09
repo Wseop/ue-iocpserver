@@ -1,28 +1,30 @@
 #pragma once
 
-#include "PacketHandler.h"
 #include "Protocol.pb.h"
 
-class ClientPacketHandler : public PacketHandler
+class PacketSession;
+class SendBuffer;
+
+class ClientPacketHandler
 {
 public:
-	static void Init();
+	static void init();
 
 private:
 	// PacketHandlers
-	static void HandlePing(shared_ptr<Session> session, BYTE* payload, uint32 payloadSize);
-	static void HandleS_Enter(shared_ptr<Session> session, BYTE* payload, uint32 payloadSize);
-	static void HandleS_Exit(shared_ptr<Session> session, BYTE* payload, uint32 payloadSize);
-	static void HandleS_Spawn(shared_ptr<Session> session, BYTE* payload, uint32 payloadSize);
-	static void HandleS_Despawn(shared_ptr<Session> session, BYTE* payload, uint32 payloadSize);
-	static void HandleS_Move(shared_ptr<Session> session, BYTE* payload, uint32 payloadSize);
+	static void handlePing(shared_ptr<PacketSession> session, BYTE* payload, uint32 payloadSize);
+	static void handleS_Enter(shared_ptr<PacketSession> session, BYTE* payload, uint32 payloadSize);
+	static void handleS_Exit(shared_ptr<PacketSession> session, BYTE* payload, uint32 payloadSize);
+	static void handleS_Spawn(shared_ptr<PacketSession> session, BYTE* payload, uint32 payloadSize);
+	static void handleS_Despawn(shared_ptr<PacketSession> session, BYTE* payload, uint32 payloadSize);
+	static void handleS_Move(shared_ptr<PacketSession> session, BYTE* payload, uint32 payloadSize);
 
 public:
 	// Packet Makers
-	static inline shared_ptr<SendBuffer> MakePing(Protocol::Ping* payload) { return MakeSendBuffer(PacketType::Ping, payload); }
-	static inline shared_ptr<SendBuffer> MakeC_Enter(Protocol::C_Enter* payload) { return MakeSendBuffer(PacketType::C_Enter, payload); }
-	static inline shared_ptr<SendBuffer> MakeC_Exit(Protocol::C_Exit* payload) { return MakeSendBuffer(PacketType::C_Exit, payload); }
-	static inline shared_ptr<SendBuffer> MakeC_Spawn(Protocol::C_Spawn* payload) { return MakeSendBuffer(PacketType::C_Spawn, payload); }
-	static inline shared_ptr<SendBuffer> MakeC_Move(Protocol::C_Move* payload) { return MakeSendBuffer(PacketType::C_Move, payload); }
+	static shared_ptr<SendBuffer> makePing(Protocol::Ping* payload);
+	static shared_ptr<SendBuffer> makeC_Enter(Protocol::C_Enter* payload);
+	static shared_ptr<SendBuffer> makeC_Exit(Protocol::C_Exit* payload);
+	static shared_ptr<SendBuffer> makeC_Spawn(Protocol::C_Spawn* payload);
+	static shared_ptr<SendBuffer> makeC_Move(Protocol::C_Move* payload);
 };
 
