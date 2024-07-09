@@ -35,6 +35,7 @@ bool NetworkService::listen(uint32 acceptCount)
 		return true;
 
 	_listener = make_shared<Listener>();
+	_listener->setService(shared_from_this());
 	return _listener->start(acceptCount);
 }
 
